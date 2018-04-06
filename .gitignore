@@ -5,6 +5,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Backup files
+*~
+~*
+*.swp
+*.bak
+
 # Runtime data
 pids
 *.pid

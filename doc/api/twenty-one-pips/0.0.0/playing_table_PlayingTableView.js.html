@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>playing_table/PlayingTableView.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module-Die-Die.html">Die</a><ul class='methods'><li data-type='method'><a href="module-Die-Die.html#.fromUnicode">fromUnicode</a></li><li data-type='method'><a href="module-Die-Die.html#holdIt">holdIt</a></li><li data-type='method'><a href="module-Die-Die.html#isHeld">isHeld</a></li><li data-type='method'><a href="module-Die-Die.html#releaseIt">releaseIt</a></li><li data-type='method'><a href="module-Die-Die.html#throwIt">throwIt</a></li><li data-type='method'><a href="module-Die-Die.html#toUnicode">toUnicode</a></li></ul></li><li><a href="module-error_ConfigurationError-ConfigurationError.html">ConfigurationError</a></li><li><a href="module-error_NoSuchEventTypeError-NoSuchEventTypeError.html">NoSuchEventTypeError</a></li><li><a href="module-Model-Model.html">Model</a></li><li><a href="module-Player-Player.html">Player</a><ul class='methods'><li data-type='method'><a href="module-Player-Player.html#equals">equals</a></li></ul></li><li><a href="module-playing_table_GridLayout-GridLayout.html">GridLayout</a><ul class='methods'><li data-type='method'><a href="module-playing_table_GridLayout-GridLayout.html#layout">layout</a></li><li data-type='method'><a href="module-playing_table_GridLayout-GridLayout.html#resize">resize</a></li><li data-type='method'><a href="module-playing_table_GridLayout-GridLayout.html#snapTo">snapTo</a></li></ul></li><li><a href="module-playing_table_PlayingTableView-PlayingTableView.html">PlayingTableView</a><ul class='methods'><li data-type='method'><a href="module-playing_table_PlayingTableView-PlayingTableView.html#renderDice">renderDice</a></li></ul></li><li><a href="module-playing_table_PlayingTable-PlayingTable.html">PlayingTable</a></li><li><a href="module-View-View.html">View</a></li></ul><h3>Modules</h3><ul><li><a href="module-Die.html">Die</a></li><li><a href="module-error_ConfigurationError.html">error/ConfigurationError</a></li><li><a href="module-error_NoSuchEventTypeError.html">error/NoSuchEventTypeError</a></li><li><a href="module-EventAware.html">EventAware</a><ul class='methods'><li data-type='method'><a href="module-EventAware.html#emit">emit</a></li><li data-type='method'><a href="module-EventAware.html#off">off</a></li><li data-type='method'><a href="module-EventAware.html#on">on</a></li><li data-type='method'><a href="module-EventAware.html#registerEvent">registerEvent</a></li><li data-type='method'><a href="module-EventAware.html#unregisterEvent">unregisterEvent</a></li></ul></li><li><a href="module-Model.html">Model</a></li><li><a href="module-Player.html">Player</a></li><li><a href="module-playing_table_GridLayout.html">playing_table/GridLayout</a></li><li><a href="module-playing_table_PlayingTable.html">playing_table/PlayingTable</a></li><li><a href="module-playing_table_PlayingTableView.html">playing_table/PlayingTableView</a></li><li><a href="module-View.html">View</a></li></ul><h3>Events</h3><ul><li><a href="module-Die.html#~event:HOLD_DIE">HOLD_DIE</a></li><li><a href="module-Die.html#~event:RELEASE_DIE">RELEASE_DIE</a></li><li><a href="module-Die.html#~event:THROW_DIE">THROW_DIE</a></li></ul><h3>Mixins</h3><ul><li><a href="module-EventAware-EventAware.html">EventAware</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">playing_table/PlayingTableView.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/** 
+ * Copyright (c) 2018 Huub de Beer
+ *
+ * This file is part of twenty-one-pips.
+ *
+ * Twenty-one-pips is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Twenty-one-pips is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with twenty-one-pips.  If not, see &lt;http://www.gnu.org/licenses/>.
+ * @ignore
+ */
+
+import {View} from "../View.js";
+import {GridLayout} from "./GridLayout.js";
+import {HOLD_DIE, RELEASE_DIE} from "../Die.js";
+import template from "./dice_svg_template.js";
+
+/**
+ * @module
+ */
+const SVGNS = "http://www.w3.org/2000/svg";
+const XLINKNS = "http://www.w3.org/1999/xlink";
+
+// Defaults
+const DEFAULT_HOLD_DURATION = 375; // ms
+const DEFAULT_DISPERSION = 2;
+const DEFAULT_BACKGROUND = "#FFFFAA";
+
+// private properties
+const _svgRoot = new WeakMap();
+const _dragHandler = new WeakMap();
+const _layout = new WeakMap();
+const _rotate = new WeakMap();
+const _holdDuration = new WeakMap();
+const _dispersion = new WeakMap();
+const _background = new WeakMap();
+
+// Interaction states
+const NONE = Symbol("no_interaction");
+const INDETERMINED = Symbol("indetermined");
+const DRAGGING = Symbol("dragging");
+
+// Event handlers to react to a die model's events
+const HOLD_IT_HANDLER = (holdUse) => (_, player) => holdUse.setAttribute("fill", player.color);
+const RELEASE_IT_HANDLER = (holdUse) => () => holdUse.setAttribute("fill", "none");
+
+// Methods to handle interaction
+
+const startDragging = (view, event, die) => {
+    let point = view.svgRoot.createSVGPoint();
+    point.x = event.clientX - document.body.scrollLeft;
+    point.y = event.clientY - document.body.scrollTop;
+    point = point.matrixTransform(die.getScreenCTM().inverse());
+
+    const offset = {
+        x: point.x,
+        y: point.y
+    };
+
+    let transform = die.ownerSVGElement.createSVGTransform();
+    let transformList = die.transform.baseVal;
+
+    _dragHandler.set(view, (event) => {
+        // Move die to the top of the SVG so it moves over the other dice
+        // rather than below them. 
+        view.svgRoot.removeChild(die);
+        view.svgRoot.appendChild(die);
+
+        // Get a point in viewport coordinates
+        point = view.svgRoot.createSVGPoint();
+        point.x = event.clientX - document.body.scrollLeft;
+        point.y = event.clientY - document.body.scrollTop;
+
+        // Transform them to user coordinates
+        point = point.matrixTransform(die.getScreenCTM().inverse());
+
+        // Keep track of the offset so the die that is being dragged stays
+        // under the cursor rather than having a jerk after starting dragging.
+        point.x -= offset.x;
+        point.y -= offset.y;
+
+        // Setup the transformation
+        transform.setTranslate(point.x, point.y);
+        transformList.appendItem(transform);
+        transformList.consolidate();
+    });
+
+    view.svgRoot.addEventListener("mousemove", _dragHandler.get(view));
+};
+
+const stopDragging = (view) => {
+    view.svgRoot.removeEventListener("mousemove", _dragHandler.get(view));
+};
+
+const renderDie = (view, {die, player, x, y, rotation = 0}) => {
+    // Render die
+    const dieElement = document.createElementNS(SVGNS, "g");
+    dieElement.classList.add("die");
+    view.svgRoot.appendChild(dieElement);
+
+    const holdUse = document.createElementNS(SVGNS, "use");
+    holdUse.setAttributeNS(XLINKNS, "xlink:href", "#hold");
+    holdUse.setAttribute(
+        "fill",
+        die.isHeld() ? die.heldBy.color : "none"
+    );
+    dieElement.appendChild(holdUse);
+
+    const useDie = document.createElementNS(SVGNS, "use");
+    useDie.setAttributeNS(XLINKNS, "xlink:href", `#die_${die.pips}`);
+    useDie.setAttribute("fill", die.color);
+    dieElement.appendChild(useDie);
+
+    const dimensions = useDie.getBBox();
+    const HALF_STROKE = .75;
+    const rotationCenter = {
+        x: dimensions.width / 2 + HALF_STROKE,
+        y: dimensions.height / 2 + HALD_STROKE
+    };
+
+    if (0 !== rotation) {
+        useDie.setAttribute(
+            "transform", 
+            `rotate(${rotation}, ${center.x}, ${center.y})`
+        );
+    }
+
+    dieElement.setAttribute("transform", `translate(${x},${y})`);
+
+    // Setup interaction
+    let state = NONE;
+    let origin;
+    let startTime;
+
+    const startInteraction = (event) => {
+        switch (state) {
+            case NONE: {
+                event.stopPropagation();
+                state = INDETERMINED;
+                startTime = new Date();
+                origin = {x: event.clientX, y: event.clientY};
+                break;
+            }
+            default: // ignore other states
+        }
+    };
+
+    const showInteraction = () => {
+        dieElement.setAttribute("cursor", "grab");
+    };
+
+    const hideInteraction = () => {
+        dieElement.setAttribute("cursor", "default");
+    };
+
+    const click = (event) => {
+        if (INDETERMINED === state) {
+            // do the click
+        }
+    }
+
+    const minDelta = 3; //px
+    const move = (event) => {
+        switch (state) {
+            case INDETERMINED: {
+                // Ignore small movements, otherwise move to MOVE state
+                const dx = Math.abs(origin.x - event.clientX);
+                const dy = Math.abs(origin.y - event.clientY);
+                if (minDelta &lt; dx || minDelta &lt; dy) {
+                    event.stopPropagation();
+                    state = DRAGGING;
+                    dieElement.setAttribute("cursor", "grabbing");
+                    startDragging(view, event, dieElement);
+                }
+                break;
+            }
+            case DRAGGING: {
+                break;
+            }
+            default: // ignore other states
+        }
+    };
+
+    const stopInteraction = (event) => {
+        switch(state) {
+            case INDETERMINED: {
+                const endTime = new Date();
+                if (endTime - startTime > view.holdDuration) {
+                    // toggle hold / release
+                    if (die.isHeld()) {
+                        die.releaseIt(player);
+                    } else {
+                        die.holdIt(player);
+                    }
+                } else {
+                    // click
+                }
+                break;
+            }
+            case DRAGGING: {
+                const snapTo = _layout.get(view).snapTo({
+                    x: event.clientX,
+                    y: event.clientY
+                });
+                stopDragging(view);
+                break;
+            }
+            default: // ignore other states
+        }
+        state = NONE;
+    };
+
+    dieElement.addEventListener("mousedown", startInteraction);
+    dieElement.addEventListener("touchstart", startInteraction);
+
+    dieElement.addEventListener("mousemove", move);
+    dieElement.addEventListener("touchmove", move);
+
+    dieElement.addEventListener("mouseover", showInteraction);
+
+    dieElement.addEventListener("mouseout", hideInteraction);
+
+    dieElement.addEventListener("mouseup", stopInteraction);
+    dieElement.addEventListener("touchend", stopInteraction);
+
+    die.off(HOLD_DIE, HOLD_IT_HANDLER);
+    die.on(HOLD_DIE, HOLD_IT_HANDLER(holdUse));
+
+    die.off(RELEASE_DIE, RELEASE_IT_HANDLER);
+    die.on(RELEASE_DIE, RELEASE_IT_HANDLER(holdUse));
+};
+    
+const clear = (view) => {
+    const diceElements = view.svgRoot.querySelectorAll("g.die");
+    for (const dieElement of diceElements) {
+        view.svgRoot.removeChild(dieElement);
+    }
+};
+
+
+/**
+ * PlayingTableView renders the playing table and the dice upon it.
+ *
+ * @property {Number} width - The width of this PlayingTableView.
+ * @property {Number} height - The height of this PlayingTableView.
+ * @property {Number} holdDuration - The time in milliseconds a user needs to
+ * click and hold a die before it is hold/released.
+ * @property {Number} dispersion - The spread distance of dice from the center
+ * point.
+ * @property {String} background - The background color of this view.
+ * @property {Number} maximumNumberOfDice - The maximum number of dice that
+ * can be rendered by this view.
+ * @property {Boolean} rotate - Should the dice be rotated when rendered?
+ * @property {module:playing_table/GridLayout~GridLayout} layout - The layout
+ * used when rendering dice in this view.
+ *
+ * @extends module:View~View
+ */
+const PlayingTableView = class extends View {
+
+    /**
+     * Create a new PlayingTableView
+     *
+     * @property {Object} config
+     * @property {Number} config.width - The width of this PlayingTableView.
+     * @property {Number} config.height - The height of this PlayingTableView.
+     * @property {Number} config.maximumNumberOfDice - The maximum number of dice that
+     * can be rendered by this view.
+     * @property {Boolean} [config.rotate = true] - Should the dice be rotated when 
+     * rendered? Defaults to true.
+     * @property {module:playing_table/GridLayout~GridLayout} [layout = new GridLayout]
+     * The layout to use when rendering dice in this view. Defaults to a GridLayout.
+     * @property {Number} [config.holdDuration = DEFAULT_HOLD_DURATION] - The time 
+     * in milliseconds a user needs to
+     * click and hold a die before it is hold/released. Defaults to 375ms.
+     * @property {Number} [config.dispersion = DEFAULT_DISPERSION] - The spread 
+     * distance of dice from the center
+     * point. Defaults to 2.
+     * @property {String} [config.background = DEFAULT_BACKGROUND] - The background 
+     * color of this view. Defaults to #FFFFAA.
+     * used when rendering dice in this view.
+     */
+    constructor({
+        width,
+        height,
+        maximumNumberOfDice,
+        rotate = true,
+        layout = new GridLayout({width, height, maximumNumberOfDice, rotate}),
+        dispersion = DEFAULT_DISPERSION,
+        background = DEFAULT_BACKGROUND,
+        holdDuration = DEFAULT_HOLD_DURATION
+    }) {
+        super();
+
+        // Add prepared SVG with die symbols
+        const parser = new DOMParser();
+        const svgDocument = parser.parseFromString(template, "image/svg+xml");
+        const svgRoot = document.importNode(svgDocument.documentElement, true);
+        this.element.appendChild(svgRoot);
+        _svgRoot.set(this, svgRoot);
+
+        // Setup properties.
+        this.holdDuration = holdDuration;
+        this.dispersion = dispersion;
+        this.background = background;
+        this.rotate = rotate;
+        this.layout = layout;
+    }
+
+    get svgRoot() {
+        return _svgRoot.get(this);
+    }
+
+    get layout() {
+        return _layout.get(this);
+    }
+
+    set layout(l) {
+        _layout.set(this, l);
+    }
+    
+    get width() {
+        return this.svgRoot.getAttribute("width");
+    }
+
+    set width(w) {
+        this.svgRoot.setAttribute("width", w);
+    }
+
+    get height() {
+        return this.svgRoot.getAttribute("height");
+    }
+
+    set height(h) {
+        this.svgRoot.setAttribute("height", h);
+    }
+
+    get rotate() {
+        return _rotate.get(this);
+    }
+
+    set rotate(r) {
+        _rotate.set(this, r);
+        this.layout.rotate = r;
+    }
+
+    get holdDuration() {
+        return _holdDuration.get(this);
+    }
+
+    set holdDuration(t) {
+        _holdDuration.set(this, t);
+    }
+
+    get dispersion() {
+        return _dispersion.get(this);
+    }
+
+    set dispersion(d) {
+        _dispersion.set(this, d);
+    }
+
+    get background() {
+        _background.get(this);
+    }
+
+    set background(b) {
+        _background.set(this, b);
+        this.svgRoot.style.background = b;
+    }
+
+    /**
+     * Render dice for this player.
+     *
+     * @param {module:Die~Die[]} dice - The dice to render in this view.
+     * @param {module:Player~Player} player - The player for which this view
+     * is rendered.
+     */
+    renderDice({dice, player}) {
+        clear(this);
+        for (const position of this.layout.layout(dice, this.dispersion)) {
+            const {x, y, die, rotation} = position;
+            renderDie(this, {die, player, x, y, rotation});
+        }
+    }
+
+};
+
+export {PlayingTableView};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Apr 06 2018 16:01:04 GMT+0200 (CEST) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
