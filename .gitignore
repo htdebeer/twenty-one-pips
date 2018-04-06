@@ -11,6 +11,9 @@ yarn-error.log*
 *.swp
 *.bak
 
+# Generated documentation
+doc/api/
+
 # Runtime data
 pids
 *.pid
