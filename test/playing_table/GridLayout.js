@@ -1,5 +1,7 @@
 import {expect} from "chai";
 import {GridLayout} from "../../src/playing_table/GridLayout.js";
+import {Die} from "../../src/Die.js";
+import {Player} from "../../src/Player.js";
 
 describe("GridLayout", function () {
     describe("create a new GridLayout", function () {
@@ -69,16 +71,56 @@ describe("GridLayout", function () {
             expect(l.maximumNumberOfDice).to.equal(869);
         });
 
-        it("should increase the width and height if the max number of dice do not fit", function () {
+        it("should increase the width and height and possible the max if the max number of dice do not fit", function () {
             let l = new GridLayout({
                 maximumNumberOfDice: 50,
                 dieSize: 10,
                 width: 45,
                 height: 30
             });
-            expect(l.width).to.equal(50);
-            expect(l.height).to.equal(30);
-            expect(l.maximumNumberOfDice).to.equal(50);
+            expect(l.width).to.equal(90);
+            expect(l.height).to.equal(60);
+            expect(l.maximumNumberOfDice).to.equal(54);
         });
+    });
+
+    describe("#layout(dice)", function () {
+        const dice = [new Die(), new Die(), new Die(), new Die(), new Die()];
+        const grid = new GridLayout({maximumNumberOfDice: 6, dieSize: 10});
+
+        it("should return an empty list when an empty list is supplied to layout", function () {
+            expect(grid.layout([])).to.be.empty;
+        });
+
+        it("should layout all dice", function () {
+            const layoutDice = grid.layout(dice);
+            expect(layoutDice.length).to.equal(dice.length);
+            for (const coords of layoutDice) {
+                expect(coords.x).to.be.above(-1).and.to.be.below(601);
+                expect(coords.y).to.be.above(-1).and.to.be.below(601);
+                expect(coords.rotation).to.exist;
+            }
+        });
+        
+        it("should not re-layout dice that are being held", function () {
+            const player = new Player({name: "John", color: "red"});
+            const holdDie = new Die({holdBy: player});
+            
+            const firstCoords = grid.layout([holdDie])[0];
+            expect(firstCoords.x).to.be.above(-1).and.to.be.below(601);
+            expect(firstCoords.y).to.be.above(-1).and.to.be.below(601);
+            expect(firstCoords.rotation).to.exist;
+            
+            const secondCoords = grid.layout([holdDie])[0];
+            expect(firstCoords.x).to.equal(secondCoords.x);
+            expect(firstCoords.y).to.equal(secondCoords.y);
+            expect(firstCoords.rotation).to.equal(secondCoords.rotation);
+        });
+
+
+    });
+    
+    describe("#snapTo({x, y})", function () {
+        // Not yet implemented.
     });
 });

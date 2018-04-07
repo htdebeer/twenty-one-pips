@@ -18,22 +18,40 @@
  * @ignore
  */
 import {ConfigurationError} from "../error/ConfigurationError.js";
-import {Layout} from "./Layout.js";
 
 /**
  * @module
  */
 
+const DEFAULT_WIDTH = 600;
+const DEFAULT_HEIGHT = 400;
+
+const _dieSize = new WeakMap();
+const _rotate = new WeakMap();
+const _width = new WeakMap();
+const _height = new WeakMap();
+const _maximumNumberOfDice = new WeakMap();
 const _cols = new WeakMap();
 const _rows = new WeakMap();
 const _layoutDice = new WeakMap();
 
 const calculateDimensions = (size, width, height, max) => {
-    let cols = Math.ceil(width/size);
-    let rows = Math.ceil(height/size);
+    let cols = Math.ceil(width / size);
+    let rows = Math.ceil(height / size);
+
+    const ratio = width / height;
+    let h = height;
+    let w = width;
     
-    if (max > cols*rows) {
-        // calculate better fit
+    while (max > cols*rows) {
+        // calculate better fit: increase height, compute corresponding width
+        // by keeping the aspect ratio, and try to see if the cols*rows now is
+        // larger than the minimum number of cells needed.
+        h = h + size;
+        w = ratio * h;
+
+        cols = Math.ceil(w / size);
+        rows = Math.ceil(h / size);
     }
 
     return {cols, rows};
@@ -66,7 +84,7 @@ const levelCells = (rows, cols, level) => {
             cells.push(cellToNumber({row, col: center.col + level}, cols));
         }
 
-        for (let column = center.col - level + 1; column < center.col + level; column++) {
+        for (let col = center.col - level + 1; col < center.col + level; col++) {
             cells.push(cellToNumber({row: center.row - level, col}, cols));
             cells.push(cellToNumber({row: center.row + level, col}, cols));
         }
@@ -92,9 +110,14 @@ const computeAvailableCells = (rows, cols, max, alreadyTakenCells) => {
 /**
  * GridLayout handles laying out the dice on a PlayingTable.
  *
- * @extends module:playing_table/Layout~Layout
+ * @property {Number} width - The width of this GridLayout.
+ * @property {Number} height - The height of this GridLayout.
+ * @property {Number} dieSize - The size of the dice.
+ * @property {Number} maximumNumberOfDice - The maximum number of dice that
+ * can be layout on this GridLayout.
+ * @property {Boolean} rotate - Indicates if dice are to be rotated.
  */
-const GridLayout = class extends Layout {
+const GridLayout = class {
 
     /**
      * Create a new GridLayout.
@@ -115,7 +138,22 @@ const GridLayout = class extends Layout {
      * has to be an Integer.
      */
     constructor({maximumNumberOfDice, dieSize, width = 600, height = 400, rotate = true}) {
-        super({maximumNumberOfDice, dieSize, width, height, rotate});
+        if (!Number.isInteger(dieSize) || 0 >= dieSize) {
+            throw new ConfigurationError(`The dieSize needs to be a whole number > 0, got '${dieSize}' instead.`);
+        }
+
+        if (0 >= width) {
+            throw new ConfigurationError(`Width should be a number larger than 0, got '${width}' instead.`);
+        }
+        
+        if (0 >= height) {
+            throw new ConfigurationError(`Height should be a number larger than 0, got '${height}' instead.`);
+        }
+        _dieSize.set(this, dieSize);
+        _rotate.set(this, rotate);
+        _width.set(this, width);
+        _height.set(this, height);
+        _maximumNumberOfDice.set(this, maximumNumberOfDice);
         const {cols, rows} = calculateDimensions(this.dieSize, width, height, maximumNumberOfDice);
         _cols.set(this, cols);
         _rows.set(this, rows);
@@ -133,6 +171,19 @@ const GridLayout = class extends Layout {
     get maximumNumberOfDice() {
         return _cols.get(this) * _rows.get(this);
     }
+    
+    get dieSize() {
+        return _dieSize.get(this);
+    }
+
+    get rotate() {
+        return _rotate.get(this);
+    }
+
+    set rotate(r) {
+        _rotate.set(this, r);
+    }
+
 
     /**
      * Layout dice on this Layout.
@@ -140,7 +191,7 @@ const GridLayout = class extends Layout {
      * @param {module:Die~Die[]} dice - The dice to layout on this Layout.
      * @return {Object[]} A list with dice and their layout coordinates (x, y) and their rotation.
      *
-     * throw module:error/ConfigurationError~ConfigurationError The number of
+     * @throws {module:error/ConfigurationError~ConfigurationError} The number of
      * dice should not exceed the maximum number of dice this Layout can
      * layout.
      */
@@ -159,7 +210,7 @@ const GridLayout = class extends Layout {
             const randomCell = availableCells[randomIndex];
             availableCells.splice(randomIndex, 1);
             const rotation = this.rotate ? Math.random() * 360 : 0;
-            cells.push({n: randomCell, die, rotation});
+            newLayoutDice.push({n: randomCell, die, rotation});
         }
 
         _layoutDice.set(this, newLayoutDice);
@@ -167,6 +218,7 @@ const GridLayout = class extends Layout {
         return newLayoutDice.map(ndie => {
             const coords = numberToCoords(ndie.n, _cols.get(this), this.dieSize);
             coords.die = ndie.die;
+            coords.rotation = ndie.rotation;
             return coords;
         });
     }

@@ -49,9 +49,13 @@ const HOLD_DIE = Symbol("event:hold-die");
  */
 const RELEASE_DIE = Symbol("event:release-die");
 
+// Private properties
 const _pips = new WeakMap();
 const _heldBy = new WeakMap();
 const _color = new WeakMap();
+const _x = new WeakMap();
+const _y = new WeakMap();
+const _rotation = new WeakMap();
 
 // Testing framework + babel results in instanceof not working correctly. So
 // checking for compatibility instead in the meantime.
@@ -95,6 +99,10 @@ const pipsToUnicode = p => {
  * @property {String} color - The color of this Die. Defaults to "Ivory".
  * @property {module:Player~Player} heldBy - The player that is holding this Die, if any. If
  * no player is holding it, heldBy is null.
+ * @property {Coordinate} coordinate - The coordinate at which this Die has
+ * been rendered, null otherwise.
+ * @property {Number} rotation - The rotation of this Die if it has been
+ * rendered, null otherwise.
  *
  * @extends module:Model~Model
  */
@@ -112,11 +120,17 @@ const Die = class extends Model {
      * @param {module:Player~Player|null} [config.heldBy = null] - The player that is holding
      * this Die. Defaults to null, indicating that no player is holding this
      * Die.
+     * @param {Coordinate} [coordinates = null] - The coordinates this Die is
+     * rendered at, null otherwise.
+     * @param {Number} [rotation = null] - The rotation of this
+     * Die when rendered, null otherwise.
      */
     constructor({
         pips = -1,
         heldBy = null,
-        color = DEFAULT_COLOR
+        color = DEFAULT_COLOR,
+        coordinates = null,
+        rotation = null
     } = {}) {
         super();
         this.registerEvent(THROW_DIE, HOLD_DIE, RELEASE_DIE);
@@ -127,6 +141,8 @@ const Die = class extends Model {
         _heldBy.set(this, heldBy);
         _color.set(this, color);
         _pips.set(this, isPipNumber(pips) ? pips : randomPips());
+        this.coordinates = null;
+        this.rotation = rotation;
     }
 
     /**
@@ -177,6 +193,32 @@ const Die = class extends Model {
         return _heldBy.get(this);
     }
 
+    get coordinates() {
+        const x = _x.get(this);
+        const y = _y.get(this);
+
+        return null === x || null === y ? null : {x, y};
+    }
+
+    set coordinates(c) {
+        if (null === c) {
+            _x.set(this, null);
+            _y.set(this, null);
+        } else{ 
+            const {x, y} = c;
+            _x.set(this, x);
+            _y.set(this, y);
+        }
+    }
+
+    get rotation() {
+        return _rotation.get(this);
+    }
+
+    set rotation(newR) {
+        _rotation.set(this, newR);
+    }
+
     /**
      * Throw this Die: set the number of pips to a random number between 1 and
      * 6. Only dice that are not being held can be thrown.
@@ -225,6 +267,15 @@ const Die = class extends Model {
             _heldBy.set(this, null);
             this.emit(RELEASE_DIE, this, player);
         }
+    }
+
+    /**
+     * Has this Die been rendered?
+     *
+     * @return {Boolean} True when the Die has been rendered, false otherwise.
+     */
+    isRendered() {
+        return null !== this.coordinate && null !== this.rotation;
     }
 };
 

@@ -10,6 +10,9 @@ describe("Die", function () {
                 expect(die.pips).to.equal(pips);
                 expect(die.isHeld()).to.be.false;
                 expect(die.color).to.equal("Ivory");
+                expect(die.coordinates).to.be.null;
+                expect(die.rotation).to.be.null;
+                expect(die.isRendered()).to.be.false;
             }
         });
         
