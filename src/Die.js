@@ -141,7 +141,7 @@ const Die = class extends Model {
         _heldBy.set(this, heldBy);
         _color.set(this, color);
         _pips.set(this, isPipNumber(pips) ? pips : randomPips());
-        this.coordinates = null;
+        this.coordinates = coordinates;
         this.rotation = rotation;
     }
 

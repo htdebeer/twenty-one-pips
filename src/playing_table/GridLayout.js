@@ -60,11 +60,23 @@ const calculateDimensions = (size, width, height, max) => {
 const numberToCell = (n, cols) => {
     return {row: n / cols, col: n % cols}
 };
+
 const cellToNumber = ({row, col}, cols) => row * cols + col;
+
 const cellToCoords = ({row, col}, size) => {
     return {x: col * size, y: row * size}
 };  
+
+const coordsToCell = ({x, y}, size) => {
+    return {
+        row: Math.trunc(x / size),
+        col: Math.trunc(y / size)
+    }
+};
+
 const numberToCoords = (n, cols, size) => cellToCoords(numberToCell(n, cols), size);
+
+const coordsToNumber = (coords, cols, size) => cellToNumber(coordsToCell(coords, size), cols);
 
 const determineCenter = (rows, cells) => {
     const row = Math.floor(rows / 2);
@@ -73,9 +85,12 @@ const determineCenter = (rows, cells) => {
     return {row, col};
 };
 
-const levelCells = (rows, cols, level) => {
+const cellsOnLevel = (layout, level) => {
+    const rows = _rows.get(layout);
+    const cols = _cols.get(layout);
     const cells = [];
     const center = determineCenter(rows, cols);
+
     if (0 === level) {
         cells.push(cellToNumber(center));
     } else {
@@ -92,19 +107,35 @@ const levelCells = (rows, cols, level) => {
     return cells.filter(n => 0 <= n && n <= rows * cols);
 };
 
-const computeAvailableCells = (rows, cols, max, alreadyTakenCells) => {
-    let availableCells = [];
+const isEmptyCell = (layout, cell, layoutDice) {
+    const cols = _cols.get(layout);
+    const size = _dieSize.get(layout);
+
+    return undefined === layoutDice.find(die => coordToNumber(die.coordinates, cols, size));
+};
+
+const computeAvailableCells = (layout, max, layoutDice) => {
+    const rows = _rows.get(layout);
+    const cols = _cols.get(layout);
+    const size = _dieSize.get(layout);
+
+    let available = [];
     let level = 0;
     const maxLevel = Math.min(rows, cols);
 
-    while (availableCells.length < max && level < maxLevel) {
-        const cellsOnLevel = levelCells(rows, cols, level);
-        const availableCellsOnLevel = cellsOnLevel.filter(c => 0 === alreadyTakenCells.filter(ndie => ndie.n === c).length);
-        availableCells = availableCells.concat(availableCellsOnLevel);
+    while (available.length < max && level < maxLevel) {
+        const levelCells = cellsOnLevel(layout, level);
+        
+        for (const cell of levelCells) {
+            if (isEmptyCell(layout, cell, layoutDice)) {
+                available.push(cell);
+            }
+        }
+
         level++;
     }
 
-    return availableCells;
+    return available;
 };
 
 /**
@@ -200,27 +231,24 @@ const GridLayout = class {
             throw new ConfigurationError(`The number of dice that can be layout is ${this.maximumNumberOfDice}, got ${dice.lenght} dice instead.`);
         }
 
-        const newLayoutDice = _layoutDice.get(this).filter(ndie => ndie.die.isHeld());
-        const diceToLayout = dice.filter(die => !die.isHeld())
+        const alreadyLayoutDice = dice.filter(die => die.isRendered() && die.isHeld());
+        const diceToLayout = dice.filter(die => !die.isHeld());
+        const layoutDice = Array.from(alreadyLayoutDice);
+
         const max = Math.min(dice.length * dispersion, this.maximumNumberOfDice);
-        const availableCells = computeAvailableCells(_rows.get(this), _cols.get(this), max, newLayoutDice);
+        const availableCells = computeAvailableCells(this, max, alreadyLayoutDice);
 
         for (const die of diceToLayout) {
             const randomIndex = Math.floor(Math.random() * availableCells.length);
             const randomCell = availableCells[randomIndex];
             availableCells.splice(randomIndex, 1);
-            const rotation = this.rotate ? Math.random() * 360 : 0;
-            newLayoutDice.push({n: randomCell, die, rotation});
+
+            die.coordination = numberToCoords(randomCell);
+            die.rotation = this.rotate ? Math.random() * 360 : 0;
+            layoutDice.push(die);
         }
 
-        _layoutDice.set(this, newLayoutDice);
-
-        return newLayoutDice.map(ndie => {
-            const coords = numberToCoords(ndie.n, _cols.get(this), this.dieSize);
-            coords.die = ndie.die;
-            coords.rotation = ndie.rotation;
-            return coords;
-        });
+        return layoutDice;
     }
 
     /**
