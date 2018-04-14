@@ -64,6 +64,34 @@ describe("GridLayout", function () {
             }
         });
         
+        it("should re-layout dice that are being held", function () {
+            const player = new Player({name: "John", color: "red"});
+            const notHoldDie = new Die();
+            expect(notHoldDie.isHeld()).to.be.false;
+            expect(notHoldDie.hasCoordinates()).to.be.false;
+
+            grid.layout([notHoldDie]);
+            expect(notHoldDie.isHeld()).to.be.false;
+            expect(notHoldDie.hasCoordinates()).to.be.true;
+
+            const firstCoordinates = notHoldDie.coordinates;
+            const firstRotation = notHoldDie.rotation;
+            
+            expect(firstCoordinates.x).to.be.above(-1).and.to.be.below(601);
+            expect(firstCoordinates.y).to.be.above(-1).and.to.be.below(601);
+            expect(firstRotation).to.exist;
+            
+            grid.layout([notHoldDie]);
+            const secondCoords = notHoldDie.coordinates;
+            const secondRotation = notHoldDie.rotation;
+
+            // Note, as these new coordinates and rotation are randomly
+            // generated, they might be the same.
+            expect(firstCoordinates.x).to.not.equal(secondCoords.x);
+            expect(firstCoordinates.y).to.not.equal(secondCoords.y);
+            expect(firstRotation).to.not.equal(secondRotation);
+        });
+        
         it("should not re-layout dice that are being held", function () {
             const player = new Player({name: "John", color: "red"});
             const holdDie = new Die({heldBy: player});
