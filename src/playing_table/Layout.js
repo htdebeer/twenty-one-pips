@@ -91,10 +91,34 @@ const Layout = class {
         _rotate.set(this, r);
     }
 
+    /**
+     * Layout dice on this Layout. Override this method. 
+     *
+     * @param {module:Die~Die[]} dice - The dice to layout on this Layout.
+     * @return {module:Die~Die[]} The same list of dice, but now layout.
+     *
+     * @throws {module:error/ConfigurationError~ConfigurationError} The number of
+     * dice should not exceed the maximum number of dice this Layout can
+     * layout.
+     */
     layout(dice) {
+        if (dice.length > this.maximumNumberOfDice) {
+            throw new ConfigurationError(`The number of dice that can be layout is ${this.maximumNumberOfDice}, got ${dice.lenght} dice instead.`);
+        }
     }
 
+    /**
+     * Snap (x,y) to the closest cell in this Layout.
+     *
+     * @param {Object} coordinate
+     * @param {Number} coordinate.x - The x-coordinate.
+     * @param {Number} coordinate.y - The y-coordinate.
+     * 
+     * @return {Object} The coordinated that are closest to (x, y) and are
+     * suitable.
+     */
     snapTo({x, y}) {
+        return {x, y};
     }
 }
 

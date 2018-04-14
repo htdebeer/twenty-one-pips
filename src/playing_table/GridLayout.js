@@ -26,10 +26,12 @@ import {ConfigurationError} from "../error/ConfigurationError.js";
 
 const DEFAULT_WIDTH = 10 * DIE_SIZE;
 const DEFAULT_HEIGHT = 10 * DIE_SIZE;
+const DEFAULT_DISPERSION = 2;
 
 // Private fields
 const _cols = new WeakMap();
 const _rows = new WeakMap();
+const _dispersion = new WeakMap();
 
 /**
  * Calculate the dimensions needed to fit max number of dice.
@@ -97,6 +99,7 @@ const coordsToCell = ({x, y}) => {
  * @property {Number} maximumNumberOfDice - The maximum number of dice that
  * can be layout on this GridLayout.
  * @property {Boolean} rotate - Indicates if dice are to be rotated.
+ * @property {Number} dispersion - The distance from the center of this Layout a die can be layout.
  *
  * @extends module:playing_table/Layout.Layout
  */
@@ -114,16 +117,25 @@ const GridLayout = class extends Layout {
      * this GridLayout in pixels. Defaults to 400px.
      * @param {Boolean} [config.rotate = true] - Should dice be rotated?
      * Defaults to true.
+     * @param {Number} [dispersion = 2] - The distance from the center of the
+     * layout a die can be layout.
      *
      * @throws module:error/ConfigurationError.ConfigurationError The dieSize
      * has to be an Integer.
      */
-    constructor({maximumNumberOfDice, width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, rotate = true}) {
+    constructor({
+        maximumNumberOfDice, 
+        width = DEFAULT_WIDTH, 
+        height = DEFAULT_HEIGHT, 
+        rotate = true, 
+        dispersion = DEFAULT_DISPERSION
+    }) {
         super({maximumNumberOfDice, width, height, rotate});
 
         const {cols, rows} = calculateDimensions(width, height, maximumNumberOfDice);
         _cols.set(this, cols);
         _rows.set(this, rows);
+        _dispersion.set(this, dispersion);
     }
 
     get width() {
@@ -136,6 +148,10 @@ const GridLayout = class extends Layout {
 
     get maximumNumberOfDice() {
         return _cols.get(this) * _rows.get(this);
+    }
+
+    get dispersion() {
+        return _dispersion.get(this);
     }
 
     get _rows() {
@@ -154,64 +170,67 @@ const GridLayout = class extends Layout {
     }
 
     /**
-     * Layout dice on this Layout.
+     * Layout dice on this GridLayout.
      *
      * @param {module:Die~Die[]} dice - The dice to layout on this Layout.
-     * @return {Object[]} A list with dice and their layout coordinates (x, y) and their rotation.
+     * @return {module:Die~Die[]} The same list of dice, but now layout.
      *
      * @throws {module:error/ConfigurationError~ConfigurationError} The number of
      * dice should not exceed the maximum number of dice this Layout can
      * layout.
      */
-    layout(dice, dispersion = 1) {
+    layout(dice) {
         if (dice.length > this.maximumNumberOfDice) {
             throw new ConfigurationError(`The number of dice that can be layout is ${this.maximumNumberOfDice}, got ${dice.lenght} dice instead.`);
         }
 
-        const layoutDice = [];
+        const alreadyLayoutDice = [];
         const diceToLayout = [];
 
         for (const die of dice) {
             if (die.hasCoordinates() && die.isHeld()) {
-                layoutDice.push(die);
+                // Dice that are being held and have been layout before should
+                // keep their current coordinates and rotation. In other words,
+                // these dice are skipped.
+                alreadyLayoutDice.push(die);
             } else {
                 diceToLayout.push(die);
             }
         }
 
-        const max = Math.min(dice.length * dispersion, this.maximumNumberOfDice);
-        const availableCells = this._computeAvailableCells(max, layoutDice);
+        const max = Math.min(dice.length * this.dispersion, this.maximumNumberOfDice);
+        const availableCells = this._computeAvailableCells(max, alreadyLayoutDice);
 
         for (const die of diceToLayout) {
             const randomIndex = Math.floor(Math.random() * availableCells.length);
             const randomCell = availableCells[randomIndex];
             availableCells.splice(randomIndex, 1);
 
-            die.coordinates = this._numberToCoords(randomCell);
+            die.coordinates = this._numberToCoordinates(randomCell);
             die.rotation = this.rotate ? Math.random() * 360 : 0;
-            layoutDice.push(die);
+            alreadyLayoutDice.push(die);
         }
 
-        return layoutDice;
+        return alreadyLayoutDice;
     }
 
     /**
      * Compute a list with available cells to place dice on.
      *
      * @param {Number} max - The number empty cells to compute.
-     * @param {Die[]} layoutDice - A list with dice that have already been layout.
+     * @param {Die[]} alreadyLayoutDice - A list with dice that have already been layout.
      * 
      * @return {NUmber[]} The list of available cells represented by their number.
      * @private
      */
-    _computeAvailableCells(max, layoutDice) {
+    _computeAvailableCells(max, alreadyLayoutDice) {
         let available = [];
         let level = 0;
         const maxLevel = Math.min(this._rows, this._cols);
 
         while (available.length < max && level < maxLevel) {
             for (const cell of this._cellsOnLevel(level)) {
-                if (this._isEmptyCell(cell, layoutDice)) {
+                if (this._cellIsEmpty(cell, alreadyLayoutDice)) {
                     available.push(cell);
                 }
             }
@@ -254,16 +273,18 @@ const GridLayout = class extends Layout {
     }
 
     /**
-     * Does cell contain a cell from layoutDice?
+     * Does cell contain a cell from alreadyLayoutDice?
      *
      * @param {Number} cell - A cell in layout represented by a number.
-     * @param {Die[]} layoutDice - A list of dice that have already been layout.
+     * @param {Die[]} alreadyLayoutDice - A list of dice that have already been layout.
      *
      * @return {Boolean} True if cell does not contain a die.
      * @private
      */
-    _isEmptyCell(cell, layoutDice) {
-        return undefined === layoutDice.find(die => cell === this._coordsToNumber(die.coordinates));
+    _cellIsEmpty(cell, alreadyLayoutDice) {
+        return undefined === alreadyLayoutDice.find(
+            die => cell === this._coordinatesToNumber(die.coordinates)
+        );
     }
 
     /**
@@ -297,7 +318,7 @@ const GridLayout = class extends Layout {
      * this number.
      * @private
      */
-    _numberToCoords(n) {
+    _numberToCoordinates(n) {
         return cellToCoords(this._numberToCell(n));
     }
 
@@ -309,7 +330,7 @@ const GridLayout = class extends Layout {
      * @return {Number} The coordinates converted to a number.
      * @private
      */
-    _coordsToNumber(coords) {
+    _coordinatesToNumber(coords) {
         return this._cellToNumber(coordsToCell(coords));
     }
 
