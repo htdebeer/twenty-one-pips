@@ -11,8 +11,8 @@ describe("Die", function () {
                 expect(die.isHeld()).to.be.false;
                 expect(die.color).to.equal("Ivory");
                 expect(die.coordinates).to.be.null;
-                expect(die.rotation).to.be.null;
-                expect(die.isRendered()).to.be.false;
+                expect(die.rotation).to.equal(0);
+                expect(die.hasCoordinates()).to.be.false;
             }
         });
         
@@ -47,6 +47,21 @@ describe("Die", function () {
             die = Die.fromUnicode("⚂", {heldBy: player, color: "purple"});
             expect(die.heldBy.name).to.equal("John");
             expect(die.color).to.equal("purple");
+        });
+    });
+
+    describe("#hasCoordinates()", function () {
+        it("should be false if coordinates are null", function () {
+            const die = new Die();
+            expect(die.coordinates).to.be.null;
+            expect(die.hasCoordinates()).to.be.false;
+        });
+
+        it("should be false if coordinates are set", function () {
+            const die = new Die({coordinates: {x: 100, y: 300}});
+            expect(die.coordinates.x).to.equal(100);
+            expect(die.coordinates.y).to.equal(300);
+            expect(die.hasCoordinates()).to.be.true;
         });
     });
 

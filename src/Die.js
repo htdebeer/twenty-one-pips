@@ -120,17 +120,19 @@ const Die = class extends Model {
      * @param {module:Player~Player|null} [config.heldBy = null] - The player that is holding
      * this Die. Defaults to null, indicating that no player is holding this
      * Die.
-     * @param {Coordinate} [coordinates = null] - The coordinates this Die is
-     * rendered at, null otherwise.
-     * @param {Number} [rotation = null] - The rotation of this
-     * Die when rendered, null otherwise.
+     * @param {Coordinate} [coordinates = null] - The coordinates of this Die.
+     * Defaults to null.
+     * @param {Number} [coordinates.x] - The x coordinate
+     * @param {Number} [coordinates.y] - The y coordinate
+     * @param {Number} [rotation = 0] - The rotation of this
+     * Die. Defaults to 0.
      */
     constructor({
         pips = -1,
         heldBy = null,
         color = DEFAULT_COLOR,
         coordinates = null,
-        rotation = null
+        rotation = 0
     } = {}) {
         super();
         this.registerEvent(THROW_DIE, HOLD_DIE, RELEASE_DIE);
@@ -211,6 +213,15 @@ const Die = class extends Model {
         }
     }
 
+    /**
+     * Does this Die have coordinates?
+     *
+     * @return {Boolean} True when the Die does have coordinates
+     */
+    hasCoordinates() {
+        return null !== this.coordinates;
+    }
+
     get rotation() {
         return _rotation.get(this);
     }
@@ -267,15 +278,6 @@ const Die = class extends Model {
             _heldBy.set(this, null);
             this.emit(RELEASE_DIE, this, player);
         }
-    }
-
-    /**
-     * Has this Die been rendered?
-     *
-     * @return {Boolean} True when the Die has been rendered, false otherwise.
-     */
-    isRendered() {
-        return null !== this.coordinate && null !== this.rotation;
     }
 };
 

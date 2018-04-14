@@ -17,27 +17,34 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
+import {Layout, DIE_SIZE} from "./Layout.js";
 import {ConfigurationError} from "../error/ConfigurationError.js";
 
 /**
  * @module
  */
 
-const DEFAULT_WIDTH = 600;
-const DEFAULT_HEIGHT = 400;
+const DEFAULT_WIDTH = 10 * DIE_SIZE;
+const DEFAULT_HEIGHT = 10 * DIE_SIZE;
 
-const _dieSize = new WeakMap();
-const _rotate = new WeakMap();
-const _width = new WeakMap();
-const _height = new WeakMap();
-const _maximumNumberOfDice = new WeakMap();
+// Private fields
 const _cols = new WeakMap();
 const _rows = new WeakMap();
-const _layoutDice = new WeakMap();
 
-const calculateDimensions = (size, width, height, max) => {
-    let cols = Math.ceil(width / size);
-    let rows = Math.ceil(height / size);
+/**
+ * Calculate the dimensions needed to fit max number of dice.
+ *
+ * @param {Number} width - The minimal width
+ * @param {Number} height - The minimal height
+ * @param {Number} max - The minimal number of dice to fit
+ *
+ * @return {Object} The number of rows and columns needed to fit at least max number of
+ * dice.
+ * @private
+ */
+const calculateDimensions = (width, height, max) => {
+    let cols = Math.ceil(width / DIE_SIZE);
+    let rows = Math.ceil(height / DIE_SIZE);
 
     const ratio = width / height;
     let h = height;
@@ -47,95 +54,39 @@ const calculateDimensions = (size, width, height, max) => {
         // calculate better fit: increase height, compute corresponding width
         // by keeping the aspect ratio, and try to see if the cols*rows now is
         // larger than the minimum number of cells needed.
-        h = h + size;
+        h = h + DIE_SIZE;
         w = ratio * h;
 
-        cols = Math.ceil(w / size);
-        rows = Math.ceil(h / size);
+        cols = Math.ceil(w / DIE_SIZE);
+        rows = Math.ceil(h / DIE_SIZE);
     }
 
     return {cols, rows};
 };
 
-const numberToCell = (n, cols) => {
-    return {row: n / cols, col: n % cols}
-};
-
-const cellToNumber = ({row, col}, cols) => row * cols + col;
-
-const cellToCoords = ({row, col}, size) => {
-    return {x: col * size, y: row * size}
+/**
+ * Convert a (row, col) cell to (x, y) coordinates.
+ *
+ * @param {Object} cell
+ * @return {Object} The corresponding coordinates.
+ * @private
+ */
+const cellToCoords = ({row, col}) => {
+    return {x: col * DIE_SIZE, y: row * DIE_SIZE}
 };  
 
-const coordsToCell = ({x, y}, size) => {
+/**
+ * Convert (x, y) coordinates to a (row, col) cell.
+ *
+ * @param {Object} coordinates
+ * @return {Object} The corresponding cell
+ * @private
+ */
+const coordsToCell = ({x, y}) => {
     return {
-        row: Math.trunc(x / size),
-        col: Math.trunc(y / size)
+        row: Math.trunc(x / DIE_SIZE),
+        col: Math.trunc(y / DIE_SIZE)
     }
-};
-
-const numberToCoords = (n, cols, size) => cellToCoords(numberToCell(n, cols), size);
-
-const coordsToNumber = (coords, cols, size) => cellToNumber(coordsToCell(coords, size), cols);
-
-const determineCenter = (rows, cells) => {
-    const row = Math.floor(rows / 2);
-    const col = Math.floor(cells / 2);
-
-    return {row, col};
-};
-
-const cellsOnLevel = (layout, level) => {
-    const rows = _rows.get(layout);
-    const cols = _cols.get(layout);
-    const cells = [];
-    const center = determineCenter(rows, cols);
-
-    if (0 === level) {
-        cells.push(cellToNumber(center));
-    } else {
-        for (let row = center.row - level; row <= center.row + level; row++) {
-            cells.push(cellToNumber({row, col: center.col - level}, cols));
-            cells.push(cellToNumber({row, col: center.col + level}, cols));
-        }
-
-        for (let col = center.col - level + 1; col < center.col + level; col++) {
-            cells.push(cellToNumber({row: center.row - level, col}, cols));
-            cells.push(cellToNumber({row: center.row + level, col}, cols));
-        }
-    }
-    return cells.filter(n => 0 <= n && n <= rows * cols);
-};
-
-const isEmptyCell = (layout, cell, layoutDice) {
-    const cols = _cols.get(layout);
-    const size = _dieSize.get(layout);
-
-    return undefined === layoutDice.find(die => coordToNumber(die.coordinates, cols, size));
-};
-
-const computeAvailableCells = (layout, max, layoutDice) => {
-    const rows = _rows.get(layout);
-    const cols = _cols.get(layout);
-    const size = _dieSize.get(layout);
-
-    let available = [];
-    let level = 0;
-    const maxLevel = Math.min(rows, cols);
-
-    while (available.length < max && level < maxLevel) {
-        const levelCells = cellsOnLevel(layout, level);
-        
-        for (const cell of levelCells) {
-            if (isEmptyCell(layout, cell, layoutDice)) {
-                available.push(cell);
-            }
-        }
-
-        level++;
-    }
-
-    return available;
 };
 
 /**
@@ -143,12 +94,13 @@ const computeAvailableCells = (layout, max, layoutDice) => {
  *
  * @property {Number} width - The width of this GridLayout.
  * @property {Number} height - The height of this GridLayout.
- * @property {Number} dieSize - The size of the dice.
  * @property {Number} maximumNumberOfDice - The maximum number of dice that
  * can be layout on this GridLayout.
  * @property {Boolean} rotate - Indicates if dice are to be rotated.
+ *
+ * @extends module:playing_table/Layout.Layout
  */
-const GridLayout = class {
+const GridLayout = class extends Layout {
 
     /**
      * Create a new GridLayout.
@@ -156,8 +108,6 @@ const GridLayout = class {
      * @param {Object} config
      * @param {Number} config.maximumNumberOfDice
      * The maximum number of dice that should fit on this GridLayout.
-     * @param {Integer} config.dieSize - The size of a die in pixels. This has to be an
-     * Integer.
      * @param {Number} [config.width = 600] - The minimal width of this
      * GridLayout in pixels. Defaults to 600px;
      * @param {Number} [config.height = 400] - The minimal height of
@@ -168,53 +118,40 @@ const GridLayout = class {
      * @throws module:error/ConfigurationError.ConfigurationError The dieSize
      * has to be an Integer.
      */
-    constructor({maximumNumberOfDice, dieSize, width = 600, height = 400, rotate = true}) {
-        if (!Number.isInteger(dieSize) || 0 >= dieSize) {
-            throw new ConfigurationError(`The dieSize needs to be a whole number > 0, got '${dieSize}' instead.`);
-        }
+    constructor({maximumNumberOfDice, width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, rotate = true}) {
+        super({maximumNumberOfDice, width, height, rotate});
 
-        if (0 >= width) {
-            throw new ConfigurationError(`Width should be a number larger than 0, got '${width}' instead.`);
-        }
-        
-        if (0 >= height) {
-            throw new ConfigurationError(`Height should be a number larger than 0, got '${height}' instead.`);
-        }
-        _dieSize.set(this, dieSize);
-        _rotate.set(this, rotate);
-        _width.set(this, width);
-        _height.set(this, height);
-        _maximumNumberOfDice.set(this, maximumNumberOfDice);
-        const {cols, rows} = calculateDimensions(this.dieSize, width, height, maximumNumberOfDice);
+        const {cols, rows} = calculateDimensions(width, height, maximumNumberOfDice);
         _cols.set(this, cols);
         _rows.set(this, rows);
-        _layoutDice.set(this, []);
     }
 
     get width() {
-        return _cols.get(this) * this.dieSize;
+        return _cols.get(this) * DIE_SIZE;
     }
 
     get height() {
-        return _rows.get(this) * this.dieSize;
+        return _rows.get(this) * DIE_SIZE;
     }
 
     get maximumNumberOfDice() {
         return _cols.get(this) * _rows.get(this);
     }
-    
-    get dieSize() {
-        return _dieSize.get(this);
+
+    get _rows() {
+        return _rows.get(this);
     }
 
-    get rotate() {
-        return _rotate.get(this);
+    get _cols() {
+        return _cols.get(this);
     }
 
-    set rotate(r) {
-        _rotate.set(this, r);
+    get _center() {
+        const row = Math.floor(this._rows / 2);
+        const col = Math.floor(this._cols / 2);
+        
+        return {row, col};
     }
-
 
     /**
      * Layout dice on this Layout.
@@ -231,24 +168,149 @@ const GridLayout = class {
             throw new ConfigurationError(`The number of dice that can be layout is ${this.maximumNumberOfDice}, got ${dice.lenght} dice instead.`);
         }
 
-        const alreadyLayoutDice = dice.filter(die => die.isRendered() && die.isHeld());
-        const diceToLayout = dice.filter(die => !die.isHeld());
-        const layoutDice = Array.from(alreadyLayoutDice);
+        const layoutDice = [];
+        const diceToLayout = [];
+
+        for (const die of dice) {
+            if (die.hasCoordinates() && die.isHeld()) {
+                layoutDice.push(die);
+            } else {
+                diceToLayout.push(die);
+            }
+        }
 
         const max = Math.min(dice.length * dispersion, this.maximumNumberOfDice);
-        const availableCells = computeAvailableCells(this, max, alreadyLayoutDice);
+        const availableCells = this._computeAvailableCells(max, layoutDice);
 
         for (const die of diceToLayout) {
             const randomIndex = Math.floor(Math.random() * availableCells.length);
             const randomCell = availableCells[randomIndex];
             availableCells.splice(randomIndex, 1);
 
-            die.coordination = numberToCoords(randomCell);
+            die.coordinates = this._numberToCoords(randomCell);
             die.rotation = this.rotate ? Math.random() * 360 : 0;
             layoutDice.push(die);
         }
 
         return layoutDice;
+    }
+
+    /**
+     * Compute a list with available cells to place dice on.
+     *
+     * @param {Number} max - The number empty cells to compute.
+     * @param {Die[]} layoutDice - A list with dice that have already been layout.
+     * 
+     * @return {NUmber[]} The list of available cells represented by their number.
+     * @private
+     */
+    _computeAvailableCells(max, layoutDice) {
+        let available = [];
+        let level = 0;
+        const maxLevel = Math.min(this._rows, this._cols);
+
+        while (available.length < max && level < maxLevel) {
+            for (const cell of this._cellsOnLevel(level)) {
+                if (this._isEmptyCell(cell, layoutDice)) {
+                    available.push(cell);
+                }
+            }
+
+            level++;
+        }
+
+        return available;
+    }
+
+    /**
+     * Calculate all cells on level from the center of the layout.
+     *
+     * @param {Number} level - The level from the center of the layout. 0
+     * indicates the center.
+     *
+     * @return {Number[]} the cells on the level in this layout represented by
+     * their number.
+     * @private
+     */
+     _cellsOnLevel(level) {
+        const cells = [];
+        const center = this._center;
+
+        if (0 === level) {
+            cells.push(this._cellToNumber(center));
+        } else {
+            for (let row = center.row - level; row <= center.row + level; row++) {
+                cells.push(this._cellToNumber({row, col: center.col - level}));
+                cells.push(this._cellToNumber({row, col: center.col + level}));
+            }
+
+            for (let col = center.col - level + 1; col < center.col + level; col++) {
+                cells.push(this._cellToNumber({row: center.row - level, col}));
+                cells.push(this._cellToNumber({row: center.row + level, col}));
+            }
+        }
+
+        return cells.filter(n => 0 <= n && n <= this.maximumNumberOfDice);
+    }
+
+    /**
+     * Does cell contain a cell from layoutDice?
+     *
+     * @param {Number} cell - A cell in layout represented by a number.
+     * @param {Die[]} layoutDice - A list of dice that have already been layout.
+     *
+     * @return {Boolean} True if cell does not contain a die.
+     * @private
+     */
+    _isEmptyCell(cell, layoutDice) {
+        return undefined === layoutDice.find(die => cell === this._coordsToNumber(die.coordinates));
+    }
+
+    /**
+     * Convert a number to a cell (row, col)
+     *
+     * @param {Number} n - The number representing a cell
+     * @returns {Object} Return the cell ({row, col}) corresponding n.
+     * @private
+     */
+    _numberToCell(n) {
+        return {row: n / this._cols, col: n % this._cols}
+    }
+
+    /**
+     * Convert a cell to a number
+     *
+     * @param {Object} cell - The cell to convert to its number.
+     * @return {Number} The number corresponding to the cell.
+     * @private
+     */
+    _cellToNumber({row, col}) {
+        return row * this._cols + col;
+    }
+
+    /**
+     * Convert a cell represented by its number to their coordinates.
+     *
+     * @param {Number} n - The number representing a cell
+     *
+     * @return {Object} The coordinates corresponding to the cell represented by
+     * this number.
+     * @private
+     */
+    _numberToCoords(n) {
+        return cellToCoords(this._numberToCell(n));
+    }
+
+    /**
+     * Convert a pair of coordinates to a number.
+     *
+     * @param {Object} coords - The coordinates to convert
+     *
+     * @return {Number} The coordinates converted to a number.
+     * @private
+     */
+    _coordsToNumber(coords) {
+        return this._cellToNumber(coordsToCell(coords));
     }
 
     /**
