@@ -17,18 +17,16 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-import {Layout, DIE_SIZE} from "./Layout.js";
+import {DIE_SIZE, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_DISPERSION, DEFAULT_MINIMAL_NUMBER_OF_DICE} from "./PlayingTable.js";
 import {ConfigurationError} from "../error/ConfigurationError.js";
 
 /**
  * @module
  */
 
-const DEFAULT_WIDTH = 10 * DIE_SIZE;
-const DEFAULT_HEIGHT = 10 * DIE_SIZE;
-const DEFAULT_DISPERSION = 2;
 
 // Private fields
+const _rotate = new WeakMap();
 const _cols = new WeakMap();
 const _rows = new WeakMap();
 const _dispersion = new WeakMap();
@@ -96,21 +94,21 @@ const coordsToCell = ({x, y}) => {
  *
  * @property {Number} width - The width of this GridLayout.
  * @property {Number} height - The height of this GridLayout.
- * @property {Number} maximumNumberOfDice - The maximum number of dice that
+ * @property {Number} minimalNumberOfDice - The maximum number of dice that
  * can be layout on this GridLayout.
  * @property {Boolean} rotate - Indicates if dice are to be rotated.
  * @property {Number} dispersion - The distance from the center of this Layout a die can be layout.
- *
- * @extends module:playing_table/Layout.Layout
  */
-const GridLayout = class extends Layout {
+const GridLayout = class {
 
     /**
      * Create a new GridLayout.
      *
      * @param {Object} config
-     * @param {Number} config.maximumNumberOfDice
-     * The maximum number of dice that should fit on this GridLayout.
+     * @param {Number} [config.minimalNumberOfDice =
+     * DEFAULT_MINIMAL_NUMBER_OF_DICE] 
+     * The minimal number of dice that should fit on this GridLayout. Defaults
+     * to DEFAULT_MINIMAL_NUMBER_OF_DICE
      * @param {Number} [config.width = 600] - The minimal width of this
      * GridLayout in pixels. Defaults to 600px;
      * @param {Number} [config.height = 400] - The minimal height of
@@ -124,18 +122,25 @@ const GridLayout = class extends Layout {
      * has to be an Integer.
      */
     constructor({
-        maximumNumberOfDice, 
+        minimalNumberOfDice = DEFAULT_MINIMAL_NUMBER_OF_DICE, 
         width = DEFAULT_WIDTH, 
         height = DEFAULT_HEIGHT, 
         rotate = true, 
         dispersion = DEFAULT_DISPERSION
     }) {
-        super({maximumNumberOfDice, width, height, rotate});
+        if (0 >= width) {
+            throw new ConfigurationError(`Width should be a number larger than 0, got '${width}' instead.`);
+        }
+        
+        if (0 >= height) {
+            throw new ConfigurationError(`Height should be a number larger than 0, got '${height}' instead.`);
+        }
 
-        const {cols, rows} = calculateDimensions(width, height, maximumNumberOfDice);
+        const {cols, rows} = calculateDimensions(width, height, minimalNumberOfDice);
         _cols.set(this, cols);
         _rows.set(this, rows);
         _dispersion.set(this, dispersion);
+        _rotate.set(this, rotate);
     }
 
     get width() {
@@ -152,6 +157,18 @@ const GridLayout = class extends Layout {
 
     get dispersion() {
         return _dispersion.get(this);
+    }
+    
+    set dispersion(d) {
+        return _dispersion.set(this, d);
+    }
+
+    get rotate() {
+        return _rotate.get(this);
+    }
+
+    set rotate(r) {
+        _rotate.set(this, r);
     }
 
     get _rows() {

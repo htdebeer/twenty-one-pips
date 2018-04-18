@@ -7,7 +7,7 @@ describe("GridLayout", function () {
     describe("create a new GridLayout", function () {
         it("should have properties width, height, maximumNumberOfDice, and rotate", function () {
             let l = new GridLayout({
-                maximumNumberOfDice: 4
+                minimalNumberOfDice: 4
             });
             expect(l.width).to.equal(725);
             expect(l.height).to.equal(725);
@@ -15,7 +15,7 @@ describe("GridLayout", function () {
             expect(l.maximumNumberOfDice).to.equal(100);
             
             l = new GridLayout({
-                maximumNumberOfDice: 4,
+                minimalNumberOfDice: 4,
                 width: 100,
                 height: 4000,
                 rotate: false
@@ -27,8 +27,8 @@ describe("GridLayout", function () {
         });
 
         it("should throw an error when height or width are <= 0", function () {
-            expect(() => new Layout({
-                maximumNumberOfDice: 4,
+            expect(() => new GridLayout({
+                minimalNumberOfDice: 4,
                 width: -100,
                 height: 0,
             })).to.throw();
@@ -36,7 +36,7 @@ describe("GridLayout", function () {
 
         it("should increase the width and height and possible the max if the max number of dice do not fit", function () {
             let l = new GridLayout({
-                maximumNumberOfDice: 50,
+                minimalNumberOfDice: 50,
                 width: 45,
                 height: 30
             });
@@ -48,7 +48,7 @@ describe("GridLayout", function () {
 
     describe("#layout(dice)", function () {
         const dice = [new Die(), new Die(), new Die(), new Die(), new Die()];
-        const grid = new GridLayout({maximumNumberOfDice: 6});
+        const grid = new GridLayout({minimalNumberOfDice: 6});
 
         it("should return an empty list when an empty list is supplied to layout", function () {
             expect(grid.layout([])).to.be.empty;
@@ -80,16 +80,24 @@ describe("GridLayout", function () {
             expect(firstCoordinates.x).to.be.above(-1).and.to.be.below(601);
             expect(firstCoordinates.y).to.be.above(-1).and.to.be.below(601);
             expect(firstRotation).to.exist;
-            
-            grid.layout([notHoldDie]);
-            const secondCoords = notHoldDie.coordinates;
-            const secondRotation = notHoldDie.rotation;
 
-            // Note, as these new coordinates and rotation are randomly
-            // generated, they might be the same.
-            expect(firstCoordinates.x).to.not.equal(secondCoords.x);
-            expect(firstCoordinates.y).to.not.equal(secondCoords.y);
-            expect(firstRotation).to.not.equal(secondRotation);
+            const NUMBER_OF_SAMPLES = 10;
+            const coordinates = [];
+            for (let i = 0; i < NUMBER_OF_SAMPLES; i++) {
+                grid.layout([notHoldDie]);
+                coordinates.push(notHoldDie.coordinates);
+            }
+          
+            // Test randomness is tricky as potentially random() could get the
+            // same value twice. To decrease that possibility, the die is
+            // layout 10 times. It should be quite unlikely that the random()
+            // method generates the same number 10 times. If it does, and
+            // repeatedly, it is probably a sign the randomness is not
+            // working.
+            const numberOfCoordinatesEqualToTheFirstCoordinates = coordinates
+                .filter(c => c.x === firstCoordinates.x || c.y === firstCoordinates.y)
+                .length;
+            expect(numberOfCoordinatesEqualToTheFirstCoordinates).not.to.equal(NUMBER_OF_SAMPLES);
         });
         
         it("should not re-layout dice that are being held", function () {

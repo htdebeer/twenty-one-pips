@@ -40,6 +40,7 @@ const ViewController = class extends EventAware(null) {
      */
     constructor() {
         super();
+
         _element.set(this, document.createElement("div"));
     }
 

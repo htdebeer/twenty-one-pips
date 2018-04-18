@@ -83,6 +83,9 @@ const Player = class extends Model {
     }
 };
 
+const GAME_MASTER = new Player({name: "GameMaster", color: "red"});
+
 export {
-    Player
+    Player,
+    GAME_MASTER
 };
