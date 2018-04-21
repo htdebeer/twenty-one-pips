@@ -17,7 +17,7 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-import {DIE_SIZE, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_DISPERSION, DEFAULT_MINIMAL_NUMBER_OF_DICE} from "./PlayingTable.js";
+import {NATURAL_DIE_SIZE, DEFAULT_DIE_SIZE, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_DISPERSION, DEFAULT_MINIMAL_NUMBER_OF_DICE} from "./PlayingTable.js";
 import {ConfigurationError} from "../error/ConfigurationError.js";
 
 /**
@@ -29,65 +29,9 @@ import {ConfigurationError} from "../error/ConfigurationError.js";
 const _rotate = new WeakMap();
 const _cols = new WeakMap();
 const _rows = new WeakMap();
+const _dieSize = new WeakMap();
 const _dispersion = new WeakMap();
 
-/**
- * Calculate the dimensions needed to fit max number of dice.
- *
- * @param {Number} width - The minimal width
- * @param {Number} height - The minimal height
- * @param {Number} max - The minimal number of dice to fit
- *
- * @return {Object} The number of rows and columns needed to fit at least max number of
- * dice.
- * @private
- */
-const calculateDimensions = (width, height, max) => {
-    let cols = Math.ceil(width / DIE_SIZE);
-    let rows = Math.ceil(height / DIE_SIZE);
-
-    const ratio = width / height;
-    let h = height;
-    let w = width;
-    
-    while (max > cols*rows) {
-        // calculate better fit: increase height, compute corresponding width
-        // by keeping the aspect ratio, and try to see if the cols*rows now is
-        // larger than the minimum number of cells needed.
-        h = h + DIE_SIZE;
-        w = ratio * h;
-
-        cols = Math.ceil(w / DIE_SIZE);
-        rows = Math.ceil(h / DIE_SIZE);
-    }
-
-    return {cols, rows};
-};
-
-/**
- * Convert a (row, col) cell to (x, y) coordinates.
- *
- * @param {Object} cell
- * @return {Object} The corresponding coordinates.
- * @private
- */
-const cellToCoords = ({row, col}) => {
-    return {x: col * DIE_SIZE, y: row * DIE_SIZE}
-};  
-
-/**
- * Convert (x, y) coordinates to a (row, col) cell.
- *
- * @param {Object} coordinates
- * @return {Object} The corresponding cell
- * @private
- */
-const coordsToCell = ({x, y}) => {
-    return {
-        row: Math.trunc(x / DIE_SIZE),
-        col: Math.trunc(y / DIE_SIZE)
-    }
-};
 
 /**
  * GridLayout handles laying out the dice on a PlayingTable.
@@ -98,6 +42,7 @@ const coordsToCell = ({x, y}) => {
  * can be layout on this GridLayout.
  * @property {Boolean} rotate - Indicates if dice are to be rotated.
  * @property {Number} dispersion - The distance from the center of this Layout a die can be layout.
+ * @property {Number} dieSize - The size of a die (plus hold togle)
  */
 const GridLayout = class {
 
@@ -109,24 +54,26 @@ const GridLayout = class {
      * DEFAULT_MINIMAL_NUMBER_OF_DICE] 
      * The minimal number of dice that should fit on this GridLayout. Defaults
      * to DEFAULT_MINIMAL_NUMBER_OF_DICE
-     * @param {Number} [config.width = 600] - The minimal width of this
-     * GridLayout in pixels. Defaults to 600px;
-     * @param {Number} [config.height = 400] - The minimal height of
-     * this GridLayout in pixels. Defaults to 400px.
+     * @param {Number} [config.width = DEFAULT_WIDTH] - The minimal width of this
+     * GridLayout in pixels. Defaults to DEFAULT_WIDTH;
+     * @param {Number} [config.height = DEFAULT_HEIGHT] - The minimal height of
+     * this GridLayout in pixels. Defaults to DEFAULT_HEIGHT.
      * @param {Boolean} [config.rotate = true] - Should dice be rotated?
      * Defaults to true.
      * @param {Number} [dispersion = 2] - The distance from the center of the
      * layout a die can be layout.
+     * @param {Number} [dieSize = DEFAULT_DIE_SIZE] - The size of a die.
      *
-     * @throws module:error/ConfigurationError.ConfigurationError The dieSize
-     * has to be an Integer.
+     * @throws module:error/ConfigurationError.ConfigurationError width,
+     * height, and dieSize should be larger than 0.
      */
     constructor({
         minimalNumberOfDice = DEFAULT_MINIMAL_NUMBER_OF_DICE, 
         width = DEFAULT_WIDTH, 
         height = DEFAULT_HEIGHT, 
         rotate = true, 
-        dispersion = DEFAULT_DISPERSION
+        dispersion = DEFAULT_DISPERSION,
+        dieSize = DEFAULT_DIE_SIZE
     }) {
         if (0 >= width) {
             throw new ConfigurationError(`Width should be a number larger than 0, got '${width}' instead.`);
@@ -136,19 +83,25 @@ const GridLayout = class {
             throw new ConfigurationError(`Height should be a number larger than 0, got '${height}' instead.`);
         }
 
-        const {cols, rows} = calculateDimensions(width, height, minimalNumberOfDice);
-        _cols.set(this, cols);
-        _rows.set(this, rows);
+        if (0 >= dieSize) {
+            throw new ConfigurationError(`dieSize should be a number larger than 0, got '${dieSize}' instead.`);
+        }
+
         _dispersion.set(this, dispersion);
         _rotate.set(this, rotate);
+        _dieSize.set(this, dieSize);
+
+        const {cols, rows} = this._calculateDimensions(width, height, minimalNumberOfDice);
+        _cols.set(this, cols);
+        _rows.set(this, rows);
     }
 
     get width() {
-        return _cols.get(this) * DIE_SIZE;
+        return _cols.get(this) * this.dieSize;
     }
 
     get height() {
-        return _rows.get(this) * DIE_SIZE;
+        return _rows.get(this) * this.dieSize;
     }
 
     get maximumNumberOfDice() {
@@ -169,6 +122,10 @@ const GridLayout = class {
 
     set rotate(r) {
         _rotate.set(this, r);
+    }
+
+    get dieSize() {
+        return _dieSize.get(this);
     }
 
     get _rows() {
@@ -336,7 +293,7 @@ const GridLayout = class {
      * @private
      */
     _numberToCoordinates(n) {
-        return cellToCoords(this._numberToCell(n));
+        return this._cellToCoords(this._numberToCell(n));
     }
 
     /**
@@ -348,7 +305,7 @@ const GridLayout = class {
      * @private
      */
     _coordinatesToNumber(coords) {
-        return this._cellToNumber(coordsToCell(coords));
+        return this._cellToNumber(this._coordsToCell(coords));
     }
 
     /**
@@ -365,6 +322,63 @@ const GridLayout = class {
         // TODO
     }
 
+    /**
+     * Calculate the dimensions needed to fit max number of dice.
+     *
+     * @param {Number} width - The minimal width
+     * @param {Number} height - The minimal height
+     * @param {Number} max - The minimal number of dice to fit
+     *
+     * @return {Object} The number of rows and columns needed to fit at least max number of
+     * dice.
+     * @private
+     */
+     _calculateDimensions(width, height, max) {
+        let cols = Math.ceil(width / this.dieSize);
+        let rows = Math.ceil(height / this.dieSize);
+
+        const ratio = width / height;
+        let h = height;
+        let w = width;
+
+        while (max > cols*rows) {
+            // calculate better fit: increase height, compute corresponding width
+            // by keeping the aspect ratio, and try to see if the cols*rows now is
+            // larger than the minimum number of cells needed.
+            h = h + this.dieSize;
+            w = ratio * h;
+
+            cols = Math.ceil(w / this.dieSize);
+            rows = Math.ceil(h / this.dieSize);
+        }
+
+        return {cols, rows};
+    }
+
+    /**
+     * Convert a (row, col) cell to (x, y) coordinates.
+     *
+     * @param {Object} cell
+     * @return {Object} The corresponding coordinates.
+     * @private
+     */
+    _cellToCoords({row, col}) {
+        return {x: col * this.dieSize, y: row * this.dieSize}
+    }  
+
+    /**
+     * Convert (x, y) coordinates to a (row, col) cell.
+     *
+     * @param {Object} coordinates
+     * @return {Object} The corresponding cell
+     * @private
+     */
+    _coordsToCell({x, y}) {
+        return {
+            row: Math.trunc(x / this.dieSize),
+            col: Math.trunc(y / this.dieSize)
+        }
+    }
 };
 
 export {GridLayout};

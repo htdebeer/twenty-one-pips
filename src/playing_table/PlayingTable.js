@@ -32,12 +32,13 @@ import {DEFAULT_SYSTEM_PLAYER} from "../Player.js";
  *
  * See dice_svg_template.js for the specification of the dice.
  */
-const DIE_SIZE = 72.5; //px
+const NATURAL_DIE_SIZE = 72.5; // px
+const DEFAULT_DIE_SIZE = NATURAL_DIE_SIZE; // px
 const DEFAULT_HOLD_DURATION = 375; // ms
 const DEFAULT_BACKGROUND = "#FFFFAA";
 const DEFAULT_MINIMAL_NUMBER_OF_DICE = 1;
-const DEFAULT_WIDTH = 10 * DIE_SIZE; // px
-const DEFAULT_HEIGHT = 10 * DIE_SIZE; // px
+const DEFAULT_WIDTH = 10 * DEFAULT_DIE_SIZE; // px
+const DEFAULT_HEIGHT = 10 * DEFAULT_DIE_SIZE; // px
 const DEFAULT_DISPERSION = 2;
 
 // Private properties
@@ -80,6 +81,7 @@ const PlayingTable = class extends ViewController {
         background = DEFAULT_BACKGROUND,
         width = DEFAULT_WIDTH,
         height = DEFAULT_HEIGHT,
+        dieSize = DEFAULT_DIE_SIZE,
         rotateDice = true,
         draggableDice = true,
         holdableDice = true,
@@ -95,6 +97,7 @@ const PlayingTable = class extends ViewController {
             minimalNumberOfDice: Math.max(minimalNumberOfDice, this.dice.length),
             width,
             height,
+            dieSize,
             rotation,
             dispersion
         }));
@@ -145,6 +148,10 @@ const PlayingTable = class extends ViewController {
 
     set background(b) {
         _view.get(this).background = b;
+    }
+
+    get dieSize() {
+        return _layout.get(this).dieSize;
     }
 
     get rotateDice() {
@@ -199,7 +206,8 @@ const PlayingTable = class extends ViewController {
 
 export {
     PlayingTable,
-    DIE_SIZE,
+    NATURAL_DIE_SIZE,
+    DEFAULT_DIE_SIZE,
     DEFAULT_HOLD_DURATION,
     DEFAULT_BACKGROUND,
     DEFAULT_MINIMAL_NUMBER_OF_DICE,
