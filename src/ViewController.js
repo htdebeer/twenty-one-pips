@@ -38,12 +38,23 @@ const ViewController = class extends EventAware(null) {
     /**
      * Create a new ViewController.
      */
-    constructor() {
+    constructor({
+        parent = null
+    }) {
         super();
 
         _element.set(this, document.createElement("div"));
+
+        if (null !== parent) {
+            parent.appendChild(this.element);
+        }
     }
 
+    /**
+     * This ViewController's DIV element
+     *
+     * @return {HTMLDIVElement} This ViewController's DIV element.
+     */
     get element() {
         return _element.get(this);
     }

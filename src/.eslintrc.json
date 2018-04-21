@@ -5,7 +5,9 @@
     },
     "extends": "eslint:recommended",
     "parserOptions": {
-        "sourceType": "module"
+        "sourceType": "module",
+        "ecmaVersion": 2018,
+        "impliedStrict": true
     },
     "rules": {
         "indent": [
@@ -24,6 +26,70 @@
             "error",
             "always"
         ],
-        "no-console": false
+        "no-console": "off",
+        "getter-return": "warn",
+        "valid-jsdoc": "warn",
+        "default-case": "warn",
+        "no-implicit-coercion": "warn",
+        "no-invalid-this": "warn",
+        "no-lone-blocks": "warn",
+        "no-loop-func": "warn",
+        "no-magic-numbers": "warn",
+        "no-multi-spaces": "warn",
+        "no-param-reassign": "warn",
+        "no-return-assign": "warn",
+        "no-return-await": "warn",
+        "no-self-compare": "warn",
+        "no-sequences": "warn",
+        "no-throw-literal": "warn",
+        "no-unmodified-loop-condition": "warn",
+        "no-unused-expressions": "warn",
+        "no-useless-call": "warn",
+        "no-useless-concat": "warn",
+        "no-useless-return": "warn",
+        "no-void": "warn",
+        "no-with": "warn",
+        "radix": "warn",
+        "require-await": "warn",
+        "yoda": ["warn", "always"],
+        "init-declarations": "warn",
+        "no-undefined": "warn",
+        "no-unused-vars": [
+            "warn",
+            {
+                "argsIgnorePattern": "_"
+            }
+        ],
+        "no-use-before-define": "warn",
+        "camelcase": "warn",
+        "indent": "warn",
+        "no-bitwise": "warn",
+        "no-lonely-if": "warn",
+        "no-multi-assign": "warn",
+        "no-trailing-spaces": [
+            "warn",
+            {
+                "ignoreComments": true
+            }
+        ],
+        "require-jsdoc": ["warn",
+            {
+                "require": {
+                    "FunctionDeclaration": true,
+                    "MethodDefinition": true,
+                    "ClassDeclaration": true
+                }
+            }
+        ],
+        "space-infix-ops": "warn",
+        "space-unary-ops": "warn",
+        "no-duplicate-imports": "warn",
+        "no-useless-rename": "warn",
+        "no-var": "warn",
+        "prefer-arrow-callback": "warn",
+        "prefer-const": "warn",
+        "prefer-template": "warn",
+        "require-yield": "warn",
+        "symbol-description": "warn"
     }
 }

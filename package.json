@@ -1,6 +1,6 @@
 {
   "name": "twenty-one-pips",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A Dice Game Engine for Creating Dice Games",
   "main": "lib/twenty-one-pips.js",
   "directories": {
@@ -28,7 +28,7 @@
   "bugs": {
     "url": "https://github.com/htdebeer/twentyonepips/issues"
   },
-  "homepage": "https://github.com/htdebeer/twentyonepips#readme",
+  "homepage": "https://twntyonepips.org",
   "devDependencies": {
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",

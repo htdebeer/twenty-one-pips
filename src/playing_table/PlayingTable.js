@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright (c) 2018 Huub de Beer
  *
  * This file is part of twenty-one-pips.
@@ -17,10 +17,12 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
+import {ConfigurationError} from "../error/ConfigurationError.js";
 import {ViewController} from "../ViewController.js";
 import {GridLayout} from "./GridLayout.js";
 import {PlayingTableSVG} from "./PlayingTableSVG.js";
 import {DEFAULT_SYSTEM_PLAYER} from "../Player.js";
+import {Die} from "../Die.js";
 
 /**
  * @module
@@ -28,17 +30,22 @@ import {DEFAULT_SYSTEM_PLAYER} from "../Player.js";
 
 /**
  * @const
- * DIE_SIZE is the width and height of a dice with hold toggle activated. 
+ * DIE_SIZE is the width and height of a dice with hold toggle activated.
  *
  * See dice_svg_template.js for the specification of the dice.
  */
+
 const NATURAL_DIE_SIZE = 72.5; // px
 const DEFAULT_DIE_SIZE = NATURAL_DIE_SIZE; // px
 const DEFAULT_HOLD_DURATION = 375; // ms
 const DEFAULT_BACKGROUND = "#FFFFAA";
 const DEFAULT_MINIMAL_NUMBER_OF_DICE = 1;
-const DEFAULT_WIDTH = 10 * DEFAULT_DIE_SIZE; // px
-const DEFAULT_HEIGHT = 10 * DEFAULT_DIE_SIZE; // px
+
+const ROWS = 10;
+const COLS = 10;
+
+const DEFAULT_WIDTH = COLS * DEFAULT_DIE_SIZE; // px
+const DEFAULT_HEIGHT = ROWS * DEFAULT_DIE_SIZE; // px
 const DEFAULT_DISPERSION = 2;
 
 // Private properties
@@ -58,11 +65,11 @@ const makeDice = function (dice) {
             } else if (die instanceof Die) {
                 return die;
             } else {
-                throw new PlayingTableConfigurationError(`Die specification '${die}' cannot be interpreted as a die.`);
+                throw new ConfigurationError(`Die specification '${die}' cannot be interpreted as a die.`);
             }
         });
     } else {
-        throw new PlayingTableConfigurationError(`Dice specification '${dice}' cannot be interpreted as dice or number of dice`);
+        throw new ConfigurationError(`Dice specification '${dice}' cannot be interpreted as dice or number of dice`);
     }
 };
 
@@ -88,7 +95,7 @@ const PlayingTable = class extends ViewController {
         holdDuration = DEFAULT_HOLD_DURATION,
         dispersion = DEFAULT_DISPERSION,
     }) {
-        super();
+        super({parent});
         this.element.classList.add("playing-table");
 
         this.dice = dice;
@@ -98,9 +105,21 @@ const PlayingTable = class extends ViewController {
             width,
             height,
             dieSize,
-            rotation,
+            rotation: rotateDice,
             dispersion
         }));
+
+        _view.set(this, new PlayingTableSVG({
+            parent: this.element,
+            width,
+            height,
+            layout: _layout.get(this),
+            background,
+            draggableDice,
+            holdableDice,
+            holdDuration
+        }));
+
     }
 
     get dice() {
@@ -122,7 +141,7 @@ const PlayingTable = class extends ViewController {
 
     set width(w) {
         // Should layout be reset as well?
-        _view.get(this).width = width;
+        _view.get(this).width = w;
     }
 
     get height() {
@@ -131,7 +150,7 @@ const PlayingTable = class extends ViewController {
 
     set height(h) {
         // Should layout be reset as well?
-        _view.get(this).height = height;
+        _view.get(this).height = h;
     }
 
     get dispersion() {
