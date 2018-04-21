@@ -325,7 +325,7 @@ const GridLayout = class {
      * @private
      */
     _cellIsEmpty(cell, alreadyLayoutDice) {
-        return undefined !== alreadyLayoutDice.find(die => cell === this._coordinatesToNumber(die.coordinates));
+        return undefined === alreadyLayoutDice.find(die => cell === this._coordinatesToNumber(die.coordinates));
     }
 
     /**

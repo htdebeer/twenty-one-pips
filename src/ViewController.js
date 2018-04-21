@@ -37,10 +37,14 @@ const ViewController = class extends EventAware(null) {
 
     /**
      * Create a new ViewController.
+     *
+     * @param {Object} config - The configuration of this ViewController.
+     * @param {HTMLElement|null} [config.parent = nul] - The parent element
+     * the newly created ViewController is a child of.
      */
     constructor({
         parent = null
-    }) {
+    } = {}) {
         super();
 
         _element.set(this, document.createElement("div"));
