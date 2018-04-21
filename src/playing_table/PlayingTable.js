@@ -20,7 +20,7 @@
 import {ViewController} from "../ViewController.js";
 import {GridLayout} from "./GridLayout.js";
 import {PlayingTableSVG} from "./PlayingTableSVG.js";
-import {GAME_MASTER} from "../Player.js";
+import {DEFAULT_SYSTEM_PLAYER} from "../Player.js";
 
 /**
  * @module
@@ -188,7 +188,7 @@ const PlayingTable = class extends ViewController {
         }
 
         if (null === player) {
-            player = GAME_MASTER;
+            player = DEFAULT_SYSTEM_PLAYER;
         }
 
         _view.get(this).renderDice({dice: this.dice, player});

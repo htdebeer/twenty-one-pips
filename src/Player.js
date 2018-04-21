@@ -83,9 +83,9 @@ const Player = class extends Model {
     }
 };
 
-const GAME_MASTER = new Player({name: "GameMaster", color: "red"});
+const DEFAULT_SYSTEM_PLAYER = new Player({name: "GameMaster", color: "red"});
 
 export {
     Player,
-    GAME_MASTER
+    DEFAULT_SYSTEM_PLAYER
 };
