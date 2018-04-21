@@ -81,15 +81,6 @@
                 "ignoreComments": true
             }
         ],
-        "require-jsdoc": ["warn",
-            {
-                "require": {
-                    "FunctionDeclaration": true,
-                    "MethodDefinition": true,
-                    "ClassDeclaration": true
-                }
-            }
-        ],
         "space-infix-ops": "warn",
         "space-unary-ops": "warn",
         "no-duplicate-imports": "warn",

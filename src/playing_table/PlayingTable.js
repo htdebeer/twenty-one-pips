@@ -179,22 +179,18 @@ const PlayingTable = class extends ViewController {
 
     }
 
-    /**
-     * The dice on this PlayingTable.
-     *
-     * @return {module:Die~Die[]} The dice on this PlayingTable.
-     */
-    get dice() {
-        return _dice.get(this);
-    }
 
     /**
-     * Set the dice on this PlayingTable. Note, to actually throw the dice use
+     * The dice on this PlayingTable. Note, to actually throw the dice use
      * @see{throwDice}.
      *
      * @param {module:Die~Die[]|Number} dice - The dice to put on this
      * PlayingTable. If dice is a Number, that number of dice will be created. 
+     * @return {module:Die~Die[]} The dice on this PlayingTable
      */
+    get dice() {
+        return _dice.get(this);
+    }
     set dice(dice) {
         // TODO: Complain if |dice| > this.maximumNumberOfDice
         _dice.set(this, makeDice(dice));
@@ -212,17 +208,12 @@ const PlayingTable = class extends ViewController {
     /**
      * The width of this PlayingTable
      *
+     * @param {Number} w - The width to set.
      * @return {Number} The width.
      */
     get width() {
         return _view.get(this).width;
     }
-
-    /**
-     * Set the width of this PlayingTable.
-     *
-     * @param {Number} w - The width to set.
-     */
     set width(w) {
         _view.get(this).width = w;
     }
@@ -230,17 +221,12 @@ const PlayingTable = class extends ViewController {
     /**
      * The height of this PlayingTable.
      *
+     * @param {Number} h - The height to set.
      * @return {Number} The height.
      */
     get height() {
         return _view.get(this).height;
     }
-
-    /**
-     * Set the height of this PlayingTable.
-     *
-     * @param {Number} h - The height to set.
-     */
     set height(h) {
         _view.get(this).height = h;
     }
@@ -248,17 +234,12 @@ const PlayingTable = class extends ViewController {
     /**
      * The dispersion level of this PlayingTable.
      *
+     * @param {Number} d - The dispersion level to set.
      * @return {Number} The dispersion level.
      */
     get dispersion() {
         return _layout.get(this).dispersion;
     }
-
-    /**
-     * Set the dispersion level of this PlayingTable.
-     *
-     * @param {Number} d - The dispersion level to set.
-     */
     set dispersion(d) {
         _layout.get(this).dispersion = d;
     }
@@ -266,17 +247,12 @@ const PlayingTable = class extends ViewController {
     /**
      * The background color of this PlayingTable.
      *
+     * @param {String} b - The color to set.
      * @return {String} The color.
      */
     get background() {
         return _view.get(this).background;
     }
-
-    /**
-     * Set the background color of this PlayingTable.
-     *
-     * @param {String} b - The color to set.
-     */
     set background(b) {
         _view.get(this).background = b;
     }
@@ -293,17 +269,12 @@ const PlayingTable = class extends ViewController {
     /**
      * Should dice be rotated on this PlayingTable?
      *
+     * @param {Boolean} r - True to rotate.
      * @return {Boolean} True is dice are being rotated.
      */
     get rotateDice() {
         return _layout.get(this).rotate;
     }
-
-    /**
-     * Configure this PlayingTable to rotate dice or not.
-     *
-     * @param {Boolean} r - True to rotate.
-     */
     set rotateDice(r) {
         _layout.get(this).rotate = r;
     }
@@ -311,17 +282,12 @@ const PlayingTable = class extends ViewController {
     /**
      * Can dice on this PlayingTable be dragged?
      *
+     * @param {Boolean} d - True to enable draggable dice.
      * @return {Boolean} True if dice can be dragged, false otherwise.
      */
     get draggableDice() {
         return _view.get(this).draggableDice;
     }
-
-    /**
-     * Configure this PlayingTable to enable dragging of dice or not.
-     *
-     * @param {Boolean} d - True to enable draggable dice.
-     */
     set draggableDice(d) {
         _view.set(this).draggableDice = d;
     }
@@ -329,17 +295,12 @@ const PlayingTable = class extends ViewController {
     /**
      * Can dice on this PlayingTable be held by a Player?
      *
+     * @param {Boolean} d - True to enable holding dice.
      * @return {Boolean} True if dice can be held, false otherwise.
      */
     get holdableDice() {
         return _view.get(this).holdableDice;
     }
-
-    /**
-     * Configure this PlayingTable to enable holding dice or not.
-     *
-     * @param {Boolean} d - True to enable holding dice.
-     */
     set holdableDice(d) {
         _view.get(this).holdableDice = d;
     }
@@ -349,17 +310,12 @@ const PlayingTable = class extends ViewController {
      * held by the Player. It has only an effect when this.holdableDice ===
      * true.
      *
+     * @param {Number} h - The duration.
      * @return {Number} The duration to hold a die.
      */
     get holdDuration() {
         return _view.get(this).holdDuration;
     }
-
-    /**
-     * Configure the duration to hold a die.
-     *
-     * @param {Number} h - The duration.
-     */
     set holdDuration(h) {
         _view.get(this).holdDuration = h;
     }
