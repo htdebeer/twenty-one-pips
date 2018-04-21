@@ -17,13 +17,21 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-import {NATURAL_DIE_SIZE, DEFAULT_DIE_SIZE, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_DISPERSION, DEFAULT_MINIMAL_NUMBER_OF_DICE} from "./PlayingTable.js";
+import {
+    DEFAULT_DIE_SIZE,
+    DEFAULT_WIDTH,
+    DEFAULT_HEIGHT,
+    DEFAULT_DISPERSION,
+    DEFAULT_MINIMAL_NUMBER_OF_DICE
+} from "./PlayingTable.js";
 import {ConfigurationError} from "../error/ConfigurationError.js";
 
 /**
  * @module
  */
 
+const HALF = 2;
+const FULL_CIRCLE_IN_DEGREES = 360;
 
 // Private fields
 const _rotate = new WeakMap();
@@ -49,7 +57,7 @@ const GridLayout = class {
     /**
      * Create a new GridLayout.
      *
-     * @param {Object} config
+     * @param {Object} config - The configuration of the GridLayout
      * @param {Number} [config.minimalNumberOfDice =
      * DEFAULT_MINIMAL_NUMBER_OF_DICE] 
      * The minimal number of dice that should fit on this GridLayout. Defaults
@@ -68,17 +76,16 @@ const GridLayout = class {
      * height, and dieSize should be larger than 0.
      */
     constructor({
-        minimalNumberOfDice = DEFAULT_MINIMAL_NUMBER_OF_DICE, 
-        width = DEFAULT_WIDTH, 
-        height = DEFAULT_HEIGHT, 
-        rotate = true, 
+        minimalNumberOfDice = DEFAULT_MINIMAL_NUMBER_OF_DICE,
+        width = DEFAULT_WIDTH,
+        height = DEFAULT_HEIGHT,
+        rotate = true,
         dispersion = DEFAULT_DISPERSION,
         dieSize = DEFAULT_DIE_SIZE
     }) {
         if (0 >= width) {
             throw new ConfigurationError(`Width should be a number larger than 0, got '${width}' instead.`);
         }
-        
         if (0 >= height) {
             throw new ConfigurationError(`Height should be a number larger than 0, got '${height}' instead.`);
         }
@@ -96,50 +103,112 @@ const GridLayout = class {
         _rows.set(this, rows);
     }
 
+    /**
+     * The width in pixels used by this GridLayout.
+     *
+     * @return {Number} The width, 0 < width.
+     */
     get width() {
         return _cols.get(this) * this.dieSize;
     }
 
+    /**
+     * The height in pixels used by this GridLayout.
+     *
+     * @return {Number} The height, 0 < height.
+     */
     get height() {
         return _rows.get(this) * this.dieSize;
     }
 
+    /**
+     * The maximum number of dice that can be layout on this GridLayout.
+     *
+     * @return {Number} The maximum number of dice, 0 < maximum
+     */
     get maximumNumberOfDice() {
         return _cols.get(this) * _rows.get(this);
     }
 
+    /**
+     * The dispersion level used by this GridLayout. The dispersion level
+     * indicates the distance from the center dice can be layout. Use 1 for a
+     * tight packed layout.
+     *
+     * @return {Number} Dispersion level, 0 < dispersion.
+     */
     get dispersion() {
         return _dispersion.get(this);
     }
-    
+
+    /**
+     * Set the dispersion level used by the GridLayout. The dispersion level
+     * indicates the distance from the center dice can be layout. Use 1 for a
+     * tight packed layout.
+     *
+     * @param {Number} d - The dispersion level to set.
+     */
     set dispersion(d) {
         return _dispersion.set(this, d);
     }
 
+    /**
+     * Should dice be rotated when layout?
+     *
+     * @return {Boolean} True if dice are rotated.
+     */
     get rotate() {
         return _rotate.get(this);
     }
 
+    /**
+     * Configure if dice are to be rotated in this GridLayout or not.
+     *
+     * @param {Boolean} r - rotate?
+     */
     set rotate(r) {
         _rotate.set(this, r);
     }
 
+    /**
+     * The size of a die.
+     *
+     * @return {Number} The die size, 0 < size.
+     */
     get dieSize() {
         return _dieSize.get(this);
     }
 
+    /**
+     * The number of rows in this GridLayout.
+     *
+     * @return {Number} The number of rows, 0 < rows.
+     * @private
+     */
     get _rows() {
         return _rows.get(this);
     }
 
+    /**
+     * The number of columns in this GridLayout.
+     *
+     * @return {Number} The number of columns, 0 < columns.
+     * @private
+     */
     get _cols() {
         return _cols.get(this);
     }
 
+    /**
+     * The center cell in this GridLayout.
+     *
+     * @return {Object} The center (row, col).
+     * @private
+     */
     get _center() {
-        const row = Math.floor(this._rows / 2);
-        const col = Math.floor(this._cols / 2);
-        
+        const row = Math.floor(this._rows / HALF);
+        const col = Math.floor(this._cols / HALF);
+
         return {row, col};
     }
 
@@ -181,7 +250,7 @@ const GridLayout = class {
             availableCells.splice(randomIndex, 1);
 
             die.coordinates = this._numberToCoordinates(randomCell);
-            die.rotation = this.rotate ? Math.random() * 360 : 0;
+            die.rotation = this.rotate ? Math.random() * FULL_CIRCLE_IN_DEGREES : 0;
             alreadyLayoutDice.push(die);
         }
 
@@ -198,7 +267,7 @@ const GridLayout = class {
      * @private
      */
     _computeAvailableCells(max, alreadyLayoutDice) {
-        let available = [];
+        const available = [];
         let level = 0;
         const maxLevel = Math.min(this._rows, this._cols);
 
@@ -225,7 +294,7 @@ const GridLayout = class {
      * their number.
      * @private
      */
-     _cellsOnLevel(level) {
+    _cellsOnLevel(level) {
         const cells = [];
         const center = this._center;
 
@@ -256,9 +325,7 @@ const GridLayout = class {
      * @private
      */
     _cellIsEmpty(cell, alreadyLayoutDice) {
-        return undefined === alreadyLayoutDice.find(
-            die => cell === this._coordinatesToNumber(die.coordinates)
-        );
+        return undefined !== alreadyLayoutDice.find(die => cell === this._coordinatesToNumber(die.coordinates));
     }
 
     /**
@@ -269,7 +336,7 @@ const GridLayout = class {
      * @private
      */
     _numberToCell(n) {
-        return {row: n / this._cols, col: n % this._cols}
+        return {row: n / this._cols, col: n % this._cols};
     }
 
     /**
@@ -311,14 +378,16 @@ const GridLayout = class {
     /**
      * Snap (x,y) to the closest cell in this Layout.
      *
-     * @param {Object} coordinate
+     * @param {Object} coordinate - The coordinate to find the closest cell
+     * for.
      * @param {Number} coordinate.x - The x-coordinate.
      * @param {Number} coordinate.y - The y-coordinate.
-     * 
+     *
      * @return {Object} The coordinate of the cell closest to (x, y).
      */
     snapTo({x, y}) {
         console.log("Snapping to ", x, y);
+        return {x, y};
         // TODO
     }
 
@@ -333,7 +402,7 @@ const GridLayout = class {
      * dice.
      * @private
      */
-     _calculateDimensions(width, height, max) {
+    _calculateDimensions(width, height, max) {
         let cols = Math.ceil(width / this.dieSize);
         let rows = Math.ceil(height / this.dieSize);
 
@@ -341,7 +410,7 @@ const GridLayout = class {
         let h = height;
         let w = width;
 
-        while (max > cols*rows) {
+        while (max > cols * rows) {
             // calculate better fit: increase height, compute corresponding width
             // by keeping the aspect ratio, and try to see if the cols*rows now is
             // larger than the minimum number of cells needed.
@@ -358,18 +427,18 @@ const GridLayout = class {
     /**
      * Convert a (row, col) cell to (x, y) coordinates.
      *
-     * @param {Object} cell
+     * @param {Object} cell - The cell to convert to coordinates
      * @return {Object} The corresponding coordinates.
      * @private
      */
     _cellToCoords({row, col}) {
-        return {x: col * this.dieSize, y: row * this.dieSize}
-    }  
+        return {x: col * this.dieSize, y: row * this.dieSize};
+    }
 
     /**
      * Convert (x, y) coordinates to a (row, col) cell.
      *
-     * @param {Object} coordinates
+     * @param {Object} coordinates - The coordinates to convert to a cell.
      * @return {Object} The corresponding cell
      * @private
      */
@@ -377,7 +446,7 @@ const GridLayout = class {
         return {
             row: Math.trunc(x / this.dieSize),
             col: Math.trunc(y / this.dieSize)
-        }
+        };
     }
 };
 

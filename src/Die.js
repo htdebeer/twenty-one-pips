@@ -57,9 +57,16 @@ const _x = new WeakMap();
 const _y = new WeakMap();
 const _rotation = new WeakMap();
 
-// Testing framework + babel results in instanceof not working correctly. So
-// checking for compatibility instead in the meantime.
-const isPlayer = p => null === p || (!!p.color && !!p.name);
+/**
+ * Is p a Player?
+ *
+ * Testing framework + babel results in instanceof not working correctly. So
+ * checking for compatibility instead in the meantime.
+ *
+ * @param {*} p - The thing to check.
+ * @return {Boolean} True is p is a Player.
+ */
+const isPlayer = p => null === p || (Boolean(p.color) && Boolean(p.name));
 
 const isPipNumber = n => {
     const number = parseInt(n, 10);
@@ -68,29 +75,9 @@ const isPipNumber = n => {
 
 const randomPips = () => Math.floor(Math.random() * NUMBER_OF_PIPS) + 1;
 
-const unicodeToPips = u => {
-    switch (u) {
-    case "⚀": return 1;
-    case "⚁": return 2;
-    case "⚂": return 3;
-    case "⚃": return 4;
-    case "⚄": return 5;
-    case "⚅": return 6;
-    default: return undefined;
-    }
-};
-
-const pipsToUnicode = p => {
-    switch (p) {
-    case 1: return "⚀";
-    case 2: return "⚁";
-    case 3: return "⚂";
-    case 4: return "⚃";
-    case 5: return "⚄";
-    case 6: return "⚅";
-    default: return undefined;
-    }
-};
+const DIE_UNICODE_CHARACTERS = ["⚀","⚁","⚂","⚃","⚄","⚅"];
+const unicodeToPips = u => DIE_UNICODE_CHARACTERS.indexOf(u) + 1;
+const pipsToUnicode = p => isPipNumber(p) ? DIE_UNICODE_CHARACTERS[p - 1] : undefined;
 
 /**
  * A model of a regular six-sided Die with numbers 1 - 6.
@@ -167,7 +154,7 @@ const Die = class extends Model {
         color = DEFAULT_COLOR
     } = {}) {
         const pips = unicodeToPips(unicodeChar);
-        if (undefined === pips) {
+        if (!isPipNumber(pips)) {
             throw new ConfigurationError(`The String '${unicodeChar}' is not a unicode character representing a die.`);
         }
         return new Die({pips, heldBy, color});
@@ -183,18 +170,39 @@ const Die = class extends Model {
         return pipsToUnicode(this.pips);
     }
 
+    /**
+     * This Die's number of pips.
+     *
+     * @return {Number} This Die's number of pips.
+     */
     get pips() {
         return _pips.get(this);
     }
 
+    /**
+     * This Die's color.
+     *
+     * @return {String} This Die's color.
+     */
     get color() {
         return _color.get(this);
     }
 
+    /**
+     * The Player that is holding this Die, if any. Null otherwise.
+     *
+     * @return {Player|null} The player that is holding this Die, if any. Null
+     * otherwise.
+     */
     get heldBy() {
         return _heldBy.get(this);
     }
 
+    /**
+     * The coordinates of this Die.
+     *
+     * @return {Object|null} The coordinates of this Die.
+     */
     get coordinates() {
         const x = _x.get(this);
         const y = _y.get(this);
@@ -202,11 +210,16 @@ const Die = class extends Model {
         return null === x || null === y ? null : {x, y};
     }
 
+    /**
+     * Set the coordinates of this Die.
+     *
+     * @param {Object} c - The coordinates to place this Die.
+     */
     set coordinates(c) {
         if (null === c) {
             _x.set(this, null);
             _y.set(this, null);
-        } else{ 
+        } else{
             const {x, y} = c;
             _x.set(this, x);
             _y.set(this, y);
@@ -222,10 +235,21 @@ const Die = class extends Model {
         return null !== this.coordinates;
     }
 
+    /**
+     * The rotation of this Die.
+     *
+     * @return {Number} The rotation of this Die, 0 <= rotation <= 360.
+     */
     get rotation() {
         return _rotation.get(this);
     }
 
+    /**
+     * Set the rotation of this Die.
+     *
+     * @param {Number} newR - The angle to rotate this Die with, 0 <=
+     * angle <= 360.
+     */
     set rotation(newR) {
         _rotation.set(this, newR);
     }

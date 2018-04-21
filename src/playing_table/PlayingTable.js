@@ -77,10 +77,67 @@ const makeDice = function (dice) {
  * PlayingTable is a component to render and control a playing table with dice
  * thrown upon it.
  *
+ * @property {HTMLElement|null} [parent = null] - The parent HTML DOM element this PlayingTable is a child of.
+ * @property {module:Die~Die[]|Number} [dice = []] - The dice to show in this
+ * PlayingTable. If dice is a positive number, create that many dice.
+ * @property {Number} [minimalNumberOfDice = DEFAULT_MINIMAL_NUMBER_OF_DICE]
+ * - The minimal number of dice that can be shown in this PlayingTable.
+ * @property {String} [background = DEFAULT_BACKGROUND] - This PlayingTable's
+ * background color.
+ * @property {Number} [width = DEFAULT_WIDTH] - This PlayingTable's width,
+ * width > 0.
+ * @property {Number} [height = DEFAULT_HEIGHT] - This PlayingTable's
+ * height, height > 0.
+ * @property {Number} [dieSize = DEFAULT_DIE_SIZE] - The size of dice
+ * on this PlayingTable, size > 0.
+ * @property {Boolean} [rotateDice = true] - Should dice be rotated
+ * when thrown on this PlayingTable?
+ * @property {Boolean} [draggableDice = true] - Can dice be dragged
+ * around on this PlayingTable?
+ * @property {Boolean} [holdableDice = true] - Can dice be held by a
+ * Player on this PlayingTable?
+ * @property {Number} [holdDuration = DEFAULT_HOLD_DURATION] - The
+ * duration a Player needs to press the mouse curson on a die to mark a
+ * Die as being held by her.
+ * @property {Number} [dispersion = DEFAULT_DISPERSION] - The
+ * dispersion level, wich implies the possible distance of a Die from the center of
+ * this PlayingTable.
+ *
  * @extends module:ViewController~ViewController
  */
 const PlayingTable = class extends ViewController {
 
+    /**
+     * Create a new PlayingTable component.
+     *
+     * @param {Object} config - The initial configuration of the new
+     * PlayingTable.
+     * @param {HTMLElement|null} [config.parent = null] - The parent HTML DOM element this PlayingTable is a child of.
+     * @param {module:Die~Die[]|Number} [config.dice = []] - The dice to show in this
+     * PlayingTable. If dice is a positive number, create that many dice.
+     * @param {Number} [config.minimalNumberOfDice = DEFAULT_MINIMAL_NUMBER_OF_DICE]
+     * - The minimal number of dice that can be shown in this PlayingTable.
+     * @param {String} [config.background = DEFAULT_BACKGROUND] - This PlayingTable's
+     * background color.
+     * @param {Number} [config.width = DEFAULT_WIDTH] - This PlayingTable's width,
+     * width > 0.
+     * @param {Number} [config.height = DEFAULT_HEIGHT] - This PlayingTable's
+     * height, height > 0.
+     * @param {Number} [config.dieSize = DEFAULT_DIE_SIZE] - The size of dice
+     * on this PlayingTable, size > 0.
+     * @param {Boolean} [config.rotateDice = true] - Should dice be rotated
+     * when thrown on this PlayingTable?
+     * @param {Boolean} [config.draggableDice = true] - Can dice be dragged
+     * around on this PlayingTable?
+     * @param {Boolean} [config.holdableDice = true] - Can dice be held by a
+     * Player on this PlayingTable?
+     * @param {Number} [config.holdDuration = DEFAULT_HOLD_DURATION] - The
+     * duration a Player needs to press the mouse curson on a die to mark a
+     * Die as being held by her.
+     * @param {Number} [config.dispersion = DEFAULT_DISPERSION] - The
+     * dispersion level, wich implies the possible distance of a Die from the center of
+     * this PlayingTable.
+     */
     constructor({
         parent = null,
         dice = [],
@@ -122,99 +179,211 @@ const PlayingTable = class extends ViewController {
 
     }
 
+    /**
+     * The dice on this PlayingTable.
+     *
+     * @return {module:Die~Die[]} The dice on this PlayingTable.
+     */
     get dice() {
         return _dice.get(this);
     }
 
+    /**
+     * Set the dice on this PlayingTable. Note, to actually throw the dice use
+     * @see{throwDice}.
+     *
+     * @param {module:Die~Die[]|Number} dice - The dice to put on this
+     * PlayingTable. If dice is a Number, that number of dice will be created. 
+     */
     set dice(dice) {
-        // Complain if |dice| > this.maximumNumberOfDice
+        // TODO: Complain if |dice| > this.maximumNumberOfDice
         _dice.set(this, makeDice(dice));
     }
 
+    /**
+     * The maximum number of dice that can be put on this PlayingTable.
+     *
+     * @return {Number} The maximum number of dice, 0 < maximum.
+     */
     get maximumNumberOfDice() {
         return _layout.get(this).maximumNumberOfDice;
     }
 
+    /**
+     * The width of this PlayingTable
+     *
+     * @return {Number} The width.
+     */
     get width() {
         return _view.get(this).width;
     }
 
+    /**
+     * Set the width of this PlayingTable.
+     *
+     * @param {Number} w - The width to set.
+     */
     set width(w) {
-        // Should layout be reset as well?
         _view.get(this).width = w;
     }
 
+    /**
+     * The height of this PlayingTable.
+     *
+     * @return {Number} The height.
+     */
     get height() {
         return _view.get(this).height;
     }
 
+    /**
+     * Set the height of this PlayingTable.
+     *
+     * @param {Number} h - The height to set.
+     */
     set height(h) {
-        // Should layout be reset as well?
         _view.get(this).height = h;
     }
 
+    /**
+     * The dispersion level of this PlayingTable.
+     *
+     * @return {Number} The dispersion level.
+     */
     get dispersion() {
         return _layout.get(this).dispersion;
     }
 
+    /**
+     * Set the dispersion level of this PlayingTable.
+     *
+     * @param {Number} d - The dispersion level to set.
+     */
     set dispersion(d) {
         _layout.get(this).dispersion = d;
     }
 
+    /**
+     * The background color of this PlayingTable.
+     *
+     * @return {String} The color.
+     */
     get background() {
         return _view.get(this).background;
     }
 
+    /**
+     * Set the background color of this PlayingTable.
+     *
+     * @param {String} b - The color to set.
+     */
     set background(b) {
         _view.get(this).background = b;
     }
 
+    /**
+     * The size of dice on this PlayingTable.
+     *
+     * @return {Number} The size of a die.
+     */
     get dieSize() {
         return _layout.get(this).dieSize;
     }
 
+    /**
+     * Should dice be rotated on this PlayingTable?
+     *
+     * @return {Boolean} True is dice are being rotated.
+     */
     get rotateDice() {
         return _layout.get(this).rotate;
     }
 
+    /**
+     * Configure this PlayingTable to rotate dice or not.
+     *
+     * @param {Boolean} r - True to rotate.
+     */
     set rotateDice(r) {
         _layout.get(this).rotate = r;
     }
 
+    /**
+     * Can dice on this PlayingTable be dragged?
+     *
+     * @return {Boolean} True if dice can be dragged, false otherwise.
+     */
     get draggableDice() {
         return _view.get(this).draggableDice;
     }
 
+    /**
+     * Configure this PlayingTable to enable dragging of dice or not.
+     *
+     * @param {Boolean} d - True to enable draggable dice.
+     */
     set draggableDice(d) {
         _view.set(this).draggableDice = d;
     }
 
+    /**
+     * Can dice on this PlayingTable be held by a Player?
+     *
+     * @return {Boolean} True if dice can be held, false otherwise.
+     */
     get holdableDice() {
         return _view.get(this).holdableDice;
     }
 
+    /**
+     * Configure this PlayingTable to enable holding dice or not.
+     *
+     * @param {Boolean} d - True to enable holding dice.
+     */
     set holdableDice(d) {
         _view.get(this).holdableDice = d;
     }
 
+    /**
+     * The duration in ms to press the mouse / touch a die before it bekomes
+     * held by the Player. It has only an effect when this.holdableDice ===
+     * true.
+     *
+     * @return {Number} The duration to hold a die.
+     */
     get holdDuration() {
         return _view.get(this).holdDuration;
     }
 
+    /**
+     * Configure the duration to hold a die.
+     *
+     * @param {Number} h - The duration.
+     */
     set holdDuration(h) {
         _view.get(this).holdDuration = h;
     }
 
+    /**
+     * Throw the dice on this PlayingTable.
+     *
+     * @param {Object} config - the throw configuration.
+     * @param {module:Player~Player} [config.player = DEFAULT_SYSTEM_PLAYER] - The throwing
+     * player. Dice are always thrown by a
+     * Player. If your application does not need Players, the
+     * DEFAULT_SYSTEM_PLAYER is used as a Player.
+     * @param {module:Die~Die[]|Number|null} [dice = null] - The dice to
+     * throw. By default, the dice already on the PlayingTable are thrown.
+     * However, as a shorthand you can specify the dice to throw.
+     *
+     * @return {module:Die~Die[]} The list with thrown dice.
+     */
     throwDice({
         dice = null,
-        player = null,
+        player = DEFAULT_SYSTEM_PLAYER,
     }) {
         if (null !== dice) {
             this.dice = dice;
-        }
-
-        if (null === player) {
-            player = DEFAULT_SYSTEM_PLAYER;
         }
 
         _view.get(this).renderDice({dice: this.dice, player});

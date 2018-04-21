@@ -52,21 +52,31 @@ const Player = class extends Model {
      */
     constructor({name, color}) {
         super();
-        if (undefined === name) {
-            throw new ConfigurationError("A Player needs a name");
+        if ("string" !== typeof name || "" === name) {
+            throw new ConfigurationError("A Player needs a name, which is a String.");
         }
-        if (undefined === color) {
-            throw new ConfigurationError("A Player needs a color");
+        if ("string" !== typeof color || "" === color) {
+            throw new ConfigurationError("A Player needs a color, which is a String.");
         }
 
         _name.set(this, name);
         _color.set(this, color);
     }
 
+    /**
+     * This Player's name.
+     *
+     * @return {String} This Player's name.
+     */
     get name() {
         return _name.get(this);
     }
 
+    /**
+     * This Player's color.
+     *
+     * @return {String} This Player's color.
+     */
     get color() {
         return _color.get(this);
     }
@@ -83,7 +93,14 @@ const Player = class extends Model {
     }
 };
 
-const DEFAULT_SYSTEM_PLAYER = new Player({name: "GameMaster", color: "red"});
+/**
+ * The default system player. Dice are thrown by a player. For situations
+ * where you want to render a bunch of dice without needing the concept of Players
+ * this DEFAULT_SYSTEM_PLAYER can be a substitute. Of course, if you'd like to
+ * change the name and/or the color, create and use your own "system player".
+ * @const
+ */
+const DEFAULT_SYSTEM_PLAYER = new Player({name: "DEFAULT_SYSTEM_PLAYER", color: "red"});
 
 export {
     Player,
