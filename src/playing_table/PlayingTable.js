@@ -151,7 +151,7 @@ const PlayingTable = class extends ViewController {
         holdableDice = true,
         holdDuration = DEFAULT_HOLD_DURATION,
         dispersion = DEFAULT_DISPERSION,
-    }) {
+    } = {}) {
         super({parent});
         this.element.classList.add("playing-table");
 
@@ -162,7 +162,7 @@ const PlayingTable = class extends ViewController {
             width,
             height,
             dieSize,
-            rotation: rotateDice,
+            rotate: rotateDice,
             dispersion
         }));
 

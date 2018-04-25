@@ -21,14 +21,18 @@
                 parent: document.getElementById("playing_table"),
                 width: 400,
                 height: 300,
-                dieSize: 100,
-                background: "green"
+                dieSize: 25,
+                dispersion: 5,
+                background: "green",
+                rotateDice: true,
+                draggableDice: true,
+                holdableDice: true
             });
 
             console.log(`The maximum number of dice is:
                 ${table.maximumNumberOfDice}.`);
 
-            table.throwDice({dice: 6});
+            table.throwDice({dice: 50});
 
             const throwButton = document.getElementById("thrower");
             throwButton.addEventListener("click", () => {

@@ -82,7 +82,7 @@ const GridLayout = class {
         rotate = true,
         dispersion = DEFAULT_DISPERSION,
         dieSize = DEFAULT_DIE_SIZE
-    }) {
+    } = {}) {
         if (0 >= width) {
             throw new ConfigurationError(`Width should be a number larger than 0, got '${width}' instead.`);
         }
@@ -97,6 +97,7 @@ const GridLayout = class {
         _dispersion.set(this, dispersion);
         _rotate.set(this, rotate);
         _dieSize.set(this, dieSize);
+
 
         const {cols, rows} = this._calculateDimensions(width, height, minimalNumberOfDice);
         _cols.set(this, cols);
@@ -336,7 +337,7 @@ const GridLayout = class {
      * @private
      */
     _numberToCell(n) {
-        return {row: n / this._cols, col: n % this._cols};
+        return {row: Math.trunc(n / this._cols), col: n % this._cols};
     }
 
     /**

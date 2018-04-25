@@ -245,12 +245,15 @@ const renderDie = (playingTableSVG, {die, player}) => {
     dieElement.addEventListener("mousedown", startInteraction);
     dieElement.addEventListener("touchstart", startInteraction);
 
-    dieElement.addEventListener("mousemove", move);
-    dieElement.addEventListener("touchmove", move);
+    if (playingTableSVG.draggableDice) {
+        dieElement.addEventListener("mousemove", move);
+        dieElement.addEventListener("touchmove", move);
+    }
 
-    dieElement.addEventListener("mouseover", showInteraction);
-
-    dieElement.addEventListener("mouseout", hideInteraction);
+    if (playingTableSVG.draggableDice || playingTableSVG.holdableDice) {
+        dieElement.addEventListener("mouseover", showInteraction);
+        dieElement.addEventListener("mouseout", hideInteraction);
+    }
 
     dieElement.addEventListener("mouseup", stopInteraction);
     dieElement.addEventListener("touchend", stopInteraction);
