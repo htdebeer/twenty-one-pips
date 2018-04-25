@@ -171,6 +171,7 @@ const PlayingTable = class extends ViewController {
             width,
             height,
             layout: _layout.get(this),
+            dieSize,
             background,
             draggableDice,
             holdableDice,
@@ -337,11 +338,11 @@ const PlayingTable = class extends ViewController {
     throwDice({
         dice = null,
         player = DEFAULT_SYSTEM_PLAYER,
-    }) {
+    } = {}) {
         if (null !== dice) {
             this.dice = dice;
         }
-
+        this.dice.forEach(die => die.throwIt());
         _view.get(this).renderDice({dice: this.dice, player});
         return this.dice;
     }

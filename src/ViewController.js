@@ -17,7 +17,7 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-
+import {Base} from "./Base.js";
 import {EventAware} from "./EventAware.js";
 
 /**
@@ -33,7 +33,7 @@ const _element = new WeakMap();
  *
  * @mixes module:EventAware~EventAware
  */
-const ViewController = class extends EventAware(null) {
+const ViewController = class extends EventAware(Base) {
 
     /**
      * Create a new ViewController.

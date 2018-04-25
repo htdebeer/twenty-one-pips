@@ -18,7 +18,7 @@
  * @ignore
  */
 
-import {DEFAULT_HOLD_DURATION, DEFAULT_BACKGROUND} from "./PlayingTable.js";
+import {DEFAULT_HOLD_DURATION, DEFAULT_BACKGROUND, DEFAULT_DIE_SIZE, NATURAL_DIE_SIZE} from "./PlayingTable.js";
 import {GridLayout} from "./GridLayout.js";
 import {HOLD_DIE, RELEASE_DIE} from "../Die.js";
 import template from "./dice_svg_template.js";
@@ -34,6 +34,7 @@ const _svgRoot = new WeakMap();
 const _dragHandler = new WeakMap();
 const _layout = new WeakMap();
 const _rotate = new WeakMap();
+const _dieSize = new WeakMap();
 const _holdDuration = new WeakMap();
 const _holdableDice = new WeakMap();
 const _draggableDice = new WeakMap();
@@ -99,11 +100,11 @@ const stopDragging = (playingTableSVG) => {
 
 const renderDie = (playingTableSVG, {die, player}) => {
     // Render die
-    const dieElement = document.createElementNS(playingTableSVGNS, "g");
+    const dieElement = document.createElementNS(SVGNS, "g");
     dieElement.classList.add("die");
-    playingTableSVG.playingTableSVGRoot.appendChild(dieElement);
+    playingTableSVG.svgRoot.appendChild(dieElement);
 
-    const holdUse = document.createElementNS(playingTableSVGNS, "use");
+    const holdUse = document.createElementNS(SVGNS, "use");
     holdUse.setAttributeNS(XLINKNS, "xlink:href", "#hold");
     holdUse.setAttribute(
         "fill",
@@ -111,7 +112,7 @@ const renderDie = (playingTableSVG, {die, player}) => {
     );
     dieElement.appendChild(holdUse);
 
-    const useDie = document.createElementNS(playingTableSVGNS, "use");
+    const useDie = document.createElementNS(SVGNS, "use");
     useDie.setAttributeNS(XLINKNS, "xlink:href", `#die_${die.pips}`);
     useDie.setAttribute("fill", die.color);
     dieElement.appendChild(useDie);
@@ -120,30 +121,60 @@ const renderDie = (playingTableSVG, {die, player}) => {
     const HALF_STROKE = .75;
     const rotationCenter = {
         x: dimensions.width / 2 + HALF_STROKE,
-        y: dimensions.height / 2 + HALD_STROKE
+        y: dimensions.height / 2 + HALF_STROKE
     };
 
-    if (0 !== rotation) {
+    if (0 !== die.rotation) {
         useDie.setAttribute(
             "transform", 
-            `rotate(${rotation}, ${center.x}, ${center.y})`
+            `rotate(${die.rotation}, ${rotationCenter.x}, ${rotationCenter.y})`
         );
     }
 
-    dieElement.setAttribute("transform", `translate(${x},${y})`);
+    const {x, y} = die.coordinates;
+    const scale = _dieSize.get(playingTableSVG) / NATURAL_DIE_SIZE;
+    dieElement.setAttribute("transform", `translate(${x},${y})scale(${scale})`);
 
     // Setup interaction
     let state = NONE;
     let origin;
-    let startTime;
+    let holdTimeout = null;
+
+    const holdDie = () => {
+        switch (state) {
+            case INDETERMINED: {
+                if (playingTableSVG.holdableDice) {
+                    // toggle hold / release
+                    if (die.isHeld()) {
+                        die.releaseIt(player);
+                    } else {
+                        die.holdIt(player);
+                    }
+                    state = NONE;
+                }
+                break;
+            }
+            default: // ignore other states
+        }
+        holdTimeout = null;
+    };
+
+    const startHolding = () => {
+        holdTimeout = window.setTimeout(holdDie, playingTableSVG.holdDuration);
+    };
+
+    const stopHolding = () => {
+        window.clearTimeout(holdTimeout);
+        holdTimeout = null;
+    };
 
     const startInteraction = (event) => {
         switch (state) {
             case NONE: {
                 event.stopPropagation();
-                state = INDETERMINED;
-                startTime = new Date();
+                startHolding();
                 origin = {x: event.clientX, y: event.clientY};
+                state = INDETERMINED;
                 break;
             }
             default: // ignore other states
@@ -180,6 +211,7 @@ const renderDie = (playingTableSVG, {die, player}) => {
                 break;
             }
             case DRAGGING: {
+                stopHolding();
                 break;
             }
             default: // ignore other states
@@ -189,25 +221,19 @@ const renderDie = (playingTableSVG, {die, player}) => {
     const stopInteraction = (event) => {
         switch(state) {
             case INDETERMINED: {
-                const endTime = new Date();
-                if (playingTableSVG.holdableDice && endTime - startTime > playingTableSVG.holdDuration) {
-                    // toggle hold / release
-                    if (die.isHeld()) {
-                        die.releaseIt(player);
-                    } else {
-                        die.holdIt(player);
-                    }
-                } else {
-                    // click
-                }
+                // click
                 break;
             }
             case DRAGGING: {
-                const lastCoordinates = {
-                    x: event.clientX,
-                    y: event.clientY
-                };
-                die.coordinates = playingTableSVG.layout.snapTo(lastCoordinates);
+                const dx = origin.x - event.clientX;
+                const dy = origin.y - event.clientY;
+
+                const {x, y} = die.coordinates;
+
+                die.coordinates = playingTableSVG.layout.snapTo({
+                    x: x - dx,
+                    y: y - dy
+                });
                 stopDragging(playingTableSVG);
                 break;
             }
@@ -269,6 +295,7 @@ const PlayingTableSVG = class {
      * @property {Number} config.height - The height of this PlayingTableSVG.
      * @property {module:playing_table/Layout~Layout} layout
      * The layout to use when rendering dice in this svg.
+     * @property {Number} config.dieSize - The size of a die.
      * @property {Boolean} [config.draggableDice = true] - Are dice draggable?
      * Defaults to true.
      * @property {Boolean} [config.holdableDice = true] - Are dice holdable?
@@ -286,6 +313,7 @@ const PlayingTableSVG = class {
         height,
         layout,
         background = DEFAULT_BACKGROUND,
+        dieSize = DEFAULT_DIE_SIZE,
         draggableDice = true,
         holdableDice = true,
         holdDuration = DEFAULT_HOLD_DURATION
@@ -303,6 +331,9 @@ const PlayingTableSVG = class {
         this.layout = layout;
         this.holdableDice = holdableDice;
         this.draggableDice = draggableDice;
+        this.width = width;
+        this.height = height;
+        _dieSize.set(this, dieSize);
     }
 
     get svgRoot() {

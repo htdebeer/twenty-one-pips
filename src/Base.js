@@ -17,26 +17,21 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-import {Base} from "./Base.js";
-import {EventAware} from "./EventAware.js";
 
 /**
  * @module
  */
 
 /**
- * Base class for models.
- *
- * @mixes module:EventAware~EventAware
+ * Base class.
  */
-const Model = class extends EventAware(Base) {
+const Base = class {
 
     /**
-     * Create a new Model.
+     * Create a new Base.
      */
     constructor() {
-        super();
     }
 };
 
-export {Model};
+export {Base};
