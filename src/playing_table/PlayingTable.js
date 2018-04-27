@@ -35,11 +35,10 @@ import {Die} from "../Die.js";
  * See dice_svg_template.js for the specification of the dice.
  */
 
-const NATURAL_DIE_SIZE = 72.5; // px
+const NATURAL_DIE_SIZE = 145; // px
 const DEFAULT_DIE_SIZE = NATURAL_DIE_SIZE; // px
 const DEFAULT_HOLD_DURATION = 375; // ms
 const DEFAULT_BACKGROUND = "#FFFFAA";
-const DEFAULT_MINIMAL_NUMBER_OF_DICE = 1;
 
 const ROWS = 10;
 const COLS = 10;
@@ -141,7 +140,6 @@ const PlayingTable = class extends ViewController {
     constructor({
         parent = null,
         dice = [],
-        minimalNumberOfDice = DEFAULT_MINIMAL_NUMBER_OF_DICE,
         background = DEFAULT_BACKGROUND,
         width = DEFAULT_WIDTH,
         height = DEFAULT_HEIGHT,
@@ -158,7 +156,6 @@ const PlayingTable = class extends ViewController {
         this.dice = dice;
 
         _layout.set(this, new GridLayout({
-            minimalNumberOfDice: Math.max(minimalNumberOfDice, this.dice.length),
             width,
             height,
             dieSize,
@@ -183,11 +180,9 @@ const PlayingTable = class extends ViewController {
 
     /**
      * The dice on this PlayingTable. Note, to actually throw the dice use
-     * @see{throwDice}.
+     * @see{throwDice}. 
      *
-     * @param {module:Die~Die[]|Number} dice - The dice to put on this
-     * PlayingTable. If dice is a Number, that number of dice will be created. 
-     * @return {module:Die~Die[]} The dice on this PlayingTable
+     * @type {module:Die~Die[]}
      */
     get dice() {
         return _dice.get(this);
@@ -207,36 +202,33 @@ const PlayingTable = class extends ViewController {
     }
 
     /**
-     * The width of this PlayingTable
+     * The width of this PlayingTable.
      *
-     * @param {Number} w - The width to set.
-     * @return {Number} The width.
+     * @type {Number}
      */
     get width() {
-        return _view.get(this).width;
+        return _layout.get(this).width;
     }
     set width(w) {
         _view.get(this).width = w;
+        _layout.get(this).width = w;
     }
 
     /**
      * The height of this PlayingTable.
-     *
-     * @param {Number} h - The height to set.
-     * @return {Number} The height.
+     * @type {Number}
      */
     get height() {
-        return _view.get(this).height;
+        return _layout.get(this).height;
     }
     set height(h) {
         _view.get(this).height = h;
+        _layout.get(this).height = h;
     }
 
     /**
      * The dispersion level of this PlayingTable.
-     *
-     * @param {Number} d - The dispersion level to set.
-     * @return {Number} The dispersion level.
+     * @type {Number}
      */
     get dispersion() {
         return _layout.get(this).dispersion;
@@ -247,9 +239,7 @@ const PlayingTable = class extends ViewController {
 
     /**
      * The background color of this PlayingTable.
-     *
-     * @param {String} b - The color to set.
-     * @return {String} The color.
+     * @type {String}
      */
     get background() {
         return _view.get(this).background;
@@ -261,17 +251,18 @@ const PlayingTable = class extends ViewController {
     /**
      * The size of dice on this PlayingTable.
      *
-     * @return {Number} The size of a die.
+     * @type {Number}
      */
     get dieSize() {
         return _layout.get(this).dieSize;
     }
+    set dieSize(ds) {
+        _layout.get(this).dieSize = ds;
+    }
 
     /**
      * Should dice be rotated on this PlayingTable?
-     *
-     * @param {Boolean} r - True to rotate.
-     * @return {Boolean} True is dice are being rotated.
+     * @type {Boolean}
      */
     get rotateDice() {
         return _layout.get(this).rotate;
@@ -282,9 +273,7 @@ const PlayingTable = class extends ViewController {
 
     /**
      * Can dice on this PlayingTable be dragged?
-     *
-     * @param {Boolean} d - True to enable draggable dice.
-     * @return {Boolean} True if dice can be dragged, false otherwise.
+     * @type {Boolean}
      */
     get draggableDice() {
         return _view.get(this).draggableDice;
@@ -295,9 +284,7 @@ const PlayingTable = class extends ViewController {
 
     /**
      * Can dice on this PlayingTable be held by a Player?
-     *
-     * @param {Boolean} d - True to enable holding dice.
-     * @return {Boolean} True if dice can be held, false otherwise.
+     * @type {Boolean}
      */
     get holdableDice() {
         return _view.get(this).holdableDice;
@@ -311,8 +298,7 @@ const PlayingTable = class extends ViewController {
      * held by the Player. It has only an effect when this.holdableDice ===
      * true.
      *
-     * @param {Number} h - The duration.
-     * @return {Number} The duration to hold a die.
+     * @type {Number}
      */
     get holdDuration() {
         return _view.get(this).holdDuration;
@@ -347,6 +333,31 @@ const PlayingTable = class extends ViewController {
         return this.dice;
     }
 
+    /**
+     * Place the dice on this PlayingTable.
+     *
+     * @param {Object} config - the throw configuration.
+     * @param {module:Player~Player} [config.player = DEFAULT_SYSTEM_PLAYER] - The throwing
+     * player. Dice are always thrown by a
+     * Player. If your application does not need Players, the
+     * DEFAULT_SYSTEM_PLAYER is used as a Player.
+     * @param {module:Die~Die[]|Number|null} [dice = null] - The dice to
+     * throw. By default, the dice already on the PlayingTable are thrown.
+     * However, as a shorthand you can specify the dice to throw.
+     *
+     * @return {module:Die~Die[]} The list with thrown dice.
+     */
+    placeDice({
+        dice = null,
+        player = DEFAULT_SYSTEM_PLAYER,
+    } = {}) {
+        if (null !== dice) {
+            this.dice = dice;
+        }
+        _view.get(this).renderDice({dice: this.dice, player});
+        return this.dice;
+    }
+
 };
 
 export {
@@ -355,7 +366,6 @@ export {
     DEFAULT_DIE_SIZE,
     DEFAULT_HOLD_DURATION,
     DEFAULT_BACKGROUND,
-    DEFAULT_MINIMAL_NUMBER_OF_DICE,
     DEFAULT_WIDTH,
     DEFAULT_HEIGHT,
     DEFAULT_DISPERSION

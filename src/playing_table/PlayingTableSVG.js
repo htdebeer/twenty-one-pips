@@ -19,7 +19,6 @@
  */
 
 import {DEFAULT_HOLD_DURATION, DEFAULT_BACKGROUND, DEFAULT_DIE_SIZE, NATURAL_DIE_SIZE} from "./PlayingTable.js";
-import {GridLayout} from "./GridLayout.js";
 import {HOLD_DIE, RELEASE_DIE} from "../Die.js";
 import template from "./dice_svg_template.js";
 
@@ -29,16 +28,16 @@ import template from "./dice_svg_template.js";
 const SVGNS = "http://www.w3.org/2000/svg";
 const XLINKNS = "http://www.w3.org/1999/xlink";
 
+const HALF = 2;
+
 // private properties
 const _svgRoot = new WeakMap();
 const _dragHandler = new WeakMap();
 const _layout = new WeakMap();
-const _rotate = new WeakMap();
 const _dieSize = new WeakMap();
 const _holdDuration = new WeakMap();
 const _holdableDice = new WeakMap();
 const _draggableDice = new WeakMap();
-const _dispersion = new WeakMap();
 const _background = new WeakMap();
 
 // Interaction states
@@ -63,8 +62,8 @@ const startDragging = (playingTableSVG, event, die) => {
         y: point.y
     };
 
-    let transform = die.ownerSVGElement.createSVGTransform();
-    let transformList = die.transform.baseVal;
+    const transform = die.ownerSVGElement.createSVGTransform();
+    const transformList = die.transform.baseVal;
 
     _dragHandler.set(playingTableSVG, (event) => {
         // Move die to the top of the SVG so it moves over the other dice
@@ -112,21 +111,20 @@ const renderDie = (playingTableSVG, {die, player}) => {
     );
     dieElement.appendChild(holdUse);
 
-    const useDie = document.createElementNS(SVGNS, "use");
-    useDie.setAttributeNS(XLINKNS, "xlink:href", `#die_${die.pips}`);
-    useDie.setAttribute("fill", die.color);
-    dieElement.appendChild(useDie);
+    const dieUse = document.createElementNS(SVGNS, "use");
+    dieUse.setAttributeNS(XLINKNS, "xlink:href", `#die_${die.pips}`);
+    dieUse.setAttribute("fill", die.color);
+    dieElement.appendChild(dieUse);
 
-    const dimensions = useDie.getBBox();
-    const HALF_STROKE = .75;
+    const dimensions = holdUse.getBBox();
     const rotationCenter = {
-        x: dimensions.width / 2 + HALF_STROKE,
-        y: dimensions.height / 2 + HALF_STROKE
+        x: dimensions.width / HALF,
+        y: dimensions.height / HALF
     };
 
     if (0 !== die.rotation) {
-        useDie.setAttribute(
-            "transform", 
+        dieUse.setAttribute(
+            "transform",
             `rotate(${die.rotation}, ${rotationCenter.x}, ${rotationCenter.y})`
         );
     }
@@ -137,24 +135,24 @@ const renderDie = (playingTableSVG, {die, player}) => {
 
     // Setup interaction
     let state = NONE;
-    let origin;
+    let origin = {};
     let holdTimeout = null;
 
     const holdDie = () => {
         switch (state) {
-            case INDETERMINED: {
-                if (playingTableSVG.holdableDice) {
-                    // toggle hold / release
-                    if (die.isHeld()) {
-                        die.releaseIt(player);
-                    } else {
-                        die.holdIt(player);
-                    }
-                    state = NONE;
+        case INDETERMINED: {
+            if (playingTableSVG.holdableDice) {
+                // toggle hold / release
+                if (die.isHeld()) {
+                    die.releaseIt(player);
+                } else {
+                    die.holdIt(player);
                 }
-                break;
+                state = NONE;
             }
-            default: // ignore other states
+            break;
+        }
+        default: // ignore other states
         }
         holdTimeout = null;
     };
@@ -170,14 +168,14 @@ const renderDie = (playingTableSVG, {die, player}) => {
 
     const startInteraction = (event) => {
         switch (state) {
-            case NONE: {
-                event.stopPropagation();
-                startHolding();
-                origin = {x: event.clientX, y: event.clientY};
-                state = INDETERMINED;
-                break;
-            }
-            default: // ignore other states
+        case NONE: {
+            event.stopPropagation();
+            startHolding();
+            origin = {x: event.clientX, y: event.clientY};
+            state = INDETERMINED;
+            break;
+        }
+        default: // ignore other states
         }
     };
 
@@ -189,55 +187,57 @@ const renderDie = (playingTableSVG, {die, player}) => {
         dieElement.setAttribute("cursor", "default");
     };
 
+    /*
     const click = (event) => {
         if (INDETERMINED === state) {
             // do the click
         }
-    }
+    };
+    */
 
     const minDelta = 3; //px
     const move = (event) => {
         switch (state) {
-            case INDETERMINED: {
-                // Ignore small movements, otherwise move to MOVE state
-                const dx = Math.abs(origin.x - event.clientX);
-                const dy = Math.abs(origin.y - event.clientY);
-                if (playingTableSVG.draggableDice && minDelta < dx || minDelta < dy) {
-                    event.stopPropagation();
-                    state = DRAGGING;
-                    dieElement.setAttribute("cursor", "grabbing");
-                    startDragging(playingTableSVG, event, dieElement);
-                }
-                break;
+        case INDETERMINED: {
+            // Ignore small movements, otherwise move to MOVE state
+            const dx = Math.abs(origin.x - event.clientX);
+            const dy = Math.abs(origin.y - event.clientY);
+            if (playingTableSVG.draggableDice && minDelta < dx || minDelta < dy) {
+                event.stopPropagation();
+                state = DRAGGING;
+                dieElement.setAttribute("cursor", "grabbing");
+                startDragging(playingTableSVG, event, dieElement);
             }
-            case DRAGGING: {
-                stopHolding();
-                break;
-            }
-            default: // ignore other states
+            break;
+        }
+        case DRAGGING: {
+            stopHolding();
+            break;
+        }
+        default: // ignore other states
         }
     };
 
     const stopInteraction = (event) => {
         switch(state) {
-            case INDETERMINED: {
-                // click
-                break;
-            }
-            case DRAGGING: {
-                const dx = origin.x - event.clientX;
-                const dy = origin.y - event.clientY;
+        case INDETERMINED: {
+            // click
+            break;
+        }
+        case DRAGGING: {
+            const dx = origin.x - event.clientX;
+            const dy = origin.y - event.clientY;
 
-                const {x, y} = die.coordinates;
+            const {x, y} = die.coordinates;
 
-                die.coordinates = playingTableSVG.layout.snapTo({
-                    x: x - dx,
-                    y: y - dy
-                });
-                stopDragging(playingTableSVG);
-                break;
-            }
-            default: // ignore other states
+            die.coordinates = playingTableSVG.layout.snapTo({
+                x: x - dx,
+                y: y - dy
+            });
+            stopDragging(playingTableSVG);
+            break;
+        }
+        default: // ignore other states
         }
         state = NONE;
     };
@@ -264,7 +264,7 @@ const renderDie = (playingTableSVG, {die, player}) => {
     die.off(RELEASE_DIE, RELEASE_IT_HANDLER);
     die.on(RELEASE_DIE, RELEASE_IT_HANDLER(holdUse));
 };
-    
+
 const clear = (playingTableSVG) => {
     const diceElements = playingTableSVG.svgRoot.querySelectorAll("g.die");
     for (const dieElement of diceElements) {
@@ -350,7 +350,7 @@ const PlayingTableSVG = class {
     set layout(l) {
         _layout.set(this, l);
     }
-    
+
     get width() {
         return this.svgRoot.getAttribute("width");
     }
@@ -392,7 +392,7 @@ const PlayingTableSVG = class {
     }
 
     get background() {
-        _background.get(this);
+        return _background.get(this);
     }
 
     set background(b) {
@@ -416,4 +416,4 @@ const PlayingTableSVG = class {
 
 };
 
-export {PlayingTableSVG}
+export {PlayingTableSVG};

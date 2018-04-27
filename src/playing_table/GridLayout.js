@@ -21,8 +21,7 @@ import {
     DEFAULT_DIE_SIZE,
     DEFAULT_WIDTH,
     DEFAULT_HEIGHT,
-    DEFAULT_DISPERSION,
-    DEFAULT_MINIMAL_NUMBER_OF_DICE
+    DEFAULT_DISPERSION
 } from "./PlayingTable.js";
 import {ConfigurationError} from "../error/ConfigurationError.js";
 
@@ -35,6 +34,8 @@ const FULL_CIRCLE_IN_DEGREES = 360;
 
 // Private fields
 const _rotate = new WeakMap();
+const _width = new WeakMap();
+const _height = new WeakMap();
 const _cols = new WeakMap();
 const _rows = new WeakMap();
 const _dieSize = new WeakMap();
@@ -43,14 +44,6 @@ const _dispersion = new WeakMap();
 
 /**
  * GridLayout handles laying out the dice on a PlayingTable.
- *
- * @property {Number} width - The width of this GridLayout.
- * @property {Number} height - The height of this GridLayout.
- * @property {Number} minimalNumberOfDice - The maximum number of dice that
- * can be layout on this GridLayout.
- * @property {Boolean} rotate - Indicates if dice are to be rotated.
- * @property {Number} dispersion - The distance from the center of this Layout a die can be layout.
- * @property {Number} dieSize - The size of a die (plus hold togle)
  */
 const GridLayout = class {
 
@@ -58,77 +51,77 @@ const GridLayout = class {
      * Create a new GridLayout.
      *
      * @param {Object} config - The configuration of the GridLayout
-     * @param {Number} [config.minimalNumberOfDice =
-     * DEFAULT_MINIMAL_NUMBER_OF_DICE] 
-     * The minimal number of dice that should fit on this GridLayout. Defaults
-     * to DEFAULT_MINIMAL_NUMBER_OF_DICE
      * @param {Number} [config.width = DEFAULT_WIDTH] - The minimal width of this
      * GridLayout in pixels. Defaults to DEFAULT_WIDTH;
      * @param {Number} [config.height = DEFAULT_HEIGHT] - The minimal height of
      * this GridLayout in pixels. Defaults to DEFAULT_HEIGHT.
      * @param {Boolean} [config.rotate = true] - Should dice be rotated?
      * Defaults to true.
-     * @param {Number} [dispersion = 2] - The distance from the center of the
+     * @param {Number} [config.dispersion = 2] - The distance from the center of the
      * layout a die can be layout.
-     * @param {Number} [dieSize = DEFAULT_DIE_SIZE] - The size of a die.
-     *
-     * @throws module:error/ConfigurationError.ConfigurationError width,
-     * height, and dieSize should be larger than 0.
+     * @param {Number} [config.dieSize = DEFAULT_DIE_SIZE] - The size of a die.
      */
     constructor({
-        minimalNumberOfDice = DEFAULT_MINIMAL_NUMBER_OF_DICE,
         width = DEFAULT_WIDTH,
         height = DEFAULT_HEIGHT,
         rotate = true,
         dispersion = DEFAULT_DISPERSION,
         dieSize = DEFAULT_DIE_SIZE
     } = {}) {
-        if (0 >= width) {
-            throw new ConfigurationError(`Width should be a number larger than 0, got '${width}' instead.`);
-        }
-        if (0 >= height) {
-            throw new ConfigurationError(`Height should be a number larger than 0, got '${height}' instead.`);
-        }
+        _dieSize.set(this, 1);
+        _width.set(this, 0);
+        _height.set(this, 0);
 
-        if (0 >= dieSize) {
-            throw new ConfigurationError(`dieSize should be a number larger than 0, got '${dieSize}' instead.`);
-        }
-
-        _dispersion.set(this, dispersion);
-        _rotate.set(this, rotate);
-        _dieSize.set(this, dieSize);
-
-
-        const {cols, rows} = this._calculateDimensions(width, height, minimalNumberOfDice);
-        _cols.set(this, cols);
-        _rows.set(this, rows);
+        this.dispersion = dispersion;
+        this.rotate = rotate;
+        this.dieSize = dieSize;
+        this.width = width;
+        this.height = height;
     }
 
     /**
      * The width in pixels used by this GridLayout.
-     *
-     * @return {Number} The width, 0 < width.
+     * @throws module:error/ConfigurationError.ConfigurationError Width >= 0
+     * @type {Number} 
      */
     get width() {
-        return _cols.get(this) * this.dieSize;
+        return _width.get(this);
+    }
+
+    set width(w) {
+        if (0 > w) {
+            throw new ConfigurationError(`Width should be a number larger than 0, got '${w}' instead.`);
+        }
+        _width.set(this, w);
+        this._calculateGrid(this.width, this.height);
     }
 
     /**
-     * The height in pixels used by this GridLayout.
+     * The height in pixels used by this GridLayout. 
+     * @throws module:error/ConfigurationError.ConfigurationError Height >= 0
      *
-     * @return {Number} The height, 0 < height.
+     * @type {Number}
      */
     get height() {
-        return _rows.get(this) * this.dieSize;
+        return _height.get(this);
+    }
+
+    set height(h) {
+        if (0 > h) {
+            throw new ConfigurationError(`Height should be a number larger than 0, got '${h}' instead.`);
+        }
+        _height.set(this, h);
+        this._calculateGrid(this.width, this.height);
     }
 
     /**
-     * The maximum number of dice that can be layout on this GridLayout.
+     * The maximum number of dice that can be layout on this GridLayout. This
+     * number is >= 0. Read only.
      *
-     * @return {Number} The maximum number of dice, 0 < maximum
+     * @type {Number}
      */
     get maximumNumberOfDice() {
-        return _cols.get(this) * _rows.get(this);
+        return this._cols * this._rows;
     }
 
     /**
@@ -136,37 +129,29 @@ const GridLayout = class {
      * indicates the distance from the center dice can be layout. Use 1 for a
      * tight packed layout.
      *
-     * @return {Number} Dispersion level, 0 < dispersion.
+     * @throws module:error/ConfigurationError.ConfigurationError Dispersion >= 0
+     * @type {Number}
      */
     get dispersion() {
         return _dispersion.get(this);
     }
 
-    /**
-     * Set the dispersion level used by the GridLayout. The dispersion level
-     * indicates the distance from the center dice can be layout. Use 1 for a
-     * tight packed layout.
-     *
-     * @param {Number} d - The dispersion level to set.
-     */
     set dispersion(d) {
+        if (0 > d) {
+            throw new ConfigurationError(`Dispersion should be a number larger than 0, got '${d}' instead.`);
+        }
         return _dispersion.set(this, d);
     }
 
     /**
      * Should dice be rotated when layout?
      *
-     * @return {Boolean} True if dice are rotated.
+     * @type {Boolean}
      */
     get rotate() {
         return _rotate.get(this);
     }
 
-    /**
-     * Configure if dice are to be rotated in this GridLayout or not.
-     *
-     * @param {Boolean} r - rotate?
-     */
     set rotate(r) {
         _rotate.set(this, r);
     }
@@ -174,10 +159,19 @@ const GridLayout = class {
     /**
      * The size of a die.
      *
-     * @return {Number} The die size, 0 < size.
+     * @throws module:error/ConfigurationError.ConfigurationError DieSize >= 0
+     * @type {Number}
      */
     get dieSize() {
         return _dieSize.get(this);
+    }
+
+    set dieSize(ds) {
+        if (0 >= ds) {
+            throw new ConfigurationError(`dieSize should be a number larger than 1, got '${ds}' instead.`);
+        }
+        _dieSize.set(this, ds);
+        this._calculateGrid(this.width, this.height);
     }
 
     /**
@@ -393,36 +387,16 @@ const GridLayout = class {
     }
 
     /**
-     * Calculate the dimensions needed to fit max number of dice.
+     * Calculate the grid size given width and height.
      *
      * @param {Number} width - The minimal width
      * @param {Number} height - The minimal height
-     * @param {Number} max - The minimal number of dice to fit
      *
-     * @return {Object} The number of rows and columns needed to fit at least max number of
-     * dice.
      * @private
      */
-    _calculateDimensions(width, height, max) {
-        let cols = Math.ceil(width / this.dieSize);
-        let rows = Math.ceil(height / this.dieSize);
-
-        const ratio = width / height;
-        let h = height;
-        let w = width;
-
-        while (max > cols * rows) {
-            // calculate better fit: increase height, compute corresponding width
-            // by keeping the aspect ratio, and try to see if the cols*rows now is
-            // larger than the minimum number of cells needed.
-            h = h + this.dieSize;
-            w = ratio * h;
-
-            cols = Math.ceil(w / this.dieSize);
-            rows = Math.ceil(h / this.dieSize);
-        }
-
-        return {cols, rows};
+    _calculateGrid(width, height) {
+        _cols.set(this, Math.floor(width / this.dieSize));
+        _rows.set(this, Math.floor(height / this.dieSize));
     }
 
     /**

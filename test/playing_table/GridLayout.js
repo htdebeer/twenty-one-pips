@@ -1,4 +1,12 @@
 import {expect} from "chai";
+import {
+    DEFAULT_DIE_SIZE,
+    DEFAULT_HOLD_DURATION,
+    DEFAULT_BACKGROUND,
+    DEFAULT_WIDTH,
+    DEFAULT_HEIGHT,
+    DEFAULT_DISPERSION
+} from "../../src/playing_table/PlayingTable.js";
 import {GridLayout} from "../../src/playing_table/GridLayout.js";
 import {Die} from "../../src/Die.js";
 import {Player} from "../../src/Player.js";
@@ -6,49 +14,34 @@ import {Player} from "../../src/Player.js";
 describe("GridLayout", function () {
     describe("create a new GridLayout", function () {
         it("should have properties width, height, maximumNumberOfDice, and rotate", function () {
-            let l = new GridLayout({
-                minimalNumberOfDice: 4
-            });
-            expect(l.width).to.equal(725);
-            expect(l.height).to.equal(725);
+            let l = new GridLayout();
+            expect(l.width).to.equal(DEFAULT_WIDTH);
+            expect(l.height).to.equal(DEFAULT_HEIGHT);
             expect(l.rotate).to.be.true;
             expect(l.maximumNumberOfDice).to.equal(100);
             
             l = new GridLayout({
-                minimalNumberOfDice: 4,
                 width: 100,
                 height: 4000,
                 rotate: false
             });
-            expect(l.width).to.equal(145);
-            expect(l.height).to.equal(4060);
+            expect(l.width).to.equal(100);
+            expect(l.height).to.equal(4000);
             expect(l.rotate).to.be.false;
-            expect(l.maximumNumberOfDice).to.equal(112);
+            expect(l.maximumNumberOfDice).to.equal(55);
         });
 
         it("should throw an error when height or width are <= 0", function () {
             expect(() => new GridLayout({
-                minimalNumberOfDice: 4,
                 width: -100,
                 height: 0,
             })).to.throw();
-        });
-
-        it("should increase the width and height and possible the max if the max number of dice do not fit", function () {
-            let l = new GridLayout({
-                minimalNumberOfDice: 50,
-                width: 45,
-                height: 30
-            });
-            expect(l.width).to.equal(652.5);
-            expect(l.height).to.equal(435);
-            expect(l.maximumNumberOfDice).to.equal(54);
         });
     });
 
     describe("#layout(dice)", function () {
         const dice = [new Die(), new Die(), new Die(), new Die(), new Die()];
-        const grid = new GridLayout({minimalNumberOfDice: 6});
+        const grid = new GridLayout();
 
         it("should return an empty list when an empty list is supplied to layout", function () {
             expect(grid.layout([])).to.be.empty;

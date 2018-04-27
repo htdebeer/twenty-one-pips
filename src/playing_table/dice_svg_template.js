@@ -18,47 +18,47 @@ export default `<?xml version="1.0" standalone="yes"?> <svg version="1.1" xmlns=
       transform="rotate(-25,10,10)" 
       />
     </symbol>
-    <symbol id="hold" transform="translate(-10.25, -10.25)scale(0.5)">
-        <circle cx="72.21" cy="72.21" r="70.71" fill="inherit"/>
+    <symbol id="hold">
+        <circle cx="72.21" cy="72.21" r="72.21" fill="inherit"/>
     </symbol>
-    <symbol id="die_1" transform="scale(0.5)">
-      <use x="0" y="0" xlink:href="#die-shape" />
-      <use x="40" y="40" xlink:href="#pip" />
+    <symbol id="die_1">
+      <use x="20.25" y="20.25" xlink:href="#die-shape" />
+      <use x="60.25" y="60.25" xlink:href="#pip" />
     </symbol>
-    <symbol id="die_2" transform="scale(0.5)">
-      <use x="0" y="0" xlink:href="#die-shape" />
-      <use x="20" y="20" xlink:href="#pip" />
-      <use x="60" y="60" xlink:href="#pip" />
+    <symbol id="die_2">
+      <use x="20.25" y="20.25" xlink:href="#die-shape" />
+      <use x="40.25" y="40.25" xlink:href="#pip" />
+      <use x="80.25" y="80.25" xlink:href="#pip" />
     </symbol>
-    <symbol id="die_3" transform="scale(0.5)">
-      <use x="0" y="0" xlink:href="#die-shape" />
-      <use x="20" y="20" xlink:href="#pip" />
-      <use x="40" y="40" xlink:href="#pip" />
-      <use x="60" y="60" xlink:href="#pip" />
+    <symbol id="die_3">
+      <use x="20.25" y="20.25" xlink:href="#die-shape" />
+      <use x="40.25" y="40.25" xlink:href="#pip" />
+      <use x="60.25" y="60.25" xlink:href="#pip" />
+      <use x="80.25" y="80.25" xlink:href="#pip" />
     </symbol>
-    <symbol id="die_4" transform="scale(0.5)">
-      <use x="0" y="0" xlink:href="#die-shape" />
-      <use x="20" y="20" xlink:href="#pip" />
-      <use x="60" y="20" xlink:href="#pip" />
-      <use x="20" y="60" xlink:href="#pip" />
-      <use x="60" y="60" xlink:href="#pip" />
+    <symbol id="die_4">
+      <use x="20.25" y="20.25" xlink:href="#die-shape" />
+      <use x="40.25" y="40.25" xlink:href="#pip" />
+      <use x="80.25" y="40.25" xlink:href="#pip" />
+      <use x="40.25" y="80.25" xlink:href="#pip" />
+      <use x="80.25" y="80.25" xlink:href="#pip" />
     </symbol>
-    <symbol id="die_5" transform="scale(0.5)">
-      <use x="0" y="0" xlink:href="#die-shape" />
-      <use x="20" y="20" xlink:href="#pip" />
-      <use x="60" y="20" xlink:href="#pip" />
-      <use x="20" y="60" xlink:href="#pip" />
-      <use x="60" y="60" xlink:href="#pip" />
-      <use x="40" y="40" xlink:href="#pip" />
+    <symbol id="die_5">
+      <use x="20.25" y="20.25" xlink:href="#die-shape" />
+      <use x="40.25" y="40.25" xlink:href="#pip" />
+      <use x="80.25" y="40.25" xlink:href="#pip" />
+      <use x="40.25" y="80.25" xlink:href="#pip" />
+      <use x="80.25" y="80.25" xlink:href="#pip" />
+      <use x="60.25" y="60.25" xlink:href="#pip" />
     </symbol>
-    <symbol id="die_6" transform="scale(0.5)">
-      <use x="0" y="0" xlink:href="#die-shape" />
-      <use x="20" y="15" xlink:href="#pip" />
-      <use x="60" y="15" xlink:href="#pip" />
-      <use x="20" y="65" xlink:href="#pip" />
-      <use x="60" y="65" xlink:href="#pip" />
-      <use x="20" y="40" xlink:href="#pip" />
-      <use x="60" y="40" xlink:href="#pip" />
+    <symbol id="die_6">
+      <use x="20.25" y="20.25" xlink:href="#die-shape" />
+      <use x="40.25" y="35.25" xlink:href="#pip" />
+      <use x="80.25" y="35.25" xlink:href="#pip" />
+      <use x="40.25" y="85.25" xlink:href="#pip" />
+      <use x="80.25" y="85.25" xlink:href="#pip" />
+      <use x="40.25" y="60.25" xlink:href="#pip" />
+      <use x="80.25" y="60.25" xlink:href="#pip" />
     </symbol>
   </defs>
 </svg>`;
