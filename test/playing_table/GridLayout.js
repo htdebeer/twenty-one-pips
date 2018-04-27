@@ -28,7 +28,17 @@ describe("GridLayout", function () {
             expect(l.width).to.equal(100);
             expect(l.height).to.equal(4000);
             expect(l.rotate).to.be.false;
-            expect(l.maximumNumberOfDice).to.equal(55);
+            expect(l.maximumNumberOfDice).to.equal(0);
+
+            l = new GridLayout({
+                width: 200,
+                height: 200,
+                rotate: false
+            });
+            expect(l.width).to.equal(200);
+            expect(l.height).to.equal(200);
+            expect(l.rotate).to.be.false;
+            expect(l.maximumNumberOfDice).to.equal(1);
         });
 
         it("should throw an error when height or width are <= 0", function () {
@@ -51,8 +61,8 @@ describe("GridLayout", function () {
             const layoutDice = grid.layout(dice);
             expect(layoutDice.length).to.equal(dice.length);
             for (const die of layoutDice) {
-                expect(die.coordinates.x).to.be.above(-1).and.to.be.below(726);
-                expect(die.coordinates.y).to.be.above(-1).and.to.be.below(726);
+                expect(die.coordinates.x).to.be.above(-1).and.to.be.below(DEFAULT_WIDTH);
+                expect(die.coordinates.y).to.be.above(-1).and.to.be.below(DEFAULT_HEIGHT);
                 expect(die.rotation).to.exist;
             }
         });
@@ -70,8 +80,8 @@ describe("GridLayout", function () {
             const firstCoordinates = notHoldDie.coordinates;
             const firstRotation = notHoldDie.rotation;
             
-            expect(firstCoordinates.x).to.be.above(-1).and.to.be.below(601);
-            expect(firstCoordinates.y).to.be.above(-1).and.to.be.below(601);
+            expect(firstCoordinates.x).to.be.above(-1).and.to.be.below(DEFAULT_WIDTH);
+            expect(firstCoordinates.y).to.be.above(-1).and.to.be.below(DEFAULT_HEIGHT);
             expect(firstRotation).to.exist;
 
             const NUMBER_OF_SAMPLES = 10;
@@ -106,8 +116,8 @@ describe("GridLayout", function () {
             const firstCoordinates = holdDie.coordinates;
             const firstRotation = holdDie.rotation;
             
-            expect(firstCoordinates.x).to.be.above(-1).and.to.be.below(601);
-            expect(firstCoordinates.y).to.be.above(-1).and.to.be.below(601);
+            expect(firstCoordinates.x).to.be.above(-1).and.to.be.below(DEFAULT_WIDTH);
+            expect(firstCoordinates.y).to.be.above(-1).and.to.be.below(DEFAULT_HEIGHT);
             expect(firstRotation).to.exist;
             
             grid.layout([holdDie]);

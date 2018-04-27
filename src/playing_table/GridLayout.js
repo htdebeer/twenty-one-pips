@@ -262,21 +262,21 @@ const GridLayout = class {
      * @private
      */
     _computeAvailableCells(max, alreadyLayoutDice) {
-        const available = [];
+        const available = new Set();
         let level = 0;
         const maxLevel = Math.min(this._rows, this._cols);
 
-        while (available.length < max && level < maxLevel) {
+        while (available.size < max && level < maxLevel) {
             for (const cell of this._cellsOnLevel(level)) {
-                if (this._cellIsEmpty(cell, alreadyLayoutDice)) {
-                    available.push(cell);
+                if (undefined !== cell && this._cellIsEmpty(cell, alreadyLayoutDice)) {
+                    available.add(cell);
                 }
             }
 
             level++;
         }
 
-        return available;
+        return Array.from(available);
     }
 
     /**
@@ -285,29 +285,29 @@ const GridLayout = class {
      * @param {Number} level - The level from the center of the layout. 0
      * indicates the center.
      *
-     * @return {Number[]} the cells on the level in this layout represented by
+     * @return {Set<Number>} the cells on the level in this layout represented by
      * their number.
      * @private
      */
     _cellsOnLevel(level) {
-        const cells = [];
+        const cells = new Set();
         const center = this._center;
 
         if (0 === level) {
-            cells.push(this._cellToNumber(center));
+            cells.add(this._cellToNumber(center));
         } else {
             for (let row = center.row - level; row <= center.row + level; row++) {
-                cells.push(this._cellToNumber({row, col: center.col - level}));
-                cells.push(this._cellToNumber({row, col: center.col + level}));
+                cells.add(this._cellToNumber({row, col: center.col - level}));
+                cells.add(this._cellToNumber({row, col: center.col + level}));
             }
 
             for (let col = center.col - level + 1; col < center.col + level; col++) {
-                cells.push(this._cellToNumber({row: center.row - level, col}));
-                cells.push(this._cellToNumber({row: center.row + level, col}));
+                cells.add(this._cellToNumber({row: center.row - level, col}));
+                cells.add(this._cellToNumber({row: center.row + level, col}));
             }
         }
 
-        return cells.filter(n => 0 <= n && n <= this.maximumNumberOfDice);
+        return cells;
     }
 
     /**
@@ -338,11 +338,15 @@ const GridLayout = class {
      * Convert a cell to a number
      *
      * @param {Object} cell - The cell to convert to its number.
-     * @return {Number} The number corresponding to the cell.
+     * @return {Number|undefined} The number corresponding to the cell.
+     * Returns undefined when the cell is not on the layout
      * @private
      */
     _cellToNumber({row, col}) {
-        return row * this._cols + col;
+        if (0 <= row && row < this._rows && 0 <= col && col < this._cols) {
+            return row * this._cols + col;
+        }
+        return undefined;
     }
 
     /**
@@ -363,11 +367,16 @@ const GridLayout = class {
      *
      * @param {Object} coords - The coordinates to convert
      *
-     * @return {Number} The coordinates converted to a number.
+     * @return {Number|undefined} The coordinates converted to a number. If
+     * the coordinates are not on this layout, the number is undefined.
      * @private
      */
     _coordinatesToNumber(coords) {
-        return this._cellToNumber(this._coordsToCell(coords));
+        const n = this._cellToNumber(this._coordsToCell(coords));
+        if (0 <= n && n < this.maximumNumberOfDice) {
+            return n;
+        }
+        return undefined;
     }
 
     /**
