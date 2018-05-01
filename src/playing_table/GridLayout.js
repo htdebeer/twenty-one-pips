@@ -38,6 +38,7 @@ const _width = new WeakMap();
 const _height = new WeakMap();
 const _cols = new WeakMap();
 const _rows = new WeakMap();
+const _dice = new WeakMap();
 const _dieSize = new WeakMap();
 const _dispersion = new WeakMap();
 
@@ -249,6 +250,8 @@ const GridLayout = class {
             alreadyLayoutDice.push(die);
         }
 
+        _dice.set(this, alreadyLayoutDice);
+
         return alreadyLayoutDice;
     }
 
@@ -379,6 +382,13 @@ const GridLayout = class {
         return undefined;
     }
 
+    _coordinatesInCell({x, y}) {
+        return {
+            row: Math.trunc(x / this.dieSize),
+            col: Math.trunc(y / this.dieSize)
+        };
+    }
+
     /**
      * Snap (x,y) to the closest cell in this Layout.
      *
@@ -387,12 +397,69 @@ const GridLayout = class {
      * @param {Number} coordinate.x - The x-coordinate.
      * @param {Number} coordinate.y - The y-coordinate.
      *
-     * @return {Object} The coordinate of the cell closest to (x, y).
+     * @return {Object|null} The coordinate of the cell closest to (x, y).
+     * Null when no suitable cell is near (x, y)
      */
-    snapTo({x, y}) {
-        console.log("Snapping to ", x, y);
-        return {x, y};
-        // TODO
+    snapTo({x, y, gx, gy}) {
+        console.log("In snapto: ", x, y, gx, gy);
+
+        const snapToCoords = {
+            max: -1,
+            coords: null
+        };
+
+        const tl = {x: x - gx, y: y - gy};
+        const tlc = this._coordinatesInCell(tl);
+
+        console.log(tl, tlc);
+
+        if (null !== tlc) {
+            const tlcc = this._cellToCoords(tlc);
+            const tla = (tlcc.x + this.dieSize - tl.x) * (tlcc.y + this.dieSize - tl.y);
+            snapToCoords.max = tla;
+            snapToCoords.coords = tlcc;
+
+            console.log(tlcc, tla, snapToCoords);
+        }
+
+        const tr = {x: tl.x + this.dieSize, y: tl.y};
+        const trc = this._coordinatesInCell(tr);
+        if (null !== trc) {
+            const trcc = this._cellToCoords(trc);
+            const tra = (tr.x - trcc.x) * (trcc.y + this.dieSize - tr.y);
+
+            if (tra > snapToCoords.max) {
+                snapToCoords.max = tra;
+                snapToCoords.coords = trcc;
+            }
+        }
+
+        const bl = {x: tl.x, y: tl.y + this.dieSize};
+        const blc = this._coordinatesInCell(bl);
+        if (null !== blc) {
+            const blcc = this._cellToCoords(blc);
+            const bla = (blcc.x + this.dieSize - bl.x) * (bl.y - blcc.y);
+
+            if (bla > snapToCoords.max) {
+                snapToCoords.max = bla;
+                snapToCoords.coords = blcc;
+            }
+        }
+
+        const br = {x: tr.x, y: bl.y};
+        const brc = this._coordinatesInCell(br);
+
+        if (null !== brc) {
+
+            const brcc = this._cellToCoords(brc);
+            const bra = (br.x - brcc.x) * (br.y - brcc.y);
+
+            if (bra > snapToCoords.max) {
+                snapToCoords.coords = brcc;
+            }
+        }
+
+        return snapToCoords.coords;
     }
 
     /**

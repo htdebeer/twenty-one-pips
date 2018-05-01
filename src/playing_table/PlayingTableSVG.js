@@ -51,13 +51,14 @@ const RELEASE_IT_HANDLER = (holdUse) => () => holdUse.setAttribute("fill", "none
 
 // Methods to handle interaction
 
+let offset = {};
 const startDragging = (playingTableSVG, event, die) => {
     let point = playingTableSVG.svgRoot.createSVGPoint();
     point.x = event.clientX - document.body.scrollLeft;
     point.y = event.clientY - document.body.scrollTop;
     point = point.matrixTransform(die.getScreenCTM().inverse());
 
-    const offset = {
+    offset = {
         x: point.x,
         y: point.y
     };
@@ -230,10 +231,20 @@ const renderDie = (playingTableSVG, {die, player}) => {
 
             const {x, y} = die.coordinates;
 
-            die.coordinates = playingTableSVG.layout.snapTo({
+            const snapToCoords = playingTableSVG.layout.snapTo({
                 x: x - dx,
-                y: y - dy
+                y: y - dy,
+                gx: offset.x,
+                gy: offset.y
             });
+            console.log("Stopping dragging: ", snapToCoords, offset);
+
+            if (null !== snapToCoords) {
+                die.coordinates = snapToCoords;
+                const scale = _dieSize.get(playingTableSVG) / NATURAL_DIE_SIZE;
+                dieElement.setAttribute("transform", `translate(${snapToCoords.x},${snapToCoords.y})scale(${scale})`);
+            }
+
             stopDragging(playingTableSVG);
             break;
         }

@@ -334,7 +334,9 @@ const PlayingTable = class extends ViewController {
     }
 
     /**
-     * Place the dice on this PlayingTable.
+     * Place the dice on this PlayingTable. Temporary method used for
+     * debugging. Might be moved in a sub class of PlayingTable later on for
+     * explanatory purposes where putting a dice on a table makes sense.
      *
      * @param {Object} config - the throw configuration.
      * @param {module:Player~Player} [config.player = DEFAULT_SYSTEM_PLAYER] - The throwing
@@ -346,6 +348,7 @@ const PlayingTable = class extends ViewController {
      * However, as a shorthand you can specify the dice to throw.
      *
      * @return {module:Die~Die[]} The list with thrown dice.
+     * @private
      */
     placeDice({
         dice = null,
