@@ -52,25 +52,25 @@ const RELEASE_IT_HANDLER = (holdUse) => () => holdUse.setAttribute("fill", "none
 // Methods to handle interaction
 
 let offset = {};
-const startDragging = (playingTableSVG, event, die) => {
+const startDragging = (playingTableSVG, event, dieElement, die) => {
     let point = playingTableSVG.svgRoot.createSVGPoint();
     point.x = event.clientX - document.body.scrollLeft;
     point.y = event.clientY - document.body.scrollTop;
-    point = point.matrixTransform(die.getScreenCTM().inverse());
+    point = point.matrixTransform(dieElement.getScreenCTM().inverse());
 
     offset = {
         x: point.x,
         y: point.y
     };
 
-    const transform = die.ownerSVGElement.createSVGTransform();
-    const transformList = die.transform.baseVal;
+    const transform = dieElement.ownerSVGElement.createSVGTransform();
+    const transformList = dieElement.transform.baseVal;
 
     _dragHandler.set(playingTableSVG, (event) => {
-        // Move die to the top of the SVG so it moves over the other dice
+        // Move dieElement to the top of the SVG so it moves over the other dice
         // rather than below them. 
-        playingTableSVG.svgRoot.removeChild(die);
-        playingTableSVG.svgRoot.appendChild(die);
+        playingTableSVG.svgRoot.removeChild(dieElement);
+        playingTableSVG.svgRoot.appendChild(dieElement);
 
         // Get a point in svgport coordinates
         point = playingTableSVG.svgRoot.createSVGPoint();
@@ -78,9 +78,9 @@ const startDragging = (playingTableSVG, event, die) => {
         point.y = event.clientY - document.body.scrollTop;
 
         // Transform them to user coordinates
-        point = point.matrixTransform(die.getScreenCTM().inverse());
+        point = point.matrixTransform(dieElement.getScreenCTM().inverse());
 
-        // Keep track of the offset so the die that is being dragged stays
+        // Keep track of the offset so the dieElement that is being dragged stays
         // under the cursor rather than having a jerk after starting dragging.
         point.x -= offset.x;
         point.y -= offset.y;
@@ -207,7 +207,7 @@ const renderDie = (playingTableSVG, {die, player}) => {
                 event.stopPropagation();
                 state = DRAGGING;
                 dieElement.setAttribute("cursor", "grabbing");
-                startDragging(playingTableSVG, event, dieElement);
+                startDragging(playingTableSVG, event, dieElement, die);
             }
             break;
         }
@@ -230,14 +230,14 @@ const renderDie = (playingTableSVG, {die, player}) => {
             const dy = origin.y - event.clientY;
 
             const {x, y} = die.coordinates;
-
+            console.log("Before snapping: ", x, y, dx, dy, offset.x, offset.y);
             const snapToCoords = playingTableSVG.layout.snapTo({
                 x: x - dx,
                 y: y - dy,
                 gx: offset.x,
                 gy: offset.y
             });
-            console.log("Stopping dragging: ", snapToCoords, offset);
+            console.log(`Stopping dragging: current = (${x - dx}, ${y - dy}), grabPoint = (${offset.x}, ${offset.y}), snapped = (${snapToCoords.x}, ${snapToCoords.y})`);
 
             if (null !== snapToCoords) {
                 die.coordinates = snapToCoords;

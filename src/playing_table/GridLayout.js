@@ -383,10 +383,12 @@ const GridLayout = class {
     }
 
     _coordinatesInCell({x, y}) {
-        return {
+        const cell = {
             row: Math.trunc(x / this.dieSize),
             col: Math.trunc(y / this.dieSize)
         };
+
+        return cell.row >= 0 && cell.col >= 0 ? cell : null;
     }
 
     /**
@@ -401,17 +403,17 @@ const GridLayout = class {
      * Null when no suitable cell is near (x, y)
      */
     snapTo({x, y, gx, gy}) {
-        console.log("In snapto: ", x, y, gx, gy);
 
         const snapToCoords = {
             max: -1,
             coords: null
         };
 
+        console.log("snapping with: ", x, gx, y, gy, this.dieSize);
+
         const tl = {x: x - gx, y: y - gy};
         const tlc = this._coordinatesInCell(tl);
 
-        console.log(tl, tlc);
 
         if (null !== tlc) {
             const tlcc = this._cellToCoords(tlc);
@@ -419,7 +421,7 @@ const GridLayout = class {
             snapToCoords.max = tla;
             snapToCoords.coords = tlcc;
 
-            console.log(tlcc, tla, snapToCoords);
+            console.log("topleft: ", tl, tlcc, tla, snapToCoords);
         }
 
         const tr = {x: tl.x + this.dieSize, y: tl.y};
@@ -432,6 +434,7 @@ const GridLayout = class {
                 snapToCoords.max = tra;
                 snapToCoords.coords = trcc;
             }
+            console.log("topright: ", tr, trcc, tra, snapToCoords);
         }
 
         const bl = {x: tl.x, y: tl.y + this.dieSize};
@@ -444,6 +447,7 @@ const GridLayout = class {
                 snapToCoords.max = bla;
                 snapToCoords.coords = blcc;
             }
+            console.log("bottomleft: ", bl, blcc, bla, snapToCoords);
         }
 
         const br = {x: tr.x, y: bl.y};
@@ -457,6 +461,7 @@ const GridLayout = class {
             if (bra > snapToCoords.max) {
                 snapToCoords.coords = brcc;
             }
+            console.log("bottomright: ", br, brcc, bra, snapToCoords);
         }
 
         return snapToCoords.coords;
