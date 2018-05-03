@@ -131,7 +131,8 @@ describe("GridLayout", function () {
 
     });
     
-    describe("#snapTo({x, y})", function () {
-        // Not yet implemented.
+    describe("#snapTo({x, y, gx, gy})", function () {
+        if("should snap a die covering a whole cell to that cel", function () {
+        });
     });
 });

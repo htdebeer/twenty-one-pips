@@ -19,8 +19,8 @@
 
             const table = new PlayingTable({
                 parent: document.getElementById("playing_table"),
-                width: 200,
-                height: 200,
+                width: 400,
+                height: 400,
                 dieSize: 100,
                 dispersion: 5,
                 background: "green",
@@ -32,7 +32,7 @@
             console.log(`The maximum number of dice is:
                 ${table.maximumNumberOfDice}.`);
 
-            table.throwDice({dice: 1});
+            table.throwDice({dice: 5});
 
             const throwButton = document.getElementById("thrower");
             throwButton.addEventListener("click", () => {

@@ -52,7 +52,7 @@ const RELEASE_IT_HANDLER = (holdUse) => () => holdUse.setAttribute("fill", "none
 // Methods to handle interaction
 
 let offset = {};
-const startDragging = (playingTableSVG, event, dieElement, die) => {
+const startDragging = (playingTableSVG, event, dieElement) => {
     let point = playingTableSVG.svgRoot.createSVGPoint();
     point.x = event.clientX - document.body.scrollLeft;
     point.y = event.clientY - document.body.scrollTop;
@@ -230,20 +230,16 @@ const renderDie = (playingTableSVG, {die, player}) => {
             const dy = origin.y - event.clientY;
 
             const {x, y} = die.coordinates;
-            console.log("Before snapping: ", x, y, dx, dy, offset.x, offset.y);
             const snapToCoords = playingTableSVG.layout.snapTo({
                 x: x - dx,
                 y: y - dy,
-                gx: offset.x,
-                gy: offset.y
             });
-            console.log(`Stopping dragging: current = (${x - dx}, ${y - dy}), grabPoint = (${offset.x}, ${offset.y}), snapped = (${snapToCoords.x}, ${snapToCoords.y})`);
 
-            if (null !== snapToCoords) {
-                die.coordinates = snapToCoords;
-                const scale = _dieSize.get(playingTableSVG) / NATURAL_DIE_SIZE;
-                dieElement.setAttribute("transform", `translate(${snapToCoords.x},${snapToCoords.y})scale(${scale})`);
-            }
+            const newCoords = null != snapToCoords ? snapToCoords : {x, y};
+
+            die.coordinates = newCoords;
+            const scale = _dieSize.get(playingTableSVG) / NATURAL_DIE_SIZE;
+            dieElement.setAttribute("transform", `translate(${newCoords.x},${newCoords.y})scale(${scale})`);
 
             stopDragging(playingTableSVG);
             break;

@@ -39,12 +39,6 @@
         "no-invalid-this": "warn",
         "no-lone-blocks": "warn",
         "no-loop-func": "warn",
-        "no-magic-numbers": [
-            "warn",
-            {
-                "ignore": [0, 1, -1]
-            }
-        ],
         "no-multi-spaces": "warn",
         "no-param-reassign": "warn",
         "no-return-assign": "warn",

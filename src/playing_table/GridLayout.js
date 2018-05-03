@@ -382,15 +382,6 @@ const GridLayout = class {
         return undefined;
     }
 
-    _coordinatesInCell({x, y}) {
-        const cell = {
-            row: Math.trunc(x / this.dieSize),
-            col: Math.trunc(y / this.dieSize)
-        };
-
-        return cell.row >= 0 && cell.col >= 0 ? cell : null;
-    }
-
     /**
      * Snap (x,y) to the closest cell in this Layout.
      *
@@ -402,69 +393,55 @@ const GridLayout = class {
      * @return {Object|null} The coordinate of the cell closest to (x, y).
      * Null when no suitable cell is near (x, y)
      */
-    snapTo({x, y, gx, gy}) {
+    snapTo({x, y}) {
+        const cornerCell = this._cellToNumber({
+            row: Math.trunc(y / this.dieSize),
+            col: Math.trunc(x / this.dieSize)
+        });
 
-        const snapToCoords = {
-            max: -1,
-            coords: null
-        };
+        const corner = this._numberToCoordinates(cornerCell);
+        const widthIn = corner.x + this.dieSize - x;
+        const widthOut = this.dieSize - widthIn;
+        const heightIn = corner.y + this.dieSize - y;
+        const heightOut = this.dieSize - heightIn;
 
-        console.log("snapping with: ", x, gx, y, gy, this.dieSize);
+        // Top left
+        const quadrant = [{
+            n: cornerCell,
+            coverage: widthIn * heightIn
+        }];
 
-        const tl = {x: x - gx, y: y - gy};
-        const tlc = this._coordinatesInCell(tl);
+        // Top right
 
-
-        if (null !== tlc) {
-            const tlcc = this._cellToCoords(tlc);
-            const tla = (tlcc.x + this.dieSize - tl.x) * (tlcc.y + this.dieSize - tl.y);
-            snapToCoords.max = tla;
-            snapToCoords.coords = tlcc;
-
-            console.log("topleft: ", tl, tlcc, tla, snapToCoords);
+        if (corner.x + this.dieSize < this.width) {
+            quadrant.push({
+                n: cornerCell + 1,
+                coverage: widthOut * heightIn
+            });
         }
 
-        const tr = {x: tl.x + this.dieSize, y: tl.y};
-        const trc = this._coordinatesInCell(tr);
-        if (null !== trc) {
-            const trcc = this._cellToCoords(trc);
-            const tra = (tr.x - trcc.x) * (trcc.y + this.dieSize - tr.y);
-
-            if (tra > snapToCoords.max) {
-                snapToCoords.max = tra;
-                snapToCoords.coords = trcc;
-            }
-            console.log("topright: ", tr, trcc, tra, snapToCoords);
+        // Bottom left
+        if (corner.y + this.dieSize < this.height) {
+            quadrant.push({
+                n: cornerCell + this._cols,
+                coverage: widthIn * heightOut
+            });
         }
 
-        const bl = {x: tl.x, y: tl.y + this.dieSize};
-        const blc = this._coordinatesInCell(bl);
-        if (null !== blc) {
-            const blcc = this._cellToCoords(blc);
-            const bla = (blcc.x + this.dieSize - bl.x) * (bl.y - blcc.y);
-
-            if (bla > snapToCoords.max) {
-                snapToCoords.max = bla;
-                snapToCoords.coords = blcc;
-            }
-            console.log("bottomleft: ", bl, blcc, bla, snapToCoords);
+        // Bottom right
+        if (3 === quadrant.length) {
+            quadrant.push({
+                n: cornerCell + this._cols + 1,
+                coverage: widthOut * heightOut
+            });
         }
 
-        const br = {x: tr.x, y: bl.y};
-        const brc = this._coordinatesInCell(br);
+        const snap = quadrant.reduce(
+            (maxQ, q) => q.coverage > maxQ.coverage ? q : maxQ,
+            quadrant[0]
+        );
 
-        if (null !== brc) {
-
-            const brcc = this._cellToCoords(brc);
-            const bra = (br.x - brcc.x) * (br.y - brcc.y);
-
-            if (bra > snapToCoords.max) {
-                snapToCoords.coords = brcc;
-            }
-            console.log("bottomright: ", br, brcc, bra, snapToCoords);
-        }
-
-        return snapToCoords.coords;
+        return this._numberToCoordinates(snap.n);
     }
 
     /**
