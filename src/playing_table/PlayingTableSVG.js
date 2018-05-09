@@ -28,8 +28,6 @@ import template from "./dice_svg_template.js";
 const SVGNS = "http://www.w3.org/2000/svg";
 const XLINKNS = "http://www.w3.org/1999/xlink";
 
-const HALF = 2;
-
 // private properties
 const _svgRoot = new WeakMap();
 const _dragHandler = new WeakMap();
@@ -119,8 +117,8 @@ const renderDie = (playingTableSVG, {die, player}) => {
 
     const dimensions = holdUse.getBBox();
     const rotationCenter = {
-        x: dimensions.width / HALF,
-        y: dimensions.height / HALF
+        x: dimensions.width / 2,
+        y: dimensions.height / 2
     };
 
     if (0 !== die.rotation) {

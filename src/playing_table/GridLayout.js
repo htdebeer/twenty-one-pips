@@ -29,7 +29,6 @@ import {ConfigurationError} from "../error/ConfigurationError.js";
  * @module
  */
 
-const HALF = 2;
 const FULL_CIRCLE_IN_DEGREES = 360;
 
 // Private fields
@@ -69,6 +68,7 @@ const GridLayout = class {
         dispersion = DEFAULT_DISPERSION,
         dieSize = DEFAULT_DIE_SIZE
     } = {}) {
+        _dice.set(this, []);
         _dieSize.set(this, 1);
         _width.set(this, 0);
         _height.set(this, 0);
@@ -202,8 +202,8 @@ const GridLayout = class {
      * @private
      */
     get _center() {
-        const row = Math.floor(this._rows / HALF);
-        const col = Math.floor(this._cols / HALF);
+        const row = Math.floor(this._rows / 2);
+        const col = Math.floor(this._cols / 2);
 
         return {row, col};
     }
@@ -428,6 +428,7 @@ const GridLayout = class {
             coverage: widthOut * heightOut
         }];
 
+
         const snapTo = quadrants
                         .filter((quadrant) => undefined !== quadrant.q)
                         .reduce(
@@ -435,7 +436,9 @@ const GridLayout = class {
                             {q: undefined, coverage: -1}
                         );
 
-        return undefined === snapTo.q ? null : this._numberToCoordinates(snapTo.q);
+        return undefined !== snapTo.q && this._cellIsEmpty(snapTo.q, _dice.get(this))  
+            ? this._numberToCoordinates(snapTo.q)
+            : null;
     }
 
     /**
@@ -471,8 +474,8 @@ const GridLayout = class {
      */
     _coordsToCell({x, y}) {
         return {
-            row: Math.trunc(x / this.dieSize),
-            col: Math.trunc(y / this.dieSize)
+            row: Math.trunc(y / this.dieSize),
+            col: Math.trunc(x / this.dieSize)
         };
     }
 };
