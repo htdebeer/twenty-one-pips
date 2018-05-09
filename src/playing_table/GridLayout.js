@@ -394,54 +394,48 @@ const GridLayout = class {
      * Null when no suitable cell is near (x, y)
      */
     snapTo({x, y}) {
-        const cornerCell = this._cellToNumber({
+        const cornerCell = {
             row: Math.trunc(y / this.dieSize),
             col: Math.trunc(x / this.dieSize)
-        });
+        };
 
-        const corner = this._numberToCoordinates(cornerCell);
+        const corner = this._cellToCoords(cornerCell);
         const widthIn = corner.x + this.dieSize - x;
         const widthOut = this.dieSize - widthIn;
         const heightIn = corner.y + this.dieSize - y;
         const heightOut = this.dieSize - heightIn;
 
-        // Top left
-        const quadrant = [{
-            n: cornerCell,
+        const quadrants = [{
+            q: this._cellToNumber(cornerCell),
             coverage: widthIn * heightIn
+        }, {
+            q: this._cellToNumber({
+                row: cornerCell.row,
+                col: cornerCell.col + 1
+            }),
+            coverage: widthOut * heightIn
+        }, {
+            q: this._cellToNumber({
+                row: cornerCell.row + 1,
+                col: cornerCell.col
+            }),
+            coverage: widthIn * heightOut
+        }, {
+            q: this._cellToNumber({
+                row: cornerCell.row + 1,
+                col: cornerCell.col + 1
+            }),
+            coverage: widthOut * heightOut
         }];
 
-        // Top right
+        const snapTo = quadrants
+                        .filter((quadrant) => undefined !== quadrant.q)
+                        .reduce(
+                            (maxQ, quadrant) => quadrant.coverage > maxQ.coverage ? quadrant : maxQ,
+                            {q: undefined, coverage: -1}
+                        );
 
-        if (corner.x + this.dieSize < this.width) {
-            quadrant.push({
-                n: cornerCell + 1,
-                coverage: widthOut * heightIn
-            });
-        }
-
-        // Bottom left
-        if (corner.y + this.dieSize < this.height) {
-            quadrant.push({
-                n: cornerCell + this._cols,
-                coverage: widthIn * heightOut
-            });
-        }
-
-        // Bottom right
-        if (3 === quadrant.length) {
-            quadrant.push({
-                n: cornerCell + this._cols + 1,
-                coverage: widthOut * heightOut
-            });
-        }
-
-        const snap = quadrant.reduce(
-            (maxQ, q) => q.coverage > maxQ.coverage ? q : maxQ,
-            quadrant[0]
-        );
-
-        return this._numberToCoordinates(snap.n);
+        return undefined === snapTo.q ? null : this._numberToCoordinates(snapTo.q);
     }
 
     /**
