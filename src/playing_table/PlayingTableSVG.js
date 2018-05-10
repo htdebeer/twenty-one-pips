@@ -17,19 +17,22 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-
+import {
+    SVGNS,
+    XLINKNS,
+    SVGElementWrapper
+} from "../SVGElementWrapper.js";
 import {DEFAULT_HOLD_DURATION, DEFAULT_BACKGROUND, DEFAULT_DIE_SIZE, NATURAL_DIE_SIZE} from "./PlayingTable.js";
-import {HOLD_DIE, RELEASE_DIE} from "../Die.js";
 import template from "./dice_svg_template.js";
+import {DieSVG} from "./DieSVG.js";
 
 /**
  * @module
  */
-const SVGNS = "http://www.w3.org/2000/svg";
-const XLINKNS = "http://www.w3.org/1999/xlink";
 
 // private properties
 const _svgRoot = new WeakMap();
+const _renderedDice = new WeakMap();
 const _dragHandler = new WeakMap();
 const _layout = new WeakMap();
 const _dieSize = new WeakMap();
@@ -42,10 +45,6 @@ const _background = new WeakMap();
 const NONE = Symbol("no_interaction");
 const INDETERMINED = Symbol("indetermined");
 const DRAGGING = Symbol("dragging");
-
-// Event handlers to react to a die model's events
-const HOLD_IT_HANDLER = (holdUse) => (_, player) => holdUse.setAttribute("fill", player.color);
-const RELEASE_IT_HANDLER = (holdUse) => () => holdUse.setAttribute("fill", "none");
 
 // Methods to handle interaction
 
@@ -97,40 +96,7 @@ const stopDragging = (playingTableSVG) => {
 };
 
 const renderDie = (playingTableSVG, {die, player}) => {
-    // Render die
-    const dieElement = document.createElementNS(SVGNS, "g");
-    dieElement.classList.add("die");
-    playingTableSVG.svgRoot.appendChild(dieElement);
-
-    const holdUse = document.createElementNS(SVGNS, "use");
-    holdUse.setAttributeNS(XLINKNS, "xlink:href", "#hold");
-    holdUse.setAttribute(
-        "fill",
-        die.isHeld() ? die.heldBy.color : "none"
-    );
-    dieElement.appendChild(holdUse);
-
-    const dieUse = document.createElementNS(SVGNS, "use");
-    dieUse.setAttributeNS(XLINKNS, "xlink:href", `#die_${die.pips}`);
-    dieUse.setAttribute("fill", die.color);
-    dieElement.appendChild(dieUse);
-
-    const dimensions = holdUse.getBBox();
-    const rotationCenter = {
-        x: dimensions.width / 2,
-        y: dimensions.height / 2
-    };
-
-    if (0 !== die.rotation) {
-        dieUse.setAttribute(
-            "transform",
-            `rotate(${die.rotation}, ${rotationCenter.x}, ${rotationCenter.y})`
-        );
-    }
-
-    const {x, y} = die.coordinates;
-    const scale = _dieSize.get(playingTableSVG) / NATURAL_DIE_SIZE;
-    dieElement.setAttribute("transform", `translate(${x},${y})scale(${scale})`);
+    const dieSVG = new DieSVG(die);
 
     // Setup interaction
     let state = NONE;
@@ -179,11 +145,11 @@ const renderDie = (playingTableSVG, {die, player}) => {
     };
 
     const showInteraction = () => {
-        dieElement.setAttribute("cursor", "grab");
+        dieSVG.element.setAttribute("cursor", "grab");
     };
 
     const hideInteraction = () => {
-        dieElement.setAttribute("cursor", "default");
+        dieSVG.element.setAttribute("cursor", "default");
     };
 
     /*
@@ -204,8 +170,8 @@ const renderDie = (playingTableSVG, {die, player}) => {
             if (playingTableSVG.draggableDice && minDelta < dx || minDelta < dy) {
                 event.stopPropagation();
                 state = DRAGGING;
-                dieElement.setAttribute("cursor", "grabbing");
-                startDragging(playingTableSVG, event, dieElement, die);
+                dieSVG.element.setAttribute("cursor", "grabbing");
+                startDragging(playingTableSVG, event, dieSVG.element, die);
             }
             break;
         }
@@ -229,6 +195,7 @@ const renderDie = (playingTableSVG, {die, player}) => {
 
             const {x, y} = die.coordinates;
             const snapToCoords = playingTableSVG.layout.snapTo({
+                die,
                 x: x - dx,
                 y: y - dy,
             });
@@ -237,7 +204,7 @@ const renderDie = (playingTableSVG, {die, player}) => {
 
             die.coordinates = newCoords;
             const scale = _dieSize.get(playingTableSVG) / NATURAL_DIE_SIZE;
-            dieElement.setAttribute("transform", `translate(${newCoords.x},${newCoords.y})scale(${scale})`);
+            dieSVG.element.setAttribute("transform", `translate(${newCoords.x},${newCoords.y})scale(${scale})`);
 
             stopDragging(playingTableSVG);
             break;
@@ -247,35 +214,30 @@ const renderDie = (playingTableSVG, {die, player}) => {
         state = NONE;
     };
 
-    dieElement.addEventListener("mousedown", startInteraction);
-    dieElement.addEventListener("touchstart", startInteraction);
+    dieSVG.element.addEventListener("mousedown", startInteraction);
+    dieSVG.element.addEventListener("touchstart", startInteraction);
 
     if (playingTableSVG.draggableDice) {
-        dieElement.addEventListener("mousemove", move);
-        dieElement.addEventListener("touchmove", move);
+        dieSVG.element.addEventListener("mousemove", move);
+        dieSVG.element.addEventListener("touchmove", move);
     }
 
     if (playingTableSVG.draggableDice || playingTableSVG.holdableDice) {
-        dieElement.addEventListener("mouseover", showInteraction);
-        dieElement.addEventListener("mouseout", hideInteraction);
+        dieSVG.element.addEventListener("mouseover", showInteraction);
+        dieSVG.element.addEventListener("mouseout", hideInteraction);
     }
 
-    dieElement.addEventListener("mouseup", stopInteraction);
-    dieElement.addEventListener("touchend", stopInteraction);
+    dieSVG.element.addEventListener("mouseup", stopInteraction);
+    dieSVG.element.addEventListener("touchend", stopInteraction);
 
-    die.off(HOLD_DIE, HOLD_IT_HANDLER);
-    die.on(HOLD_DIE, HOLD_IT_HANDLER(holdUse));
-
-    die.off(RELEASE_DIE, RELEASE_IT_HANDLER);
-    die.on(RELEASE_DIE, RELEASE_IT_HANDLER(holdUse));
+    return dieSVG;
 };
 
-const clear = (playingTableSVG) => {
-    const diceElements = playingTableSVG.svgRoot.querySelectorAll("g.die");
-    for (const dieElement of diceElements) {
-        playingTableSVG.svgRoot.removeChild(dieElement);
-    }
-};
+const importTemplate = () => {
+    const parser = new DOMParser();
+    const svgDocument = parser.parseFromString(template, "image/svg+xml");
+    return document.importNode(svgDocument.documentElement, true);
+}
 
 /**
  * PlayingTableSVG renders the playing table and the dice upon it.
@@ -293,7 +255,7 @@ const clear = (playingTableSVG) => {
  * @property {module:playing_table/GridLayout~GridLayout} layout - The layout
  * used when rendering dice in this svg.
  */
-const PlayingTableSVG = class {
+const PlayingTableSVG = class extends SVGElementWrapper {
 
     /**
      * Create a new PlayingTableSVG
@@ -326,12 +288,9 @@ const PlayingTableSVG = class {
         holdableDice = true,
         holdDuration = DEFAULT_HOLD_DURATION
     }) {
-        // Add prepared SVG with die symbols
-        const parser = new DOMParser();
-        const svgDocument = parser.parseFromString(template, "image/svg+xml");
-        const svgRoot = document.importNode(svgDocument.documentElement, true);
-        parent.appendChild(svgRoot);
-        _svgRoot.set(this, svgRoot);
+        super(importTemplate())
+        parent.appendChild(this.element);
+        _renderedDice.set(this, new Map());
 
         // Setup properties.
         this.holdDuration = holdDuration;
@@ -342,10 +301,11 @@ const PlayingTableSVG = class {
         this.width = width;
         this.height = height;
         _dieSize.set(this, dieSize);
+        DieSVG.size = dieSize;
     }
 
     get svgRoot() {
-        return _svgRoot.get(this);
+        return this.element;
     }
 
     get layout() {
@@ -413,10 +373,28 @@ const PlayingTableSVG = class {
      * is rendered.
      */
     renderDice({dice, player}) {
-        clear(this);
+        const renderedDice = _renderedDice.get(this);
+
+        // Remove all rendered dice that are not to be rendered again
+        for (const die of renderedDice.keys()) {
+            if (dice.includes(die)) {
+                const renderedDie = renderedDice.get(die);
+                renderedDie.element.parentElement.removeChild(renderedDie.element);
+                renderedDice.delete(die);
+            }
+        }
+
         this.layout
             .layout(dice)
-            .forEach(die => renderDie(this, {die, player}));
+            .forEach(die => {
+                if (!renderedDice.has(die)) {
+                    const renderedDie = renderDie(this, {die, player});
+                    this.svgRoot.appendChild(renderedDie.element);
+                    renderedDice.set(die, renderedDie);
+                }
+
+                renderedDice.get(die).render();
+            });
     }
 
 };

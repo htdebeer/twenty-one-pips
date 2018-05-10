@@ -180,8 +180,18 @@ describe("GridLayout", function () {
             c = grid.snapTo({x: 70, y: 75});
             expect(c.x).to.equal(0);
             expect(c.y).to.equal(100);
+        });
 
+        it("should return the current coordinates if the current cell is the best fit", function () {
+            const die = new Die();
+            const player = new Player({name: "test", color: "red"});
+            die.coordinates = {x: 100, y: 100};
+            die.holdIt(player);
 
+            grid.layout([die]);
+            c = grid.snapTo({die, x: 70, y: 75});
+            expect(c.x).to.equal(100);
+            expect(c.y).to.equal(100);
         });
     });
 });

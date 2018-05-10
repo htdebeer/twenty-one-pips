@@ -385,15 +385,16 @@ const GridLayout = class {
     /**
      * Snap (x,y) to the closest cell in this Layout.
      *
-     * @param {Object} coordinate - The coordinate to find the closest cell
+     * @param {Object} diecoordinate - The coordinate to find the closest cell
      * for.
-     * @param {Number} coordinate.x - The x-coordinate.
-     * @param {Number} coordinate.y - The y-coordinate.
+     * @param {Die} [diecoordinat.die = null] - The die to snap to.
+     * @param {Number} diecoordinate.x - The x-coordinate.
+     * @param {Number} diecoordinate.y - The y-coordinate.
      *
      * @return {Object|null} The coordinate of the cell closest to (x, y).
      * Null when no suitable cell is near (x, y)
      */
-    snapTo({x, y}) {
+    snapTo({die = null, x, y}) {
         const cornerCell = {
             row: Math.trunc(y / this.dieSize),
             col: Math.trunc(x / this.dieSize)
@@ -431,8 +432,10 @@ const GridLayout = class {
         const snapTo = quadrants
                         // cell should be on the layout
                         .filter((quadrant) => undefined !== quadrant.q)
-                        // cell should be not already taken
-                        .filter((quadrant) => this._cellIsEmpty(quadrant.q, _dice.get(this))) 
+                        // cell should be not already taken except by itself
+                        .filter((quadrant) => (
+                            null !== die && this._coordinatesToNumber(die.coordinates) === quadrant.q) 
+                            || this._cellIsEmpty(quadrant.q, _dice.get(this))) 
                         // cell should be covered by the die the most
                         .reduce(
                             (maxQ, quadrant) => quadrant.coverage > maxQ.coverage ? quadrant : maxQ,
