@@ -131,8 +131,57 @@ describe("GridLayout", function () {
 
     });
     
-    describe("#snapTo({x, y, gx, gy})", function () {
-        if("should snap a die covering a whole cell to that cel", function () {
+    describe("#snapTo({x, y})", function () {
+        const grid = new GridLayout({width: 500, height: 500, dieSize: 100})
+        let c;
+
+        it("should snap to coordinates of the cell closest to it", function () {
+            c = grid.snapTo({x: 0, y: 0});
+            expect(c.x).to.equal(0);
+            expect(c.y).to.equal(0);
+
+            c = grid.snapTo({x: 30, y: 40});
+            expect(c.x).to.equal(0);
+            expect(c.y).to.equal(0);
+
+            c = grid.snapTo({x: -70, y: -10});
+            expect(c.x).to.equal(0);
+            expect(c.y).to.equal(0);
+
+            c = grid.snapTo({x: 70, y: 70});
+            expect(c.x).to.equal(100);
+            expect(c.y).to.equal(100);
+
+            c = grid.snapTo({x:150, y:312});
+            expect(c.x).to.equal(100);
+            expect(c.y).to.equal(300);
+
+            c = grid.snapTo({x:151, y:312});
+            expect(c.x).to.equal(200);
+            expect(c.y).to.equal(300);
+        });
+
+        it("should return null if there is no meaningful closest cell", function () {
+            c = grid.snapTo({x: -300, y: -300});
+            expect(c).to.be.null;
+        });
+
+        it("should return the next bet fit if the closest cell is already taken", function () {
+            const die = new Die();
+            const player = new Player({name: "test", color: "red"});
+            die.coordinates = {x: 100, y: 100};
+            die.holdIt(player);
+
+            c = grid.snapTo({x: 70, y: 75});
+            expect(c.x).to.equal(100);
+            expect(c.y).to.equal(100);
+
+            grid.layout([die]);
+            c = grid.snapTo({x: 70, y: 75});
+            expect(c.x).to.equal(0);
+            expect(c.y).to.equal(100);
+
+
         });
     });
 });

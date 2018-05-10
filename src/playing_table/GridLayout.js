@@ -428,17 +428,18 @@ const GridLayout = class {
             coverage: widthOut * heightOut
         }];
 
-
         const snapTo = quadrants
+                        // cell should be on the layout
                         .filter((quadrant) => undefined !== quadrant.q)
+                        // cell should be not already taken
+                        .filter((quadrant) => this._cellIsEmpty(quadrant.q, _dice.get(this))) 
+                        // cell should be covered by the die the most
                         .reduce(
                             (maxQ, quadrant) => quadrant.coverage > maxQ.coverage ? quadrant : maxQ,
                             {q: undefined, coverage: -1}
                         );
 
-        return undefined !== snapTo.q && this._cellIsEmpty(snapTo.q, _dice.get(this))  
-            ? this._numberToCoordinates(snapTo.q)
-            : null;
+        return undefined !== snapTo.q ? this._numberToCoordinates(snapTo.q) : null;
     }
 
     /**
