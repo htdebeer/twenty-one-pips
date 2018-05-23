@@ -20,12 +20,11 @@
 import {ConfigurationError} from "../error/ConfigurationError.js";
 import {ViewController} from "../ViewController.js";
 import {DEFAULT_SYSTEM_PLAYER} from "../Player.js";
-import {Die} from "../Die.js";
 
 /**
  * @module
  */
-
+const _scores = new WeakMap();
 
 /**
  * ScoreCard is a component to render the scores per player in a game.
@@ -35,15 +34,34 @@ import {Die} from "../Die.js";
 const ScoreCard = class extends ViewController {
 
     /**
-     * Create a new PlayingTable component.
+     * Create a new ScoreCard component.
      *
      * @param {Object} config - The initial configuration of the new ScoreCard
      */
     constructor({
         parent = null,
+        players = []
     } = {}) {
         super({parent});
         this.element.classList.add("score-card");
+
+        const playerScores = new Map();
+        for (const player of players) {
+            playerScores.set(player, new Map());
+        }
+        _scores.set(this, playerScores);
+        
+    }
+
+    get scores() {
+        return _scores.get(this);
+    }
+
+    get players() {
+        return Array.from(this.scores.keys());
+    }
+
+    total(player) {
     }
 
 };
