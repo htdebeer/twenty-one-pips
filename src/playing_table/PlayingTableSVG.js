@@ -234,7 +234,7 @@ const renderDie = (playingTableSVG, {die, player}) => {
 };
 
 const importTemplate = () => {
-    const parser = new DOMParser();
+    const parser = new window.DOMParser(); // Explicitly specified "window.DOMParser" to allow testing with jsdom
     const svgDocument = parser.parseFromString(template, "image/svg+xml");
     return document.importNode(svgDocument.documentElement, true);
 }
@@ -377,7 +377,7 @@ const PlayingTableSVG = class extends SVGElementWrapper {
 
         // Remove all rendered dice that are not to be rendered again
         for (const die of renderedDice.keys()) {
-            if (dice.includes(die)) {
+            if (!dice.includes(die)) {
                 const renderedDie = renderedDice.get(die);
                 renderedDie.element.parentElement.removeChild(renderedDie.element);
                 renderedDice.delete(die);

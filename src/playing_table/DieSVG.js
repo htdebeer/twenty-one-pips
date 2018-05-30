@@ -25,8 +25,6 @@ import {
 import {HOLD_DIE, RELEASE_DIE} from "../Die.js";
 import {DEFAULT_HOLD_DURATION, DEFAULT_DIE_SIZE, NATURAL_DIE_SIZE} from "./PlayingTable.js";
 
-//const CENTER = NATURAL_DIE_SIZE / 2;
-
 // Event handlers to react to a die model's events
 const HOLD_IT_HANDLER = (holdUse) => (_, player) => holdUse.setAttribute("fill", player.color);
 const RELEASE_IT_HANDLER = (holdUse) => () => holdUse.setAttribute("fill", "none");

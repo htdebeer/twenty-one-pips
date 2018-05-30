@@ -21,10 +21,13 @@ import {ConfigurationError} from "../error/ConfigurationError.js";
 import {ViewController} from "../ViewController.js";
 import {DEFAULT_SYSTEM_PLAYER} from "../Player.js";
 
+const SUM = dice => dice.reduce((sum, die) => sum += die.pips, 0);
+
 /**
  * @module
  */
 const _scores = new WeakMap();
+const _totals = new WeakMap();
 
 /**
  * ScoreCard is a component to render the scores per player in a game.
@@ -50,11 +53,16 @@ const ScoreCard = class extends ViewController {
             playerScores.set(player, new Map());
         }
         _scores.set(this, playerScores);
-        
+        _totals.set(this, new Map());
     }
 
+   
     get scores() {
         return _scores.get(this);
+    }
+
+    get totals() {
+        return _totals.get(this);
     }
 
     get players() {
@@ -63,6 +71,43 @@ const ScoreCard = class extends ViewController {
 
     total(player) {
     }
+
+    score({
+        player,
+        key,
+        dice,
+        scoring = SUM
+    }) {
+        const value = scoring.apply(this, dice);
+        this.scores.get(player).set(key, value);
+
+        // update totals
+
+
+        return value;
+    }
+
+    hasScore({
+        player,
+        key
+    }) {
+        return this.scores.get(player).has(key);
+    }
+
+    getScore({
+        player,
+        key
+    }) {
+        return this.scores.get(player).get(key);
+    }
+
+    getScores({
+        player
+    }) {
+        return this.scores.get(player);
+    }
+
+
 
 };
 
