@@ -8,31 +8,33 @@
                 border: 1px solid dimgray;
             }
         </style>
+        <script type="module"
+            src="../src/playing_table/PlayingTable.js"></script>
     </head>
     <body>
         <h1>Playing Table</h1>
         <button id="thrower" type="button">Throw dice!</button>
         <figure id="playing_table">
         </figure>
-        <script type="module">
-            import {PlayingTable} from "../src/playing_table/PlayingTable.js";
+        <twenty-one-pips-playing-table
+            width="400"
+            height="400"
+            die-size="50"
+            dispersion="5"
+            background="green"
+            rotate-dice="true"
+            draggable-dice="true"
+            holdable-dice="true"
+        ></twenty-one-pips-playing-table>
 
-            const table = new PlayingTable({
-                parent: document.getElementById("playing_table"),
-                width: 400,
-                height: 400,
-                dieSize: 50,
-                dispersion: 5,
-                background: "silver",
-                rotateDice: true,
-                draggableDice: true,
-                holdableDice: true
-            });
+        <script type="module">
+            const table = document.querySelector("twenty-one-pips-playing-table");
+            console.log("table: ", table);
 
             console.log(`The maximum number of dice is:
                 ${table.maximumNumberOfDice}.`);
 
-            table.throwDice({dice: 10});
+            table.throwDice({dice: 3});
 
             const throwButton = document.getElementById("thrower");
             throwButton.addEventListener("click", () => {

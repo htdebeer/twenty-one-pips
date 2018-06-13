@@ -24,7 +24,7 @@ import {EventAware} from "./EventAware.js";
  * @module
  */
 
-const _element = new WeakMap();
+const _shadow = new WeakMap();
 
 /**
  * Base class for view components.
@@ -33,7 +33,7 @@ const _element = new WeakMap();
  *
  * @mixes module:EventAware~EventAware
  */
-const ViewController = class extends EventAware(Base) {
+const ViewController = class extends EventAware(HTMLDivElement) {
 
     /**
      * Create a new ViewController.
@@ -43,24 +43,24 @@ const ViewController = class extends EventAware(Base) {
      * the newly created ViewController is a child of.
      */
     constructor({
-        parent = null
+        parent = null,
+        properties
     } = {}) {
         super();
-
-        _element.set(this, document.createElement("div"));
+        _shadow.set(this, this.attachShadow({mode: "open"}));
 
         if (null !== parent) {
-            parent.appendChild(this.element);
+            parent.appendChild(this);
         }
     }
 
     /**
-     * This ViewController's DIV element
+     * This ViewController's shadow dom
      *
-     * @return {HTMLDIVElement} This ViewController's DIV element.
+        * @return {ShadowRoot} This ViewController's shadow dowm.
      */
-    get element() {
-        return _element.get(this);
+    get shadow() {
+        return _shadow.get(this);
     }
 };
 

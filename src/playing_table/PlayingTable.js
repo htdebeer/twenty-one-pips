@@ -72,6 +72,39 @@ const makeDice = function (dice) {
     }
 };
 
+const createView = function (table) {
+    const width = table.hasAttribute("width") ? table.getAttribute("width") : DEFAULT_WIDTH;
+    const height = table.hasAttribute("height") ? table.getAttribute("height") : DEFAULT_HEIGHT;
+    const dieSize = table.hasAttribute("die-size") ? table.getAttribute("die-size") : DEFAULT_DIE_SIZE;
+    const rotate = table.hasAttribute("rotate-dice") ? table.getAttribute("rotate-dice") : true;
+    const dispersion = table.hasAttribute("dispersion") ? table.getAttribute("dispersion") : DEFAULT_DISPERSION;
+
+    _layout.set(table, new GridLayout({
+        width,
+        height,
+        dieSize,
+        rotate,
+        dispersion
+    }));
+
+    const background = table.hasAttribute("background") ? table.getAttribute("background") : DEFAULT_BACKGROUND;
+    const draggableDice = table.hasAttribute("draggable-dice") ? table.getAttribute("draggable-dice") : true;
+    const holdableDice = table.hasAttribute("holdable-dice") ? table.getAttribute("holdable-dice") : true;
+    const holdDuration = table.hasAttribute("hold-duration") ? table.getAttribute("hold-duration") : DEFAULT_HOLD_DURATION;
+
+    _view.set(table, new PlayingTableSVG({
+        parent: table.shadow,
+        width,
+        height,
+        layout: _layout.get(table),
+        dieSize,
+        background,
+        draggableDice,
+        holdableDice,
+        holdDuration
+    }));
+};
+
 /**
  * PlayingTable is a component to render and control a playing table with dice
  * thrown upon it.
@@ -105,6 +138,21 @@ const makeDice = function (dice) {
  * @extends module:ViewController~ViewController
  */
 const PlayingTable = class extends ViewController {
+
+    static get observedAttributes() {
+        return [
+            "width",
+            "height",
+            "background",
+            "die-size",
+            "rotate-dice",
+            "draggable-dice",
+            "holdable-dice",
+            "hold-duration",
+            "dispersion",
+            "dice"
+        ]; 
+    }
 
     /**
      * Create a new PlayingTable component.
@@ -151,32 +199,61 @@ const PlayingTable = class extends ViewController {
         dispersion = DEFAULT_DISPERSION,
     } = {}) {
         super({parent});
-        this.element.classList.add("playing-table");
 
         this.dice = dice;
-
-        _layout.set(this, new GridLayout({
-            width,
-            height,
-            dieSize,
-            rotate: rotateDice,
-            dispersion
-        }));
-
-        _view.set(this, new PlayingTableSVG({
-            parent: this.element,
-            width,
-            height,
-            layout: _layout.get(this),
-            dieSize,
-            background,
-            draggableDice,
-            holdableDice,
-            holdDuration
-        }));
-
     }
 
+    connectedCallback() {
+        if (undefined === _view.get(this)) {
+            createView(this);
+        }
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (undefined ===  _view.get(this)) {
+            createView(this);
+        }
+        switch (name) {
+            case "dice": {
+                const parsedNumber = parseInt(newValue, 10);
+                if (newValue.includes(",")) {
+                    this.dice = newValue.split(",").map(n => parseInt(n, 10));
+                } else if (Number.isInteger(parsedNumber)) {
+                    this.dice = parsedNumber;
+                }
+                break;
+            }
+            case "die-size": {
+                this.dieSize = parseInt(newValue, 10);
+                break;
+            }
+            case "hold-duration": {
+                this.holdDuration = parseInt(newValue, 10);
+                break;
+            }
+            case "width":
+            case "height":
+            case "dispersion": {
+                this[name] = parseInt(newValue, 10);
+                break;
+            }
+            case "rotate-dice": {
+                this.rotateDice = newValue;
+                break;
+            }
+            case "draggable-dice": {
+                this.draggableDice = newValue;
+                break;
+            }
+            case "holdable-dice": {
+                this.holdableDice = newValue;
+                break;
+            }
+            default: {
+                this[name] = newValue;
+            }
+        }
+    }
 
     /**
      * The dice on this PlayingTable. Note, to actually throw the dice use
@@ -290,6 +367,7 @@ const PlayingTable = class extends ViewController {
         return _view.get(this).holdableDice;
     }
     set holdableDice(d) {
+        console.log("is  aviw", _view.get(this), this);
         _view.get(this).holdableDice = d;
     }
 
@@ -362,6 +440,9 @@ const PlayingTable = class extends ViewController {
     }
 
 };
+
+// Register PlayingTable as a custom element.
+customElements.define("twenty-one-pips-playing-table", PlayingTable, {extends: "div"});
 
 export {
     PlayingTable,
