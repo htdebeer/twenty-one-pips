@@ -54,15 +54,10 @@ const DEFAULT_DISPERSION = 2;
 
 // Private properties
 const _layout = new WeakMap();
-const _dice = new WeakMap();
 const _svgRoot = new WeakMap();
+const _dice = new WeakMap();
 const _renderedDice = new WeakMap();
 const _dragHandler = new WeakMap();
-const _dieSize = new WeakMap();
-const _holdDuration = new WeakMap();
-const _holdableDice = new WeakMap();
-const _draggableDice = new WeakMap();
-const _background = new WeakMap();
 
 const makeDice = function (dice) {
     if (Number.isInteger(dice)) {
@@ -175,6 +170,7 @@ const renderDie = (playingTable, {die, player}) => {
     };
 
     const startInteraction = (event) => {
+        console.log(state);
         switch (state) {
         case NONE: {
             event.stopPropagation();
@@ -185,6 +181,7 @@ const renderDie = (playingTable, {die, player}) => {
         }
         default: // ignore other states
         }
+        console.log(state, origin);
     };
 
     const showInteraction = () => {
@@ -205,12 +202,13 @@ const renderDie = (playingTable, {die, player}) => {
 
     const minDelta = 3; //px
     const move = (event) => {
+        console.log(state);
         switch (state) {
         case INDETERMINED: {
             // Ignore small movements, otherwise move to MOVE state
             const dx = Math.abs(origin.x - event.clientX);
             const dy = Math.abs(origin.y - event.clientY);
-            console.log(playingTable.draggableDice, true === playingTable.draggableDice);
+            console.log(dx, dy, playingTable.draggableDice, true === playingTable.draggableDice);
             if (playingTable.draggableDice && minDelta < dx || minDelta < dy) {
                 event.stopPropagation();
                 state = DRAGGING;
@@ -225,9 +223,11 @@ const renderDie = (playingTable, {die, player}) => {
         }
         default: // ignore other states
         }
+        console.log(state);
     };
 
     const stopInteraction = (event) => {
+        console.log(state);
         switch(state) {
         case INDETERMINED: {
             // click
@@ -256,6 +256,7 @@ const renderDie = (playingTable, {die, player}) => {
         default: // ignore other states
         }
         state = NONE;
+        console.log(state);
     };
 
     dieSVG.element.addEventListener("mousedown", startInteraction);

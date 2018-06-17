@@ -22,9 +22,11 @@
             die-size="50"
             dispersion="5"
             background="green"
-            draggable-dice="true"
-            holdable-dice="true"
-        ></top-playing-table>
+            draggable-dice
+            holdable-dice
+        >
+            <top-die pips="4" />
+        </top-playing-table>
 
         <script type="module">
             const table = document.querySelector("top-playing-table");
