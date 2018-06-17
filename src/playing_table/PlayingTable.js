@@ -17,10 +17,16 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
+import {
+    SVGNS,
+    XLINKNS,
+    SVGElementWrapper
+} from "../SVGElementWrapper.js";
+import template from "./dice_svg_template.js";
+import {DieSVG} from "./DieSVG.js";
 import {ConfigurationError} from "../error/ConfigurationError.js";
 import {ViewController} from "../ViewController.js";
 import {GridLayout} from "./GridLayout.js";
-import {PlayingTableSVG} from "./PlayingTableSVG.js";
 import {DEFAULT_SYSTEM_PLAYER} from "../Player.js";
 import {Die} from "../Die.js";
 
@@ -39,6 +45,9 @@ const NATURAL_DIE_SIZE = 145; // px
 const DEFAULT_DIE_SIZE = NATURAL_DIE_SIZE; // px
 const DEFAULT_HOLD_DURATION = 375; // ms
 const DEFAULT_BACKGROUND = "#FFFFAA";
+const DEFAULT_ROTATE_DICE = true;
+const DEFAULT_DRAGGABLE_DICE = true;
+const DEFAULT_HOLDABLE_DICE = true;
 
 const ROWS = 10;
 const COLS = 10;
@@ -51,6 +60,14 @@ const DEFAULT_DISPERSION = 2;
 const _view = new WeakMap();
 const _layout = new WeakMap();
 const _dice = new WeakMap();
+const _svgRoot = new WeakMap();
+const _renderedDice = new WeakMap();
+const _dragHandler = new WeakMap();
+const _dieSize = new WeakMap();
+const _holdDuration = new WeakMap();
+const _holdableDice = new WeakMap();
+const _draggableDice = new WeakMap();
+const _background = new WeakMap();
 
 const makeDice = function (dice) {
     if (Number.isInteger(dice)) {
@@ -72,68 +89,215 @@ const makeDice = function (dice) {
     }
 };
 
-const createView = function (table) {
-    const width = table.hasAttribute("width") ? table.getAttribute("width") : DEFAULT_WIDTH;
-    const height = table.hasAttribute("height") ? table.getAttribute("height") : DEFAULT_HEIGHT;
-    const dieSize = table.hasAttribute("die-size") ? table.getAttribute("die-size") : DEFAULT_DIE_SIZE;
-    const rotate = table.hasAttribute("rotate-dice") ? table.getAttribute("rotate-dice") : true;
-    const dispersion = table.hasAttribute("dispersion") ? table.getAttribute("dispersion") : DEFAULT_DISPERSION;
+// Interaction states
+const NONE = Symbol("no_interaction");
+const INDETERMINED = Symbol("indetermined");
+const DRAGGING = Symbol("dragging");
 
-    _layout.set(table, new GridLayout({
-        width,
-        height,
-        dieSize,
-        rotate,
-        dispersion
-    }));
+// Methods to handle interaction
 
-    const background = table.hasAttribute("background") ? table.getAttribute("background") : DEFAULT_BACKGROUND;
-    const draggableDice = table.hasAttribute("draggable-dice") ? table.getAttribute("draggable-dice") : true;
-    const holdableDice = table.hasAttribute("holdable-dice") ? table.getAttribute("holdable-dice") : true;
-    const holdDuration = table.hasAttribute("hold-duration") ? table.getAttribute("hold-duration") : DEFAULT_HOLD_DURATION;
+let offset = {};
+const startDragging = (playingTable, event, dieElement) => {
+    let point = playingTable.svgRoot.createSVGPoint();
+    point.x = event.clientX - document.body.scrollLeft;
+    point.y = event.clientY - document.body.scrollTop;
+    point = point.matrixTransform(dieElement.getScreenCTM().inverse());
 
-    _view.set(table, new PlayingTableSVG({
-        parent: table.shadow,
-        width,
-        height,
-        layout: _layout.get(table),
-        dieSize,
-        background,
-        draggableDice,
-        holdableDice,
-        holdDuration
-    }));
+    offset = {
+        x: point.x,
+        y: point.y
+    };
+
+    const transform = dieElement.ownerSVGElement.createSVGTransform();
+    const transformList = dieElement.transform.baseVal;
+
+    _dragHandler.set(playingTable, (event) => {
+        // Move dieElement to the top of the SVG so it moves over the other dice
+        // rather than below them. 
+        playingTable.svgRoot.removeChild(dieElement);
+        playingTable.svgRoot.appendChild(dieElement);
+
+        // Get a point in svgport coordinates
+        point = playingTable.svgRoot.createSVGPoint();
+        point.x = event.clientX - document.body.scrollLeft;
+        point.y = event.clientY - document.body.scrollTop;
+
+        // Transform them to user coordinates
+        point = point.matrixTransform(dieElement.getScreenCTM().inverse());
+
+        // Keep track of the offset so the dieElement that is being dragged stays
+        // under the cursor rather than having a jerk after starting dragging.
+        point.x -= offset.x;
+        point.y -= offset.y;
+
+        // Setup the transformation
+        transform.setTranslate(point.x, point.y);
+        transformList.appendItem(transform);
+        transformList.consolidate();
+    });
+
+    playingTable.svgRoot.addEventListener("mousemove", _dragHandler.get(playingTable));
 };
+
+const stopDragging = (playingTable) => {
+    playingTable.svgRoot.removeEventListener("mousemove", _dragHandler.get(playingTable));
+};
+
+const renderDie = (playingTable, {die, player}) => {
+    const dieSVG = new DieSVG(die);
+
+    // Setup interaction
+    let state = NONE;
+    let origin = {};
+    let holdTimeout = null;
+
+    const holdDie = () => {
+        switch (state) {
+        case INDETERMINED: {
+            if (playingTable.holdableDice) {
+                // toggle hold / release
+                if (die.isHeld()) {
+                    die.releaseIt(player);
+                } else {
+                    die.holdIt(player);
+                }
+                state = NONE;
+            }
+            break;
+        }
+        default: // ignore other states
+        }
+        holdTimeout = null;
+    };
+
+    const startHolding = () => {
+        holdTimeout = window.setTimeout(holdDie, playingTable.holdDuration);
+    };
+
+    const stopHolding = () => {
+        window.clearTimeout(holdTimeout);
+        holdTimeout = null;
+    };
+
+    const startInteraction = (event) => {
+        switch (state) {
+        case NONE: {
+            event.stopPropagation();
+            startHolding();
+            origin = {x: event.clientX, y: event.clientY};
+            state = INDETERMINED;
+            break;
+        }
+        default: // ignore other states
+        }
+    };
+
+    const showInteraction = () => {
+        dieSVG.element.setAttribute("cursor", "grab");
+    };
+
+    const hideInteraction = () => {
+        dieSVG.element.setAttribute("cursor", "default");
+    };
+
+    /*
+    const click = (event) => {
+        if (INDETERMINED === state) {
+            // do the click
+        }
+    };
+    */
+
+    const minDelta = 3; //px
+    const move = (event) => {
+        switch (state) {
+        case INDETERMINED: {
+            // Ignore small movements, otherwise move to MOVE state
+            const dx = Math.abs(origin.x - event.clientX);
+            const dy = Math.abs(origin.y - event.clientY);
+            if (playingTable.draggableDice && minDelta < dx || minDelta < dy) {
+                event.stopPropagation();
+                state = DRAGGING;
+                dieSVG.element.setAttribute("cursor", "grabbing");
+                startDragging(playingTable, event, dieSVG.element, die);
+            }
+            break;
+        }
+        case DRAGGING: {
+            stopHolding();
+            break;
+        }
+        default: // ignore other states
+        }
+    };
+
+    const stopInteraction = (event) => {
+        switch(state) {
+        case INDETERMINED: {
+            // click
+            break;
+        }
+        case DRAGGING: {
+            const dx = origin.x - event.clientX;
+            const dy = origin.y - event.clientY;
+
+            const {x, y} = die.coordinates;
+            const snapToCoords = _layout.get(playingTable).snapTo({
+                die,
+                x: x - dx,
+                y: y - dy,
+            });
+
+            const newCoords = null != snapToCoords ? snapToCoords : {x, y};
+
+            die.coordinates = newCoords;
+            const scale = playingTable.dieSize / NATURAL_DIE_SIZE;
+            dieSVG.element.setAttribute("transform", `translate(${newCoords.x},${newCoords.y})scale(${scale})`);
+
+            stopDragging(playingTable);
+            break;
+        }
+        default: // ignore other states
+        }
+        state = NONE;
+    };
+
+    dieSVG.element.addEventListener("mousedown", startInteraction);
+    dieSVG.element.addEventListener("touchstart", startInteraction);
+
+    if (playingTable.draggableDice) {
+        dieSVG.element.addEventListener("mousemove", move);
+        dieSVG.element.addEventListener("touchmove", move);
+    }
+
+    if (playingTable.draggableDice || playingTable.holdableDice) {
+        dieSVG.element.addEventListener("mouseover", showInteraction);
+        dieSVG.element.addEventListener("mouseout", hideInteraction);
+    }
+
+    dieSVG.element.addEventListener("mouseup", stopInteraction);
+    dieSVG.element.addEventListener("touchend", stopInteraction);
+
+    return dieSVG;
+};
+
+// Apparently, SVG definitions in a shadow DOM do not work (see
+// https://github.com/w3c/webcomponents/issues/179). As a workaround, the SVG
+// with the dice definitions is put on the BODY. As this SVG with definitions
+// only contains definitions, nothing is shown on the screen. However, to make
+// sure, it is hidden anyway.
+const setupDiceSVG = () => {
+    if (null === document.querySelector("svg.twenty-one-pips-dice")) {
+        const parser = new window.DOMParser(); // Explicitly specified "window.DOMParser" to allow testing with jsdom
+        const svgDocument = parser.parseFromString(template, "image/svg+xml");
+        const diceSVG = document.body.appendChild(document.importNode(svgDocument.documentElement, true));
+        diceSVG.style.display = "none";
+    }
+}
 
 /**
  * PlayingTable is a component to render and control a playing table with dice
  * thrown upon it.
- *
- * @property {HTMLElement|null} [parent = null] - The parent HTML DOM element this PlayingTable is a child of.
- * @property {module:Die~Die[]|Number} [dice = []] - The dice to show in this
- * PlayingTable. If dice is a positive number, create that many dice.
- * @property {Number} [minimalNumberOfDice = DEFAULT_MINIMAL_NUMBER_OF_DICE]
- * - The minimal number of dice that can be shown in this PlayingTable.
- * @property {String} [background = DEFAULT_BACKGROUND] - This PlayingTable's
- * background color.
- * @property {Number} [width = DEFAULT_WIDTH] - This PlayingTable's width,
- * width > 0.
- * @property {Number} [height = DEFAULT_HEIGHT] - This PlayingTable's
- * height, height > 0.
- * @property {Number} [dieSize = DEFAULT_DIE_SIZE] - The size of dice
- * on this PlayingTable, size > 0.
- * @property {Boolean} [rotateDice = true] - Should dice be rotated
- * when thrown on this PlayingTable?
- * @property {Boolean} [draggableDice = true] - Can dice be dragged
- * around on this PlayingTable?
- * @property {Boolean} [holdableDice = true] - Can dice be held by a
- * Player on this PlayingTable?
- * @property {Number} [holdDuration = DEFAULT_HOLD_DURATION] - The
- * duration a Player needs to press the mouse curson on a die to mark a
- * Die as being held by her.
- * @property {Number} [dispersion = DEFAULT_DISPERSION] - The
- * dispersion level, wich implies the possible distance of a Die from the center of
- * this PlayingTable.
  *
  * @extends module:ViewController~ViewController
  */
@@ -157,62 +321,23 @@ const PlayingTable = class extends ViewController {
     /**
      * Create a new PlayingTable component.
      *
-     * @param {Object} config - The initial configuration of the new
-     * PlayingTable.
-     * @param {HTMLElement|null} [config.parent = null] - The parent HTML DOM element this PlayingTable is a child of.
-     * @param {module:Die~Die[]|Number} [config.dice = []] - The dice to show in this
-     * PlayingTable. If dice is a positive number, create that many dice.
-     * @param {Number} [config.minimalNumberOfDice = DEFAULT_MINIMAL_NUMBER_OF_DICE]
-     * - The minimal number of dice that can be shown in this PlayingTable.
-     * @param {String} [config.background = DEFAULT_BACKGROUND] - This PlayingTable's
-     * background color.
-     * @param {Number} [config.width = DEFAULT_WIDTH] - This PlayingTable's width,
-     * width > 0.
-     * @param {Number} [config.height = DEFAULT_HEIGHT] - This PlayingTable's
-     * height, height > 0.
-     * @param {Number} [config.dieSize = DEFAULT_DIE_SIZE] - The size of dice
-     * on this PlayingTable, size > 0.
-     * @param {Boolean} [config.rotateDice = true] - Should dice be rotated
-     * when thrown on this PlayingTable?
-     * @param {Boolean} [config.draggableDice = true] - Can dice be dragged
-     * around on this PlayingTable?
-     * @param {Boolean} [config.holdableDice = true] - Can dice be held by a
-     * Player on this PlayingTable?
-     * @param {Number} [config.holdDuration = DEFAULT_HOLD_DURATION] - The
-     * duration a Player needs to press the mouse curson on a die to mark a
-     * Die as being held by her.
-     * @param {Number} [config.dispersion = DEFAULT_DISPERSION] - The
-     * dispersion level, wich implies the possible distance of a Die from the center of
-     * this PlayingTable.
      */
-    constructor({
-        parent = null,
-        dice = [],
-        background = DEFAULT_BACKGROUND,
-        width = DEFAULT_WIDTH,
-        height = DEFAULT_HEIGHT,
-        dieSize = DEFAULT_DIE_SIZE,
-        rotateDice = true,
-        draggableDice = true,
-        holdableDice = true,
-        holdDuration = DEFAULT_HOLD_DURATION,
-        dispersion = DEFAULT_DISPERSION,
-    } = {}) {
-        super({parent});
-
-        this.dice = dice;
-    }
-
-    connectedCallback() {
-        if (undefined === _view.get(this)) {
-            createView(this);
-        }
+    constructor() {
+        super();
+        setupDiceSVG();
+        this.shadow.appendChild(document.createElementNS(SVGNS, "svg"));
+        _dice.set(this, []);
+        _renderedDice.set(this, new Map());
+        _layout.set(this, new GridLayout({
+            width: this.width,
+            height: this.height,
+            dieSize: this.dieSize,
+            rotate: this.rotateDice,
+            dispersion: this.dispersion
+        }));
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
-        if (undefined ===  _view.get(this)) {
-            createView(this);
-        }
         switch (name) {
             case "dice": {
                 const parsedNumber = parseInt(newValue, 10);
@@ -224,35 +349,37 @@ const PlayingTable = class extends ViewController {
                 break;
             }
             case "die-size": {
-                this.dieSize = parseInt(newValue, 10);
+                _layout.get(this).dieSize = newValue;
+                DieSVG.size = newValue;
                 break;
             }
-            case "hold-duration": {
-                this.holdDuration = parseInt(newValue, 10);
+            case "width": {
+                _layout.get(this).width = newValue;
+                this.svgRoot.setAttribute("width", newValue);
                 break;
             }
-            case "width":
-            case "height":
+            case "height": {
+                _layout.get(this).height = newValue;
+                this.svgRoot.setAttribute("height", newValue);
+                break;
+            }
             case "dispersion": {
-                this[name] = parseInt(newValue, 10);
+                _layout.get(this).dispersion = newValue;
                 break;
             }
             case "rotate-dice": {
-                this.rotateDice = newValue;
+                _layout.get(this).rotate = newValue;
                 break;
             }
-            case "draggable-dice": {
-                this.draggableDice = newValue;
+            case "background": {
+                this.svgRoot.style.background = newValue;
                 break;
-            }
-            case "holdable-dice": {
-                this.holdableDice = newValue;
-                break;
-            }
-            default: {
-                this[name] = newValue;
             }
         }
+    }
+    
+    get svgRoot() {
+        return this.shadow.querySelector("svg");
     }
 
     /**
@@ -284,11 +411,7 @@ const PlayingTable = class extends ViewController {
      * @type {Number}
      */
     get width() {
-        return _layout.get(this).width;
-    }
-    set width(w) {
-        _view.get(this).width = w;
-        _layout.get(this).width = w;
+        return this.hasAttribute("width") ? this.getAttribute("width") : DEFAULT_WIDTH;
     }
 
     /**
@@ -296,11 +419,7 @@ const PlayingTable = class extends ViewController {
      * @type {Number}
      */
     get height() {
-        return _layout.get(this).height;
-    }
-    set height(h) {
-        _view.get(this).height = h;
-        _layout.get(this).height = h;
+        return this.hasAttribute("height") ? this.getAttribute("height") : DEFAULT_HEIGHT;
     }
 
     /**
@@ -308,10 +427,7 @@ const PlayingTable = class extends ViewController {
      * @type {Number}
      */
     get dispersion() {
-        return _layout.get(this).dispersion;
-    }
-    set dispersion(d) {
-        _layout.get(this).dispersion = d;
+        return this.hasAttribute("dispersion") ? this.getAttribute("dispersion") : DEFAULT_DISPERSION;
     }
 
     /**
@@ -319,10 +435,7 @@ const PlayingTable = class extends ViewController {
      * @type {String}
      */
     get background() {
-        return _view.get(this).background;
-    }
-    set background(b) {
-        _view.get(this).background = b;
+        return this.hasAttribute("background") ? this.getAttribute("background") : DEFAULT_BACKGROUND;
     }
 
     /**
@@ -331,10 +444,7 @@ const PlayingTable = class extends ViewController {
      * @type {Number}
      */
     get dieSize() {
-        return _layout.get(this).dieSize;
-    }
-    set dieSize(ds) {
-        _layout.get(this).dieSize = ds;
+        return this.hasAttribute("die-size") ? this.getAttribute("die-size") : DEFAULT_DIE_SIZE;
     }
 
     /**
@@ -342,10 +452,7 @@ const PlayingTable = class extends ViewController {
      * @type {Boolean}
      */
     get rotateDice() {
-        return _layout.get(this).rotate;
-    }
-    set rotateDice(r) {
-        _layout.get(this).rotate = r;
+        return this.hasAttribute("rotate-dice") ? this.getAttribute("rotate-dice") : DEFAULT_ROTATE_DICE;
     }
 
     /**
@@ -353,10 +460,7 @@ const PlayingTable = class extends ViewController {
      * @type {Boolean}
      */
     get draggableDice() {
-        return _view.get(this).draggableDice;
-    }
-    set draggableDice(d) {
-        _view.set(this).draggableDice = d;
+        return this.hasAttribute("draggable-dice") ? this.getAttribute("draggable-dice") : DEFAULT_DRAGGABLE_DICE;
     }
 
     /**
@@ -364,11 +468,7 @@ const PlayingTable = class extends ViewController {
      * @type {Boolean}
      */
     get holdableDice() {
-        return _view.get(this).holdableDice;
-    }
-    set holdableDice(d) {
-        console.log("is  aviw", _view.get(this), this);
-        _view.get(this).holdableDice = d;
+        return this.hasAttribute("holdable-dice") ? this.getAttribute("holdable-dice") : DEFAULT_HOLDABLE_DICE;
     }
 
     /**
@@ -379,10 +479,39 @@ const PlayingTable = class extends ViewController {
      * @type {Number}
      */
     get holdDuration() {
-        return _view.get(this).holdDuration;
+        return this.hasAttribute("hold-duration") ? this.getAttribute("hold-duration") : DEFAULT_HOLD_DURATION;
     }
-    set holdDuration(h) {
-        _view.get(this).holdDuration = h;
+
+    /**
+     * Render dice for this player.
+     *
+     * @param {module:Die~Die[]} dice - The dice to render in this svg.
+     * @param {module:Player~Player} player - The player for which this svg
+     * is rendered.
+     */
+    renderDice({dice, player}) {
+        const renderedDice = _renderedDice.get(this);
+
+        // Remove all rendered dice that are not to be rendered again
+        for (const die of renderedDice.keys()) {
+            if (!dice.includes(die)) {
+                const renderedDie = renderedDice.get(die);
+                renderedDie.element.parentElement.removeChild(renderedDie.element);
+                renderedDice.delete(die);
+            }
+        }
+
+        _layout.get(this)
+            .layout(dice)
+            .forEach(die => {
+                if (!renderedDice.has(die)) {
+                    const renderedDie = renderDie(this, {die, player});
+                    this.svgRoot.appendChild(renderedDie.element);
+                    renderedDice.set(die, renderedDie);
+                }
+
+                renderedDice.get(die).render();
+            });
     }
 
     /**
@@ -407,7 +536,7 @@ const PlayingTable = class extends ViewController {
             this.dice = dice;
         }
         this.dice.forEach(die => die.throwIt());
-        _view.get(this).renderDice({dice: this.dice, player});
+        this.renderDice({dice: this.dice, player});
         return this.dice;
     }
 
@@ -435,14 +564,14 @@ const PlayingTable = class extends ViewController {
         if (null !== dice) {
             this.dice = dice;
         }
-        _view.get(this).renderDice({dice: this.dice, player});
+        this.renderDice({dice: this.dice, player});
         return this.dice;
     }
 
 };
 
 // Register PlayingTable as a custom element.
-customElements.define("twenty-one-pips-playing-table", PlayingTable, {extends: "div"});
+customElements.define("top-playing-table", PlayingTable, {extends: "div"});
 
 export {
     PlayingTable,
@@ -452,5 +581,8 @@ export {
     DEFAULT_BACKGROUND,
     DEFAULT_WIDTH,
     DEFAULT_HEIGHT,
-    DEFAULT_DISPERSION
+    DEFAULT_DISPERSION,
+    DEFAULT_ROTATE_DICE,
+    DEFAULT_HOLDABLE_DICE,
+    DEFAULT_DRAGGABLE_DICE
 };

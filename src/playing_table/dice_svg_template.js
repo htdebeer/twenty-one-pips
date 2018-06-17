@@ -1,4 +1,4 @@
-export default `<?xml version="1.0" standalone="yes"?> <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="1000">
+export default `<?xml version="1.0" standalone="yes"?> <svg class="twenty-one-pips-dice" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="1000">
   <defs>
     <symbol id="die-shape" overflow="visible">
       <rect x="1.5" y="1.5" rx="10" ry="10" width="100" height="100"

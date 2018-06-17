@@ -16,7 +16,7 @@
         <button id="thrower" type="button">Throw dice!</button>
         <figure id="playing_table">
         </figure>
-        <twenty-one-pips-playing-table
+        <top-playing-table
             width="400"
             height="400"
             die-size="50"
@@ -25,12 +25,10 @@
             rotate-dice="true"
             draggable-dice="true"
             holdable-dice="true"
-        ></twenty-one-pips-playing-table>
+        ></top-playing-table>
 
         <script type="module">
-            const table = document.querySelector("twenty-one-pips-playing-table");
-            console.log("table: ", table);
-
+            const table = document.querySelector("top-playing-table");
             console.log(`The maximum number of dice is:
                 ${table.maximumNumberOfDice}.`);
 
@@ -41,7 +39,6 @@
                 table.throwDice();
                 console.log(table.dice.reduce((sum, die) => sum + die.pips, 0));
             });
-
 
         </script>
     </body>
