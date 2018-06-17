@@ -23,15 +23,20 @@
  */
 
 /**
- * Base class.
+ * The SVG namespace.
+ *
+ * @type {String}
  */
-const Base = class {
+const SVGNS = "http://www.w3.org/2000/svg";
 
-    /**
-     * Create a new Base.
-     */
-    constructor() {
-    }
+/**
+ * The xlink namespace.
+ *
+ * @type {String}
+ */
+const XLINKNS = "http://www.w3.org/1999/xlink";
+
+export {
+    SVGNS,
+    XLINKNS
 };
-
-export {Base};

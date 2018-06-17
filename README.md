@@ -24,7 +24,13 @@ plan to build the following components as well:
 - Dialog to interact with the user
 - DiceGameController to control the game
 
+# Observations
 
-Apparently, it looks like using elements from within a shadow dom is
-[problematic](https://github.com/w3c/webcomponents/issues/179). As a
-workaround, the SVG definitions are pulled outside the component.
+- Apparently, it looks like using elements from within a shadow dom is
+  [problematic](https://github.com/w3c/webcomponents/issues/179). As a
+  workaround, the SVG definitions are pulled outside the component.
+- The behavior of creating Custom Components on Chrome and Firefox is slightly
+  different. The current code does not seem to run on Chrome.
+- Somehow Firefox freezes when I am interacting with dice. It looks like the
+  issues with SVG in the shadow dom are even worse.
+

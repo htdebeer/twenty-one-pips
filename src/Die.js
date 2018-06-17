@@ -17,7 +17,6 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-
 import {Model} from "./Model.js";
 import {ConfigurationError} from "./error/ConfigurationError.js";
 

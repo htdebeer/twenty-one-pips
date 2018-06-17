@@ -17,11 +17,7 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-import {
-    SVGNS,
-    XLINKNS,
-    SVGElementWrapper
-} from "../SVGElementWrapper.js";
+import { SVGNS, XLINKNS } from "./svg.js";
 import template from "./dice_svg_template.js";
 import {DieSVG} from "./DieSVG.js";
 import {ConfigurationError} from "../error/ConfigurationError.js";
@@ -88,7 +84,7 @@ const DRAGGING = Symbol("dragging");
 
 let offset = {};
 const startDragging = (playingTable, event, dieElement) => {
-    let point = playingTable.svgRoot.createSVGPoint();
+    let point = _svgRoot.get(playingTable).createSVGPoint();
     point.x = event.clientX - document.body.scrollLeft;
     point.y = event.clientY - document.body.scrollTop;
     point = point.matrixTransform(dieElement.getScreenCTM().inverse());
@@ -104,11 +100,11 @@ const startDragging = (playingTable, event, dieElement) => {
     _dragHandler.set(playingTable, (event) => {
         // Move dieElement to the top of the SVG so it moves over the other dice
         // rather than below them. 
-        playingTable.svgRoot.removeChild(dieElement);
-        playingTable.svgRoot.appendChild(dieElement);
+        _svgRoot.get(playingTable).removeChild(dieElement);
+        _svgRoot.get(playingTable).appendChild(dieElement);
 
         // Get a point in svgport coordinates
-        point = playingTable.svgRoot.createSVGPoint();
+        point = _svgRoot.get(playingTable).createSVGPoint();
         point.x = event.clientX - document.body.scrollLeft;
         point.y = event.clientY - document.body.scrollTop;
 
@@ -126,11 +122,11 @@ const startDragging = (playingTable, event, dieElement) => {
         transformList.consolidate();
     });
 
-    playingTable.svgRoot.addEventListener("mousemove", _dragHandler.get(playingTable));
+    _svgRoot.get(playingTable).addEventListener("mousemove", _dragHandler.get(playingTable));
 };
 
 const stopDragging = (playingTable) => {
-    playingTable.svgRoot.removeEventListener("mousemove", _dragHandler.get(playingTable));
+    _svgRoot.get(playingTable).removeEventListener("mousemove", _dragHandler.get(playingTable));
 };
 
 const renderDie = (playingTable, {die, player}) => {
@@ -170,7 +166,6 @@ const renderDie = (playingTable, {die, player}) => {
     };
 
     const startInteraction = (event) => {
-        console.log(state);
         switch (state) {
         case NONE: {
             event.stopPropagation();
@@ -181,7 +176,6 @@ const renderDie = (playingTable, {die, player}) => {
         }
         default: // ignore other states
         }
-        console.log(state, origin);
     };
 
     const showInteraction = () => {
@@ -202,13 +196,11 @@ const renderDie = (playingTable, {die, player}) => {
 
     const minDelta = 3; //px
     const move = (event) => {
-        console.log(state);
         switch (state) {
         case INDETERMINED: {
             // Ignore small movements, otherwise move to MOVE state
             const dx = Math.abs(origin.x - event.clientX);
             const dy = Math.abs(origin.y - event.clientY);
-            console.log(dx, dy, playingTable.draggableDice, true === playingTable.draggableDice);
             if (playingTable.draggableDice && minDelta < dx || minDelta < dy) {
                 event.stopPropagation();
                 state = DRAGGING;
@@ -223,11 +215,9 @@ const renderDie = (playingTable, {die, player}) => {
         }
         default: // ignore other states
         }
-        console.log(state);
     };
 
     const stopInteraction = (event) => {
-        console.log(state);
         switch(state) {
         case INDETERMINED: {
             // click
@@ -256,7 +246,6 @@ const renderDie = (playingTable, {die, player}) => {
         default: // ignore other states
         }
         state = NONE;
-        console.log(state);
     };
 
     dieSVG.element.addEventListener("mousedown", startInteraction);
@@ -352,12 +341,12 @@ const PlayingTable = class extends HTMLDivElement {
             }
             case "width": {
                 _layout.get(this).width = newValue;
-                this.svgRoot.setAttribute("width", newValue);
+                _svgRoot.get(this).setAttribute("width", newValue);
                 break;
             }
             case "height": {
                 _layout.get(this).height = newValue;
-                this.svgRoot.setAttribute("height", newValue);
+                _svgRoot.get(this).setAttribute("height", newValue);
                 break;
             }
             case "dispersion": {
@@ -365,16 +354,12 @@ const PlayingTable = class extends HTMLDivElement {
                 break;
             }
             case "background": {
-                this.svgRoot.style.background = newValue;
+                _svgRoot.get(this).style.background = newValue;
                 break;
             }
         }
     }
     
-    get svgRoot() {
-        return _svgRoot.get(this);
-    }
-
     /**
      * The dice on this PlayingTable. Note, to actually throw the dice use
      * @see{throwDice}. 
@@ -464,7 +449,7 @@ const PlayingTable = class extends HTMLDivElement {
      * @type {Number}
      */
     get holdDuration() {
-        return this.hasAttribute("hold-duration");
+        return this.hasAttribute("hold-duration") ? this.getAttribute("hold-duration") : DEFAULT_HOLD_DURATION;
     }
 
     /**
@@ -491,7 +476,7 @@ const PlayingTable = class extends HTMLDivElement {
             .forEach(die => {
                 if (!renderedDice.has(die)) {
                     const renderedDie = renderDie(this, {die, player});
-                    this.svgRoot.appendChild(renderedDie.element);
+                    _svgRoot.get(this).appendChild(renderedDie.element);
                     renderedDice.set(die, renderedDie);
                 }
 

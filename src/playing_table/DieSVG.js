@@ -20,14 +20,14 @@
 import {
     SVGNS,
     XLINKNS,
-    SVGElementWrapper
-} from "../SVGElementWrapper.js";
+} from "./svg.js";
 import {DEFAULT_HOLD_DURATION, DEFAULT_DIE_SIZE, NATURAL_DIE_SIZE} from "./PlayingTable.js";
 
 // Event handlers to react to a die model's events
 const HOLD_IT_HANDLER = (holdUse) => (event) => holdUse.setAttribute("fill", event.detail.player.color);
 const RELEASE_IT_HANDLER = (holdUse) => () => holdUse.setAttribute("fill", "none");
 
+const _element = new WeakMap();
 const _die = new WeakMap();
 const _holdElement = new WeakMap();
 const _dieElement = new WeakMap();
@@ -35,14 +35,14 @@ const _dieElement = new WeakMap();
 /**
  * A view of a Die
  */
-const DieSVG = class extends SVGElementWrapper {
+const DieSVG = class {
     /**
      * Create a new DieSVG for a Die
      *
      * @param {Die} die - The Die to create a DieSVG for.
      */
     constructor(die) {
-        super(document.createElementNS(SVGNS, "g"));
+        _element.set(this, document.createElementNS(SVGNS, "g"));
         this.element.classList.add("die");
 
         const holdUse = document.createElementNS(SVGNS, "use");
@@ -60,6 +60,10 @@ const DieSVG = class extends SVGElementWrapper {
 
         this.die.removeEventListener("release-die", RELEASE_IT_HANDLER);
         this.die.addEventListener("release-die", RELEASE_IT_HANDLER(_holdElement.get(this)));
+    }
+
+    get element() {
+        return _element.get(this);
     }
 
     /**
