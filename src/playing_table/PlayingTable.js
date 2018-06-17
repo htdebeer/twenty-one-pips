@@ -25,7 +25,6 @@ import {
 import template from "./dice_svg_template.js";
 import {DieSVG} from "./DieSVG.js";
 import {ConfigurationError} from "../error/ConfigurationError.js";
-import {ViewController} from "../ViewController.js";
 import {GridLayout} from "./GridLayout.js";
 import {DEFAULT_SYSTEM_PLAYER} from "../Player.js";
 import {Die} from "../Die.js";
@@ -45,9 +44,6 @@ const NATURAL_DIE_SIZE = 145; // px
 const DEFAULT_DIE_SIZE = NATURAL_DIE_SIZE; // px
 const DEFAULT_HOLD_DURATION = 375; // ms
 const DEFAULT_BACKGROUND = "#FFFFAA";
-const DEFAULT_ROTATE_DICE = true;
-const DEFAULT_DRAGGABLE_DICE = true;
-const DEFAULT_HOLDABLE_DICE = true;
 
 const ROWS = 10;
 const COLS = 10;
@@ -57,7 +53,6 @@ const DEFAULT_HEIGHT = ROWS * DEFAULT_DIE_SIZE; // px
 const DEFAULT_DISPERSION = 2;
 
 // Private properties
-const _view = new WeakMap();
 const _layout = new WeakMap();
 const _dice = new WeakMap();
 const _svgRoot = new WeakMap();
@@ -215,6 +210,7 @@ const renderDie = (playingTable, {die, player}) => {
             // Ignore small movements, otherwise move to MOVE state
             const dx = Math.abs(origin.x - event.clientX);
             const dy = Math.abs(origin.y - event.clientY);
+            console.log(playingTable.draggableDice, true === playingTable.draggableDice);
             if (playingTable.draggableDice && minDelta < dx || minDelta < dy) {
                 event.stopPropagation();
                 state = DRAGGING;
@@ -298,10 +294,8 @@ const setupDiceSVG = () => {
 /**
  * PlayingTable is a component to render and control a playing table with dice
  * thrown upon it.
- *
- * @extends module:ViewController~ViewController
  */
-const PlayingTable = class extends ViewController {
+const PlayingTable = class extends HTMLDivElement {
 
     static get observedAttributes() {
         return [
@@ -309,7 +303,6 @@ const PlayingTable = class extends ViewController {
             "height",
             "background",
             "die-size",
-            "rotate-dice",
             "draggable-dice",
             "holdable-dice",
             "hold-duration",
@@ -324,15 +317,18 @@ const PlayingTable = class extends ViewController {
      */
     constructor() {
         super();
+
         setupDiceSVG();
-        this.shadow.appendChild(document.createElementNS(SVGNS, "svg"));
+
+        const shadow = this.attachShadow({mode: "open"});
+        _svgRoot.set(this, shadow.appendChild(document.createElementNS(SVGNS, "svg")));
+
         _dice.set(this, []);
         _renderedDice.set(this, new Map());
         _layout.set(this, new GridLayout({
             width: this.width,
             height: this.height,
             dieSize: this.dieSize,
-            rotate: this.rotateDice,
             dispersion: this.dispersion
         }));
     }
@@ -367,10 +363,6 @@ const PlayingTable = class extends ViewController {
                 _layout.get(this).dispersion = newValue;
                 break;
             }
-            case "rotate-dice": {
-                _layout.get(this).rotate = newValue;
-                break;
-            }
             case "background": {
                 this.svgRoot.style.background = newValue;
                 break;
@@ -379,7 +371,7 @@ const PlayingTable = class extends ViewController {
     }
     
     get svgRoot() {
-        return this.shadow.querySelector("svg");
+        return _svgRoot.get(this);
     }
 
     /**
@@ -432,7 +424,7 @@ const PlayingTable = class extends ViewController {
 
     /**
      * The background color of this PlayingTable.
-     * @type {String}
+     * @type {String}G
      */
     get background() {
         return this.hasAttribute("background") ? this.getAttribute("background") : DEFAULT_BACKGROUND;
@@ -448,19 +440,11 @@ const PlayingTable = class extends ViewController {
     }
 
     /**
-     * Should dice be rotated on this PlayingTable?
-     * @type {Boolean}
-     */
-    get rotateDice() {
-        return this.hasAttribute("rotate-dice") ? this.getAttribute("rotate-dice") : DEFAULT_ROTATE_DICE;
-    }
-
-    /**
      * Can dice on this PlayingTable be dragged?
      * @type {Boolean}
      */
     get draggableDice() {
-        return this.hasAttribute("draggable-dice") ? this.getAttribute("draggable-dice") : DEFAULT_DRAGGABLE_DICE;
+        return this.hasAttribute("draggable-dice");
     }
 
     /**
@@ -468,7 +452,7 @@ const PlayingTable = class extends ViewController {
      * @type {Boolean}
      */
     get holdableDice() {
-        return this.hasAttribute("holdable-dice") ? this.getAttribute("holdable-dice") : DEFAULT_HOLDABLE_DICE;
+        return this.hasAttribute("holdable-dice");
     }
 
     /**
@@ -479,7 +463,7 @@ const PlayingTable = class extends ViewController {
      * @type {Number}
      */
     get holdDuration() {
-        return this.hasAttribute("hold-duration") ? this.getAttribute("hold-duration") : DEFAULT_HOLD_DURATION;
+        return this.hasAttribute("hold-duration");
     }
 
     /**
@@ -582,7 +566,4 @@ export {
     DEFAULT_WIDTH,
     DEFAULT_HEIGHT,
     DEFAULT_DISPERSION,
-    DEFAULT_ROTATE_DICE,
-    DEFAULT_HOLDABLE_DICE,
-    DEFAULT_DRAGGABLE_DICE
 };

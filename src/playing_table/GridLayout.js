@@ -32,7 +32,6 @@ import {ConfigurationError} from "../error/ConfigurationError.js";
 const FULL_CIRCLE_IN_DEGREES = 360;
 
 // Private fields
-const _rotate = new WeakMap();
 const _width = new WeakMap();
 const _height = new WeakMap();
 const _cols = new WeakMap();
@@ -55,8 +54,6 @@ const GridLayout = class {
      * GridLayout in pixels. Defaults to DEFAULT_WIDTH;
      * @param {Number} [config.height = DEFAULT_HEIGHT] - The minimal height of
      * this GridLayout in pixels. Defaults to DEFAULT_HEIGHT.
-     * @param {Boolean} [config.rotate = true] - Should dice be rotated?
-     * Defaults to true.
      * @param {Number} [config.dispersion = 2] - The distance from the center of the
      * layout a die can be layout.
      * @param {Number} [config.dieSize = DEFAULT_DIE_SIZE] - The size of a die.
@@ -64,7 +61,6 @@ const GridLayout = class {
     constructor({
         width = DEFAULT_WIDTH,
         height = DEFAULT_HEIGHT,
-        rotate = true,
         dispersion = DEFAULT_DISPERSION,
         dieSize = DEFAULT_DIE_SIZE
     } = {}) {
@@ -74,7 +70,6 @@ const GridLayout = class {
         _height.set(this, 0);
 
         this.dispersion = dispersion;
-        this.rotate = rotate;
         this.dieSize = dieSize;
         this.width = width;
         this.height = height;
@@ -142,19 +137,6 @@ const GridLayout = class {
             throw new ConfigurationError(`Dispersion should be a number larger than 0, got '${d}' instead.`);
         }
         return _dispersion.set(this, d);
-    }
-
-    /**
-     * Should dice be rotated when layout?
-     *
-     * @type {Boolean}
-     */
-    get rotate() {
-        return _rotate.get(this);
-    }
-
-    set rotate(r) {
-        _rotate.set(this, r);
     }
 
     /**
@@ -246,7 +228,7 @@ const GridLayout = class {
             availableCells.splice(randomIndex, 1);
 
             die.coordinates = this._numberToCoordinates(randomCell);
-            die.rotation = this.rotate ? Math.random() * FULL_CIRCLE_IN_DEGREES : 0;
+            die.rotation = Math.random() * FULL_CIRCLE_IN_DEGREES;
             alreadyLayoutDice.push(die);
         }
 

@@ -28,27 +28,6 @@ import {ConfigurationError} from "./error/ConfigurationError.js";
 const NUMBER_OF_PIPS = 6;
 const DEFAULT_COLOR = "Ivory";
 
-/**
- * Event fired when a Die is thrown. 
- * @see {@link module:Die~Die#throwIt}
- * @event 
- */
-const THROW_DIE = Symbol("event:throw-die");
-
-/**
- * Event fired when a Player holds a Die.
- * @see {@link module:Die~Die#holdIt}
- * @event 
- */
-const HOLD_DIE = Symbol("event:hold-die");
-
-/**
- * Event fired when a Player releases a Die.
- * @see {@link module:Die~Die#releaseIt}
- * @event 
- */
-const RELEASE_DIE = Symbol("event:release-die");
-
 // Private properties
 const _pips = new WeakMap();
 const _heldBy = new WeakMap();
@@ -122,7 +101,6 @@ const Die = class extends Model {
         rotation = 0
     } = {}) {
         super();
-        this.registerEvent(THROW_DIE, HOLD_DIE, RELEASE_DIE);
 
         if (!isPlayer(heldBy)) {
             throw new ConfigurationError(`A die must be hold by a Player or it is not hold at all. Got '${heldBy}' instead.`);
@@ -263,7 +241,9 @@ const Die = class extends Model {
     throwIt() {
         if (!this.isHeld()) {
             _pips.set(this, randomPips());
-            this.emit(THROW_DIE, this);
+            this.dispatchEvent(new CustomEvent("throw-die", {detail: {
+                die: this
+            }}));
         }
     }
 
@@ -277,7 +257,10 @@ const Die = class extends Model {
     holdIt(player) {
         if (!this.isHeld()) {
             _heldBy.set(this, player);
-            this.emit(HOLD_DIE, this, player);
+            this.dispatchEvent(new CustomEvent("hold-die", {detail: {
+                die: this,
+                player
+            }}));
         }
     }
 
@@ -300,14 +283,14 @@ const Die = class extends Model {
     releaseIt(player) {
         if (this.isHeld() && this.heldBy.equals(player)) {
             _heldBy.set(this, null);
-            this.emit(RELEASE_DIE, this, player);
+            this.dispatchEvent(new CustomEvent("release-die", {detail: {
+                die: this,
+                player
+            }}));
         }
     }
 };
 
 export {
-    Die,
-    THROW_DIE,
-    HOLD_DIE,
-    RELEASE_DIE
+    Die
 };

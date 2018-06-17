@@ -13,31 +13,26 @@ import {Player} from "../../src/Player.js";
 
 describe("GridLayout", function () {
     describe("create a new GridLayout", function () {
-        it("should have properties width, height, maximumNumberOfDice, and rotate", function () {
+        it("should have properties width, height, maximumNumberOfDice", function () {
             let l = new GridLayout();
             expect(l.width).to.equal(DEFAULT_WIDTH);
             expect(l.height).to.equal(DEFAULT_HEIGHT);
-            expect(l.rotate).to.be.true;
             expect(l.maximumNumberOfDice).to.equal(100);
             
             l = new GridLayout({
                 width: 100,
-                height: 4000,
-                rotate: false
+                height: 4000
             });
             expect(l.width).to.equal(100);
             expect(l.height).to.equal(4000);
-            expect(l.rotate).to.be.false;
             expect(l.maximumNumberOfDice).to.equal(0);
 
             l = new GridLayout({
                 width: 200,
-                height: 200,
-                rotate: false
+                height: 200
             });
             expect(l.width).to.equal(200);
             expect(l.height).to.equal(200);
-            expect(l.rotate).to.be.false;
             expect(l.maximumNumberOfDice).to.equal(1);
         });
 

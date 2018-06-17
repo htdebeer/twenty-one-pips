@@ -17,19 +17,14 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-import {Base} from "./Base.js";
-import {EventAware} from "./EventAware.js";
-
 /**
  * @module
  */
 
 /**
  * Base class for models.
- *
- * @mixes module:EventAware~EventAware
  */
-const Model = class extends EventAware(Base) {
+const Model = class extends EventTarget {
 
     /**
      * Create a new Model.
