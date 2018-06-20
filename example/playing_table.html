@@ -22,7 +22,6 @@
             die-size="50"
             dispersion="5"
             background="green"
-            holdable-dice
         >
             <top-die pips="4" />
         </top-playing-table>
@@ -32,7 +31,7 @@
             console.log(`The maximum number of dice is:
                 ${table.maximumNumberOfDice}.`);
 
-            table.throwDice({dice: 3});
+            table.throwDice({dice: 10});
 
             const throwButton = document.getElementById("thrower");
             throwButton.addEventListener("click", () => {
