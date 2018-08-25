@@ -17,13 +17,6 @@ To configure Firefox to run the examples, configure the following options via
 - Set `dom.webcomponents.shadowdom.enabled` to `true`
 - Set `dom.webcomponents.customelements.enabled` to `true`
 
-At the moment, only the *PlayingTable* component is more or less finished. I
-plan to build the following components as well:
-
-- ScoreCard to keep score
-- Dialog to interact with the user
-- DiceGameController to control the game
-
 # Observations
 
 - Apparently, it looks like using elements from within a shadow dom is
