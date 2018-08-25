@@ -1,7 +1,7 @@
 {
   "name": "twenty-one-pips",
   "version": "0.0.1",
-  "description": "A Dice Game Engine for Creating Dice Games",
+  "description": "A Dice Throwing Component for Creating Dice Games",
   "main": "lib/twenty-one-pips.js",
   "directories": {
     "doc": "doc",
@@ -19,28 +19,27 @@
   },
   "keywords": [
     "dice",
-    "dice",
     "game",
     "die"
   ],
   "author": "Huub de Beer <Huub@heerdebeer.org>",
   "license": "LGPL-3.0",
   "bugs": {
-    "url": "https://github.com/htdebeer/twentyonepips/issues"
+    "url": "https://github.com/htdebeer/twenty-one-pips/issues"
   },
   "homepage": "https://twntyonepips.org",
   "devDependencies": {
-    "babel-polyfill": "^6.26.0",
-    "babel-preset-env": "^1.6.1",
-    "babel-register": "^6.26.0",
+    "babel-polyfill": "^7.0.0-beta.3",
+    "babel-preset-env": "^7.0.0-beta.3",
+    "babel-register": "^7.0.0-beta.3",
     "chai": "^4.1.2",
-    "docdash": "^0.4.0",
-    "eslint": "^4.19.1",
+    "docdash": "^1.0.0",
+    "eslint": "^5.4.0",
     "http-server": "^0.11.1",
     "jsdoc": "^3.5.5",
-    "jsdom": "11.7.0",
+    "jsdom": "^12.0.0",
     "jsdom-global": "3.0.2",
-    "mocha": "^5.0.5"
+    "mocha": "^5.2.0"
   },
   "dependencies": {
     "npm": "^6.4.0"

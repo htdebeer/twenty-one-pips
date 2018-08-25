@@ -1,3 +1,4 @@
+import "jsdom-global/register";
 import {expect} from "chai";
 import {Die, THROW_DIE, HOLD_DIE, RELEASE_DIE} from "../src/Die.js";
 import {Player} from "../src/Player.js";
@@ -31,8 +32,16 @@ describe("Die", function () {
         });
 
         it("should create a random die", function () {
-            const die = new Die();
-            expect(die.pips).to.be.above(0).and.to.be.below(7);
+            expect((new Die()).pips).to.be.above(0).and.to.be.below(7);
+            expect((new Die()).pips).to.be.above(0).and.to.be.below(7);
+            expect((new Die()).pips).to.be.above(0).and.to.be.below(7);
+            expect((new Die()).pips).to.be.above(0).and.to.be.below(7);
+            expect((new Die()).pips).to.be.above(0).and.to.be.below(7);
+            expect((new Die()).pips).to.be.above(0).and.to.be.below(7);
+            expect((new Die()).pips).to.be.above(0).and.to.be.below(7);
+            expect((new Die()).pips).to.be.above(0).and.to.be.below(7);
+            expect((new Die()).pips).to.be.above(0).and.to.be.below(7);
+            expect((new Die()).pips).to.be.above(0).and.to.be.below(7);
         });
 
         it("should set color and holdBy when configured; getters color, pips, and heldBy", function () {

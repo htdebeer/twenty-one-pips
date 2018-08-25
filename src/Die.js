@@ -24,16 +24,16 @@ import {ConfigurationError} from "./error/ConfigurationError.js";
  * @module
  */
 
-const NUMBER_OF_PIPS = 6;
+const NUMBER_OF_PIPS = 6; // Default / regular six sided die has 6 pips maximum.
 const DEFAULT_COLOR = "Ivory";
 
 // Private properties
-const _pips = new WeakMap();
-const _heldBy = new WeakMap();
-const _color = new WeakMap();
-const _x = new WeakMap();
-const _y = new WeakMap();
-const _rotation = new WeakMap();
+const _pips = new WeakMap(); // The number of pips of a die.
+const _heldBy = new WeakMap(); // Reference to the player that is holding a die.
+const _color = new WeakMap(); // The color of a die.
+const _x = new WeakMap(); // The x-coordinate of a die on the table.
+const _y = new WeakMap(); // The y-coordinate of a die on the table.
+const _rotation = new WeakMap(); // The rotation in degrees of a die on the table.
 
 /**
  * Is p a Player?
@@ -51,23 +51,49 @@ const isPipNumber = n => {
     return Number.isInteger(number) && 1 <= number && number <= NUMBER_OF_PIPS;
 };
 
+/**
+ * Generate a random number of pips between 1 and the NUMBER_OF_PIPS.
+ *
+ * @returns {Number} A random number n, 1 ≤ n ≤ NUMBER_OF_PIPS.
+ */
 const randomPips = () => Math.floor(Math.random() * NUMBER_OF_PIPS) + 1;
 
 const DIE_UNICODE_CHARACTERS = ["⚀","⚁","⚂","⚃","⚄","⚅"];
-const unicodeToPips = u => DIE_UNICODE_CHARACTERS.indexOf(u) + 1;
-const pipsToUnicode = p => isPipNumber(p) ? DIE_UNICODE_CHARACTERS[p - 1] : undefined;
 
 /**
- * A model of a regular six-sided Die with numbers 1 - 6.
+ * Convert a unicode character representing a die face to the number of pips of
+ * that same die. This function is the reverse of pipsToUnicode.
  *
- * @property {Number} pips - The number of pips of this Die; 1 <= pips <= 6.
- * @property {String} color - The color of this Die. Defaults to "Ivory".
- * @property {module:Player~Player} heldBy - The player that is holding this Die, if any. If
- * no player is holding it, heldBy is null.
- * @property {Coordinate} coordinate - The coordinate at which this Die has
- * been rendered, null otherwise.
- * @property {Number} rotation - The rotation of this Die if it has been
- * rendered, null otherwise.
+ * @param {String} u - The unicode character to convert to pips.
+ * @returns {Number|undefined} The corresponding number of pips, 1 ≤ pips ≤ 6, or
+ * undefined if u was not a unicode character representing a die.
+ */
+const unicodeToPips = (u) => {
+    const dieCharIndex = DIE_UNICODE_CHARACTERS.indexOf(u);
+    return 0 <= dieCharIndex ? dieCharIndex + 1 : undefined;
+};
+
+
+/**
+ * Convert a number of pips, 1 ≤ pips ≤ 6 to a unicode character
+ * representation of the corresponding die face. This function is the reverse
+ * of unicodeToPips.
+ *
+ * @param {Number} p - The number of pips to convert to a unicode character.
+ * @returns {String|undefined} The corresponding unicode characters or
+ * undefined if p was not between 1 and 6 inclusive.
+ */
+const pipsToUnicode = p => isPipNumber(p) ? DIE_UNICODE_CHARACTERS[p - 1] : undefined;
+
+
+/**
+ * @typedef {Object} Coordinates
+ * @property {Number} x - The x coordinate.
+ * @property {Number} y - The y coordinate.
+ */
+
+/**
+ * A model of a regular six-sided Die.
  *
  * @extends module:Model~Model
  */
@@ -85,10 +111,8 @@ const Die = class extends Model {
      * @param {module:Player~Player|null} [config.heldBy = null] - The player that is holding
      * this Die. Defaults to null, indicating that no player is holding this
      * Die.
-     * @param {Coordinate} [coordinates = null] - The coordinates of this Die.
+     * @param {Coordinates} [coordinates = null] - The coordinates of this Die.
      * Defaults to null.
-     * @param {Number} [coordinates.x] - The x coordinate
-     * @param {Number} [coordinates.y] - The y coordinate
      * @param {Number} [rotation = 0] - The rotation of this
      * Die. Defaults to 0.
      */
@@ -148,9 +172,9 @@ const Die = class extends Model {
     }
 
     /**
-     * This Die's number of pips.
+     * This Die's number of pips, 1 ≤ pips ≤ 6.
      *
-     * @return {Number} This Die's number of pips.
+     * @type {Number}
      */
     get pips() {
         return _pips.get(this);
@@ -159,7 +183,7 @@ const Die = class extends Model {
     /**
      * This Die's color.
      *
-     * @return {String} This Die's color.
+     * @type {String}
      */
     get color() {
         return _color.get(this);
@@ -168,8 +192,7 @@ const Die = class extends Model {
     /**
      * The Player that is holding this Die, if any. Null otherwise.
      *
-     * @return {Player|null} The player that is holding this Die, if any. Null
-     * otherwise.
+     * @type {Player|null} 
      */
     get heldBy() {
         return _heldBy.get(this);
@@ -178,7 +201,7 @@ const Die = class extends Model {
     /**
      * The coordinates of this Die.
      *
-     * @return {Object|null} The coordinates of this Die.
+     * @type {Coordinates|null}
      */
     get coordinates() {
         const x = _x.get(this);
@@ -186,12 +209,6 @@ const Die = class extends Model {
 
         return null === x || null === y ? null : {x, y};
     }
-
-    /**
-     * Set the coordinates of this Die.
-     *
-     * @param {Object} c - The coordinates to place this Die.
-     */
     set coordinates(c) {
         if (null === c) {
             _x.set(this, null);
@@ -215,32 +232,25 @@ const Die = class extends Model {
     /**
      * The rotation of this Die.
      *
-     * @return {Number} The rotation of this Die, 0 <= rotation <= 360.
+     * @type {Number} The rotation of this Die, 0 ≤ rotation ≤ 360.
      */
     get rotation() {
         return _rotation.get(this);
     }
-
-    /**
-     * Set the rotation of this Die.
-     *
-     * @param {Number} newR - The angle to rotate this Die with, 0 <=
-     * angle <= 360.
-     */
     set rotation(newR) {
         _rotation.set(this, newR);
     }
 
     /**
-     * Throw this Die: set the number of pips to a random number between 1 and
-     * 6. Only dice that are not being held can be thrown.
+     * Throw this Die. The number of pips to a random number n, 1 ≤ n ≤ 6.
+     * Only dice that are not being held can be thrown.
      *
-     * @fires THROW_DIE with parameters this Die.
+     * @fires "top:throw-die" with parameters this Die.
      */
     throwIt() {
         if (!this.isHeld()) {
             _pips.set(this, randomPips());
-            this.dispatchEvent(new CustomEvent("throw-die", {detail: {
+            this.dispatchEvent(new CustomEvent("top:throw-die", {detail: {
                 die: this
             }}));
         }
@@ -248,15 +258,15 @@ const Die = class extends Model {
 
     /**
      * The player holds this Die. A player can only hold a die that is not
-     * being held yet.
+     * being held by another player yet.
      *
      * @param {module:Player~Player} player - The player who wants to hold this Die.
-     * @fires HOLD_DIE with parameters this Die and the player.
+     * @fires "top:hold-die" with parameters this Die and the player.
      */
     holdIt(player) {
         if (!this.isHeld()) {
             _heldBy.set(this, player);
-            this.dispatchEvent(new CustomEvent("hold-die", {detail: {
+            this.dispatchEvent(new CustomEvent("top:hold-die", {detail: {
                 die: this,
                 player
             }}));
@@ -264,25 +274,25 @@ const Die = class extends Model {
     }
 
     /**
-     * Is this Die being held?
+     * Is this Die being held by any player?
      *
-     * @return {Boolean} True when this Die is being held, false otherwise.
+     * @return {Boolean} True when this Die is being held by any player, false otherwise.
      */
     isHeld() {
         return null !== _heldBy.get(this);
     }
 
     /**
-     * The player releases this Die. A player can only release dice she is
+     * The player releases this Die. A player can only release dice that she is
      * holding.
      *
      * @param {module:Player~Player} player - The player who wants to release this Die.
-     * @fires RELEASE_DIE with parameters this Die and the player.
+     * @fires "top:relase-die" with parameters this Die and the player releasing it.
      */
     releaseIt(player) {
         if (this.isHeld() && this.heldBy.equals(player)) {
             _heldBy.set(this, null);
-            this.dispatchEvent(new CustomEvent("release-die", {detail: {
+            this.dispatchEvent(new CustomEvent("top:release-die", {detail: {
                 die: this,
                 player
             }}));

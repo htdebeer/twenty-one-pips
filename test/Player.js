@@ -1,3 +1,4 @@
+import "jsdom-global/register";
 import {expect} from "chai";
 import {Player} from "../src/Player.js";
 
