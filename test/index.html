@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Testing Twenty-One-Pips with Mocha in the Browser</title>
+        <link href="../node_modules/mocha/mocha.css" rel="stylesheet">
+    </head>
+    <body>
+        <main id="mocha"></main>
+
+        <script src="../node_modules/chai/chai.js"></script>
+        <script src="../node_modules/mocha/mocha.js"></script>
+
+        <script>mocha.setup("bdd")</script>
+        <script type="module">
+            import "./Model.js";
+            import "./Player.js";
+            import "./Die.js";
+
+            mocha.checkLeaks();
+            mocha.run();
+        </script>

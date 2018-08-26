@@ -20,7 +20,6 @@
 /**
  * @module
  */
-
 /**
  * Base class for models.
  */

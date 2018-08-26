@@ -162,7 +162,7 @@ const Die = class extends Model {
     }
 
     /**
-     * Convert this Die to the corresponding unicode character of a die.
+     * Convert this Die to the corresponding unicode character of a die face.
      *
      * @return {String} The unicode character corresponding to the number of
      * pips of this Die.

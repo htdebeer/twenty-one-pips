@@ -1,5 +1,4 @@
-import "jsdom-global/register";
-import {expect} from "chai";
+//import {expect} from "chai";
 import {Model} from "../src/Model.js";
 
 // For now, the Model class acts as an empty base class for model classes such
@@ -8,7 +7,7 @@ import {Model} from "../src/Model.js";
 describe("Model", function () {
     describe("create a new Model", function () {
         it("should not throw an error", function () {
-            expect(() => new Model()).to.not.throw();
+            chai.expect(() => new Model()).to.not.throw();
         });
     });
 });
