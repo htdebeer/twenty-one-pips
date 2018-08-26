@@ -17,14 +17,14 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-import {
-    SVGNS,
-    XLINKNS,
-} from "./svg.js";
-import {DEFAULT_HOLD_DURATION, DEFAULT_DIE_SIZE, NATURAL_DIE_SIZE} from "./PlayingTable.js";
+import {SVGNS, XLINKNS} from "./svg.js";
+import {NATURAL_DIE_SIZE} from "./PlayingTable.js";
 
 // Event handlers to react to a die model's events
-const HOLD_IT_HANDLER = (holdUse) => (event) => holdUse.setAttribute("fill", event.detail.player.color);
+const HOLD_IT_HANDLER = (holdUse) => (event) => {
+    console.log("Holding it in handler: ", event, event.detail.player.color);
+    holdUse.setAttribute("fill", event.detail.player.color);
+};
 const RELEASE_IT_HANDLER = (holdUse) => () => holdUse.setAttribute("fill", "none");
 
 const _element = new WeakMap();
@@ -33,7 +33,7 @@ const _holdElement = new WeakMap();
 const _dieElement = new WeakMap();
 
 /**
- * A view of a Die
+ * A view of a Die in SVG elements.
  */
 const DieSVG = class {
     /**
@@ -104,11 +104,11 @@ const DieSVG = class {
      * @type {Object}
      */
     static get center() {
-        const CENTER = NATURAL_DIE_SIZE / 2
+        const CENTER = NATURAL_DIE_SIZE / 2;
         return {
             x: CENTER,
             y: CENTER
-        }
+        };
     }
 
     /**

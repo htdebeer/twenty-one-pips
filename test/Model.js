@@ -5,8 +5,8 @@ import {Model} from "../src/Model.js";
 // as Die and Player: it does not have any functionality.
 
 describe("Model", function () {
-    describe("create a new Model", function () {
-        it("should not throw an error", function () {
+    describe("Create a new Model", function () {
+        it("Should not throw an error", function () {
             chai.expect(() => new Model()).to.not.throw();
         });
     });

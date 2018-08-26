@@ -17,7 +17,7 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-import { SVGNS, XLINKNS } from "./svg.js";
+import {SVGNS} from "./svg.js";
 import template from "./dice_svg_template.js";
 import {DieSVG} from "./DieSVG.js";
 import {ConfigurationError} from "../error/ConfigurationError.js";
@@ -279,7 +279,7 @@ const setupDiceSVG = () => {
         const diceSVG = document.body.appendChild(document.importNode(svgDocument.documentElement, true));
         diceSVG.style.display = "none";
     }
-}
+};
 
 /**
  * PlayingTable is a component to render and control a playing table with dice
@@ -298,7 +298,7 @@ const PlayingTable = class extends HTMLDivElement {
             "hold-duration",
             "dispersion",
             "dice"
-        ]; 
+        ];
     }
 
     /**
@@ -325,41 +325,42 @@ const PlayingTable = class extends HTMLDivElement {
 
     attributeChangedCallback(name, oldValue, newValue) {
         switch (name) {
-            case "dice": {
-                const parsedNumber = parseInt(newValue, 10);
-                if (newValue.includes(",")) {
-                    this.dice = newValue.split(",").map(n => parseInt(n, 10));
-                } else if (Number.isInteger(parsedNumber)) {
-                    this.dice = parsedNumber;
-                }
-                break;
+        case "dice": {
+            const parsedNumber = parseInt(newValue, 10);
+            if (newValue.includes(",")) {
+                this.dice = newValue.split(",").map(n => parseInt(n, 10));
+            } else if (Number.isInteger(parsedNumber)) {
+                this.dice = parsedNumber;
             }
-            case "die-size": {
-                _layout.get(this).dieSize = newValue;
-                DieSVG.size = newValue;
-                break;
-            }
-            case "width": {
-                _layout.get(this).width = newValue;
-                _svgRoot.get(this).setAttribute("width", newValue);
-                break;
-            }
-            case "height": {
-                _layout.get(this).height = newValue;
-                _svgRoot.get(this).setAttribute("height", newValue);
-                break;
-            }
-            case "dispersion": {
-                _layout.get(this).dispersion = newValue;
-                break;
-            }
-            case "background": {
-                _svgRoot.get(this).style.background = newValue;
-                break;
-            }
+            break;
+        }
+        case "die-size": {
+            _layout.get(this).dieSize = newValue;
+            DieSVG.size = newValue;
+            break;
+        }
+        case "width": {
+            _layout.get(this).width = newValue;
+            _svgRoot.get(this).setAttribute("width", newValue);
+            break;
+        }
+        case "height": {
+            _layout.get(this).height = newValue;
+            _svgRoot.get(this).setAttribute("height", newValue);
+            break;
+        }
+        case "dispersion": {
+            _layout.get(this).dispersion = newValue;
+            break;
+        }
+        case "background": {
+            _svgRoot.get(this).style.background = newValue;
+            break;
+        }
+        default: break;
         }
     }
-    
+
     /**
      * The dice on this PlayingTable. Note, to actually throw the dice use
      * @see{throwDice}. 
