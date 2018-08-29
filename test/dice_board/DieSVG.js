@@ -1,4 +1,4 @@
-import {DieSVG} from "../../src/playing_table/DieSVG.js";
+import {DieSVG} from "../../src/dice_board/DieSVG.js";
 import {Die} from "../../src/Die.js";
 import {Player} from "../../src/Player.js";
 

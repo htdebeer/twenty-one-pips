@@ -18,11 +18,10 @@
  * @ignore
  */
 import {SVGNS, XLINKNS} from "./svg.js";
-import {NATURAL_DIE_SIZE} from "./PlayingTable.js";
+import {NATURAL_DIE_SIZE} from "./DiceBoard.js";
 
 // Event handlers to react to a die model's events
 const HOLD_IT_HANDLER = (holdUse) => (event) => {
-    console.log("Holding it in handler: ", event, event.detail.player.color);
     holdUse.setAttribute("fill", event.detail.player.color);
 };
 const RELEASE_IT_HANDLER = (holdUse) => () => holdUse.setAttribute("fill", "none");
@@ -55,11 +54,11 @@ const DieSVG = class {
         _dieElement.set(this, dieUse);
         _die.set(this, die);
 
-        this.die.removeEventListener("hold-die", HOLD_IT_HANDLER);
-        this.die.addEventListener("hold-die", HOLD_IT_HANDLER(_holdElement.get(this)));
+        this.die.removeEventListener("top:hold-die", HOLD_IT_HANDLER());
+        this.die.addEventListener("top:hold-die", HOLD_IT_HANDLER(_holdElement.get(this)));
 
-        this.die.removeEventListener("release-die", RELEASE_IT_HANDLER);
-        this.die.addEventListener("release-die", RELEASE_IT_HANDLER(_holdElement.get(this)));
+        this.die.removeEventListener("top:release-die", RELEASE_IT_HANDLER());
+        this.die.addEventListener("top:release-die", RELEASE_IT_HANDLER(_holdElement.get(this)));
     }
 
     get element() {

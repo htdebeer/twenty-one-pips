@@ -2,30 +2,41 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>Playing Table</title>
+        <title>Twenty-One-Pips: Dice Board</title>
         <style>
             svg {
                 border: 1px solid dimgray;
             }
+
+            top-dice-board {
+                display: block;
+                margin-top: 3px;
+            }
         </style>
+        <script
+            src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
         <script type="module"
-            src="../src/playing_table/PlayingTable.js"></script>
+            src="../src/dice_board/DiceBoard.js"></script>
     </head>
     <body>
-        <h1>Playing Table</h1>
+        <h1>Dice Board</h1>
+
         <button id="thrower" type="button">Throw dice!</button>
-        <top-playing-table
+        
+        <top-dice-board
             width="400"
             height="400"
             die-size="50"
             dispersion="5"
             background="green"
+            holdable-dice
+            draggable-dice
         >
             <!--top-die pips="4" /-->
-        </top-playing-table>
+        </top-dice-board>
 
         <script type="module">
-            const table = document.querySelector("top-playing-table");
+            const table = document.querySelector("top-dice-board");
             console.log(`The maximum number of dice is:
                 ${table.maximumNumberOfDice}.`);
 

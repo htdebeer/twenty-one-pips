@@ -22,7 +22,7 @@ import {
     DEFAULT_WIDTH,
     DEFAULT_HEIGHT,
     DEFAULT_DISPERSION
-} from "./PlayingTable.js";
+} from "./DiceBoard.js";
 import {ConfigurationError} from "../error/ConfigurationError.js";
 
 /**
@@ -42,7 +42,7 @@ const _dispersion = new WeakMap();
 
 
 /**
- * GridLayout handles laying out the dice on a PlayingTable.
+ * GridLayout handles laying out the dice on a DiceBoard.
  */
 const GridLayout = class {
 
@@ -412,17 +412,17 @@ const GridLayout = class {
         }];
 
         const snapTo = quadrants
-                        // cell should be on the layout
-                        .filter((quadrant) => undefined !== quadrant.q)
-                        // cell should be not already taken except by itself
-                        .filter((quadrant) => (
-                            null !== die && this._coordinatesToNumber(die.coordinates) === quadrant.q) 
-                            || this._cellIsEmpty(quadrant.q, _dice.get(this))) 
-                        // cell should be covered by the die the most
-                        .reduce(
-                            (maxQ, quadrant) => quadrant.coverage > maxQ.coverage ? quadrant : maxQ,
-                            {q: undefined, coverage: -1}
-                        );
+            // cell should be on the layout
+            .filter((quadrant) => undefined !== quadrant.q)
+            // cell should be not already taken except by itself
+            .filter((quadrant) => (
+                null !== die && this._coordinatesToNumber(die.coordinates) === quadrant.q)
+                || this._cellIsEmpty(quadrant.q, _dice.get(this)))
+            // cell should be covered by the die the most
+            .reduce(
+                (maxQ, quadrant) => quadrant.coverage > maxQ.coverage ? quadrant : maxQ,
+                {q: undefined, coverage: -1}
+            );
 
         return undefined !== snapTo.q ? this._numberToCoordinates(snapTo.q) : null;
     }
