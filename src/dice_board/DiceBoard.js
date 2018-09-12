@@ -40,6 +40,9 @@ const NATURAL_DIE_SIZE = 145; // px
 const DEFAULT_DIE_SIZE = NATURAL_DIE_SIZE; // px
 const DEFAULT_HOLD_DURATION = 375; // ms
 const DEFAULT_BACKGROUND = "#FFFFAA";
+const DEFAULT_DRAGGABLE_DICE = true;
+const DEFAULT_HOLDABLE_DICE = true;
+
 
 const ROWS = 10;
 const COLS = 10;
@@ -51,11 +54,20 @@ const DEFAULT_DISPERSION = 2;
 const MIN_DELTA = 3; //px
 
 // Private properties
+const _element = new WeakMap();
 const _layout = new WeakMap();
-const _svgRoot = new WeakMap();
 const _dice = new WeakMap();
 const _renderedDice = new WeakMap();
 const _dragHandler = new WeakMap();
+
+const _width = new WeakMap();
+const _height = new WeakMap();
+const _background = new WeakMap();
+const _dieSize = new WeakMap();
+const _draggableDice = new WeakMap();
+const _holdableDice = new WeakMap();
+const _holdDuration = new WeakMap();
+const _dispersion = new WeakMap();
 
 const makeDice = function (dice) {
     if (Number.isInteger(dice)) {
@@ -99,33 +111,33 @@ const startDragging = (board, point, dieElement) => {
     _dragHandler.set(board, (event) => {
         // Move dieElement to the top of the SVG so it moves over the other dice
         // rather than below them. 
-        _svgRoot.get(board).removeChild(dieElement);
-        _svgRoot.get(board).appendChild(dieElement);
+        _element.get(board).removeChild(dieElement);
+        _element.get(board).appendChild(dieElement);
 
         // Get a point in svgport coordinates
-        point = _svgRoot.get(board).createSVGPoint();
-        point.x = event.clientX - document.body.scrollLeft;
-        point.y = event.clientY - document.body.scrollTop;
+        let mappedPoint = _element.get(board).createSVGPoint();
+        mappedPoint.x = event.clientX - document.body.scrollLeft;
+        mappedPoint.y = event.clientY - document.body.scrollTop;
 
         // Transform them to user coordinates
-        point = point.matrixTransform(dieElement.getScreenCTM().inverse());
+        mappedPoint = mappedPoint.matrixTransform(dieElement.getScreenCTM().inverse());
 
         // Keep track of the offset so the dieElement that is being dragged stays
         // under the cursor rather than having a jerk after starting dragging.
-        point.x -= offset.x;
-        point.y -= offset.y;
+        mappedPoint.x -= offset.x;
+        mappedPoint.y -= offset.y;
 
         // Setup the transformation
-        transform.setTranslate(point.x, point.y);
+        transform.setTranslate(mappedPoint.x, mappedPoint.y);
         transformList.appendItem(transform);
         transformList.consolidate();
     });
 
-    _svgRoot.get(board).addEventListener("mousemove", _dragHandler.get(board));
+    _element.get(board).addEventListener("mousemove", _dragHandler.get(board));
 };
 
 const stopDragging = (board) => {
-    _svgRoot.get(board).removeEventListener("mousemove", _dragHandler.get(board));
+    _element.get(board).removeEventListener("mousemove", _dragHandler.get(board));
 };
 
 const renderDie = (board, {die, player}) => {
@@ -180,11 +192,11 @@ const renderDie = (board, {die, player}) => {
         }
     };
 
-    const showInteraction = (event) => {
+    const showInteraction = () => {
         dieSVG.element.setAttribute("cursor", "grab");
     };
 
-    const hideInteraction = (event) => {
+    const hideInteraction = () => {
         dieSVG.element.setAttribute("cursor", "default");
     };
 
@@ -200,7 +212,7 @@ const renderDie = (board, {die, player}) => {
 
                 dieSVG.element.setAttribute("cursor", "grabbing");
 
-                let point = _svgRoot.get(board).createSVGPoint();
+                let point = _element.get(board).createSVGPoint();
                 point.x = event.clientX - document.body.scrollLeft;
                 point.y = event.clientY - document.body.scrollTop;
                 point = point.matrixTransform(dieSVG.element.getScreenCTM().inverse());
@@ -258,7 +270,7 @@ const renderDie = (board, {die, player}) => {
 // with the dice definitions is put on the BODY. As this SVG with definitions
 // only contains definitions, nothing is shown on the screen. However, to make
 // sure, it is hidden anyway.
-const setupDiceSVG = () => {
+const setupDiceSVGSource = () => {
     if (null === document.querySelector("svg.twenty-one-pips-dice")) {
         const parser = new DOMParser();
         const svgDocument = parser.parseFromString(template, "image/svg+xml");
@@ -270,82 +282,62 @@ const setupDiceSVG = () => {
 /**
  * DiceBoard is a component to render and control dice 
  */
-const DiceBoard = class extends HTMLElement {
-
-    static get observedAttributes() {
-        return [
-            "width",
-            "height",
-            "background",
-            "die-size",
-            "draggable-dice",
-            "holdable-dice",
-            "hold-duration",
-            "dispersion",
-            "dice"
-        ];
-    }
+const DiceBoard = class extends EventTarget {
 
     /**
      * Create a new board component.
      *
      */
-    constructor() {
+    constructor({
+        parent = null,
+        width = DEFAULT_WIDTH,
+        height = DEFAULT_HEIGHT,
+        background = DEFAULT_BACKGROUND,
+        dice = [],
+        dieSize = DEFAULT_DIE_SIZE,
+        draggableDice = DEFAULT_DRAGGABLE_DICE,
+        holdableDice = DEFAULT_HOLDABLE_DICE,
+        holdDuration = DEFAULT_HOLD_DURATION,
+        dispersion = DEFAULT_DISPERSION
+    }) {
         super();
+        setupDiceSVGSource();
 
-        setupDiceSVG();
+        // Setup element
+        _element.set(this, document.createElementNS(SVGNS, "svg"));
 
-        const shadow = this.attachShadow({mode: "open"});
-        // Using the shadow crashed Firefox when interacting with the SVG and
-        // the USEd elements don't show up in Chrome.
-        _svgRoot.set(this, shadow.appendChild(document.createElementNS(SVGNS, "svg")));
+        if (null !== parent) {
+            parent.appendChild(this.element);
+        }
 
-        _dice.set(this, []);
+        // Initialize component
         _renderedDice.set(this, new Map());
         _layout.set(this, new GridLayout({
-            width: this.width,
-            height: this.height,
-            dieSize: this.dieSize,
-            dispersion: this.dispersion
+            width: width,
+            height: height,
+            dieSize: dieSize,
+            dispersion: dispersion
         }));
+
+        // Initialize properties of the DiceBoard.
+        this.width = width;
+        this.height = height;
+        this.background = background;
+        this.dieSize = dieSize;
+        this.dice = dice;
+        this.draggableDice = draggableDice;
+        this.holdableDice = holdableDice;
+        this.holdDuration = holdDuration;
+        this.dispersion = dispersion;
     }
 
-    attributeChangedCallback(name, oldValue, newValue) {
-        switch (name) {
-        case "dice": {
-            const parsedNumber = parseInt(newValue, 10);
-            if (newValue.includes(",")) {
-                this.dice = newValue.split(",").map(n => parseInt(n, 10));
-            } else if (Number.isInteger(parsedNumber)) {
-                this.dice = parsedNumber;
-            }
-            break;
-        }
-        case "die-size": {
-            _layout.get(this).dieSize = newValue;
-            DieSVG.size = newValue;
-            break;
-        }
-        case "width": {
-            _layout.get(this).width = newValue;
-            _svgRoot.get(this).setAttribute("width", newValue);
-            break;
-        }
-        case "height": {
-            _layout.get(this).height = newValue;
-            _svgRoot.get(this).setAttribute("height", newValue);
-            break;
-        }
-        case "dispersion": {
-            _layout.get(this).dispersion = newValue;
-            break;
-        }
-        case "background": {
-            _svgRoot.get(this).style.background = newValue;
-            break;
-        }
-        default: break;
-        }
+    /**
+     * The DIV element that represents this DiceBoard.
+     *
+     * @type {DIVHTMLElement}
+     */
+    get element() {
+        return _element.get(this);
     }
 
     /**
@@ -377,7 +369,13 @@ const DiceBoard = class extends HTMLElement {
      * @type {Number}
      */
     get width() {
-        return this.hasAttribute("width") ? this.getAttribute("width") : DEFAULT_WIDTH;
+        return _width.get(this) || DEFAULT_WIDTH;
+    }
+
+    set width(newWidth) {
+        _width.set(this, newWidth);
+        _layout.get(this).width = newWidth;
+        _element.get(this).setAttribute("width", newWidth);
     }
 
     /**
@@ -385,7 +383,13 @@ const DiceBoard = class extends HTMLElement {
      * @type {Number}
      */
     get height() {
-        return this.hasAttribute("height") ? this.getAttribute("height") : DEFAULT_HEIGHT;
+        return _height.get(this) || DEFAULT_HEIGHT;
+    }
+
+    set height(newHeight) {
+        _height.set(this, newHeight);
+        _layout.get(this).height = newHeight;
+        _element.get(this).setAttribute("height", newHeight);
     }
 
     /**
@@ -393,15 +397,25 @@ const DiceBoard = class extends HTMLElement {
      * @type {Number}
      */
     get dispersion() {
-        return this.hasAttribute("dispersion") ? this.getAttribute("dispersion") : DEFAULT_DISPERSION;
+        return _dispersion.get(this) || DEFAULT_DISPERSION;
+    }
+
+    set dispersion(newDispersion) {
+        _dispersion.set(this, newDispersion);
+        _layout.get(this).dispersion = newDispersion;
     }
 
     /**
      * The background color of this board.
-     * @type {String}G
+     * @type {String}
      */
     get background() {
-        return this.hasAttribute("background") ? this.getAttribute("background") : DEFAULT_BACKGROUND;
+        return _background.get(this) || DEFAULT_BACKGROUND;
+    }
+
+    set background(newBackground) {
+        _background.set(this, newBackground);
+        _element.get(this).style.background = newBackground;
     }
 
     /**
@@ -410,7 +424,13 @@ const DiceBoard = class extends HTMLElement {
      * @type {Number}
      */
     get dieSize() {
-        return this.hasAttribute("die-size") ? this.getAttribute("die-size") : DEFAULT_DIE_SIZE;
+        return _dieSize.get(this) || DEFAULT_DIE_SIZE;
+    }
+
+    set dieSize(newDieSize) {
+        _dieSize.set(this, newDieSize);
+        _layout.get(this).dieSize = newDieSize;
+        DieSVG.size = newDieSize;
     }
 
     /**
@@ -418,7 +438,11 @@ const DiceBoard = class extends HTMLElement {
      * @type {Boolean}
      */
     get draggableDice() {
-        return this.hasAttribute("draggable-dice");
+        return _draggableDice.get(this) || DEFAULT_DRAGGABLE_DICE;
+    }
+
+    set draggableDice(newDraggableDice) {
+        _draggableDice.set(this, newDraggableDice);
     }
 
     /**
@@ -426,7 +450,11 @@ const DiceBoard = class extends HTMLElement {
      * @type {Boolean}
      */
     get holdableDice() {
-        return this.hasAttribute("holdable-dice");
+        return _holdableDice.get(this) || DEFAULT_HOLDABLE_DICE;
+    }
+
+    set holdableDice(newHoldableDice) {
+        _holdableDice.set(this, newHoldableDice);
     }
 
     /**
@@ -437,7 +465,11 @@ const DiceBoard = class extends HTMLElement {
      * @type {Number}
      */
     get holdDuration() {
-        return this.hasAttribute("hold-duration") ? this.getAttribute("hold-duration") : DEFAULT_HOLD_DURATION;
+        return _holdDuration.get(this) || DEFAULT_HOLD_DURATION;
+    }
+
+    set holdDuration(newHoldDuration) {
+        _holdDuration.set(this, newHoldDuration);
     }
 
     /**
@@ -464,7 +496,7 @@ const DiceBoard = class extends HTMLElement {
             .forEach(die => {
                 if (!renderedDice.has(die)) {
                     const renderedDie = renderDie(this, {die, player});
-                    _svgRoot.get(this).appendChild(renderedDie.element);
+                    _element.get(this).appendChild(renderedDie.element);
                     renderedDice.set(die, renderedDie);
                 }
 
@@ -527,9 +559,6 @@ const DiceBoard = class extends HTMLElement {
     }
 
 };
-
-// Register board as a custom element.
-customElements.define("top-dice-board", DiceBoard);
 
 export {
     DiceBoard,

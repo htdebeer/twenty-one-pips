@@ -3,50 +3,34 @@
     <head>
         <meta charset="utf-8">
         <title>Twenty-One-Pips: Dice Board</title>
-        <style>
-            svg {
-                border: 1px solid dimgray;
-            }
-
-            top-dice-board {
-                display: block;
-                margin-top: 3px;
-            }
-        </style>
-        <script
-            src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
-        <script type="module"
-            src="../src/dice_board/DiceBoard.js"></script>
     </head>
     <body>
         <h1>Dice Board</h1>
 
+        <figure id="dice-board"></figure>
+
         <button id="thrower" type="button">Throw dice!</button>
-        
-        <top-dice-board
-            width="400"
-            height="400"
-            die-size="50"
-            dispersion="5"
-            background="green"
-            holdable-dice
-            draggable-dice
-        >
-            <!--top-die pips="4" /-->
-        </top-dice-board>
 
         <script type="module">
-            const table = document.querySelector("top-dice-board");
-            console.log(`The maximum number of dice is:
-                ${table.maximumNumberOfDice}.`);
+import {DiceBoard} from "../src/dice_board/DiceBoard.js";
 
-            table.throwDice({dice: 10});
+const diceBoardElement = document.querySelector("#dice-board");
+const diceBoard = new DiceBoard({
+    parent: diceBoardElement,
+    width: 400,
+    height: 400,
+    dieSize: 50,
+    dice: 10,
+    background: "green"
+});
 
-            const throwButton = document.getElementById("thrower");
-            throwButton.addEventListener("click", () => {
-                table.throwDice();
-                console.log(table.dice.reduce((sum, die) => sum + die.pips, 0));
-            });
+diceBoard.throwDice();
+
+const throwButton = document.getElementById("thrower");
+throwButton.addEventListener("click", () => {
+    diceBoard.throwDice();
+    console.log(diceBoard.dice.reduce((sum, die) => sum + die.pips, 0));
+});
 
         </script>
     </body>
