@@ -56,18 +56,18 @@ const MIN_DELTA = 3; //px
 // Private properties
 const _element = new WeakMap();
 const _layout = new WeakMap();
-const _dice = new WeakMap();
-const _renderedDice = new WeakMap();
-const _dragHandler = new WeakMap();
-
 const _width = new WeakMap();
 const _height = new WeakMap();
 const _background = new WeakMap();
 const _dieSize = new WeakMap();
+const _dice = new WeakMap();
 const _draggableDice = new WeakMap();
 const _holdableDice = new WeakMap();
 const _holdDuration = new WeakMap();
 const _dispersion = new WeakMap();
+
+const _renderedDice = new WeakMap();
+const _dragHandler = new WeakMap();
 
 const makeDice = function (dice) {
     if (Number.isInteger(dice)) {
@@ -285,8 +285,35 @@ const setupDiceSVGSource = () => {
 const DiceBoard = class extends EventTarget {
 
     /**
-     * Create a new board component.
+     * @typedef {Object} DiceBoardConfiguration
+     * @property {HTMLElement} [parent = null] - The DiceBoard's parent HTML
+     * Element, if any. Defaults to null;
+     * @property {Number} [width = DEFAULT_WIDTH] - The width of the
+     * DiceBoard.
+     * @property {Number} [height = DEFAULT_HEIGHT] - The height of the
+     * DiceBoard.
+     * @property {ColorString} [color = DEFAULT_BACKGROUND] - The background
+     * color of the DiceBoard.
+     * @property {Number|Dice[]} [dice = []] - The dice to put on the
+     * DiceBoard. If dice is a number, that amount of random dice are put on
+     * the DiceBoard.
+     * @property {Number} [dieSize = DEFAULT_DIE_SIZE] - The size of the dice
+     * on the DiceBoard.
+     * @property {Boolean} [draggableDice = DEFAULT_DRAGGABLE_DICE] - Can the
+     * dice on the DiceBoard be dragged around? Defaults to true.
+     * @property {Boolean} [holdableDice = DEFAULT_HOLDABLE_DICE] - Can the
+     * dice on the DiceBoard be hold by a player? Defaults to true. 
+     * @property {Number} [holdDuration = DEFAULT_HOLD_DURATION] - The time a
+     * player needs to click on a die to hold or release it.
+     * @property {Number} [dispersion = DEFAULT_DISPERSION] - The dispersion
+     * spread of dice on the DiceBoard.
+     */
+
+    /**
+     * Create a new DiceBoard.
      *
+     * @param {DiceBoardConfiguration} config - The configuration of this
+     * DiceBoard.
      */
     constructor({
         parent = null,
