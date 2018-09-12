@@ -1,4 +1,3 @@
-import {expect} from "chai";
 import {
     DEFAULT_DIE_SIZE,
     DEFAULT_HOLD_DURATION,
@@ -6,8 +5,8 @@ import {
     DEFAULT_WIDTH,
     DEFAULT_HEIGHT,
     DEFAULT_DISPERSION
-} from "../../src/playing_table/PlayingTable.js";
-import {GridLayout} from "../../src/playing_table/GridLayout.js";
+} from "../../src/dice_board/DiceBoard.js";
+import {GridLayout} from "../../src/dice_board/GridLayout.js";
 import {Die} from "../../src/Die.js";
 import {Player} from "../../src/Player.js";
 
@@ -15,29 +14,29 @@ describe("GridLayout", function () {
     describe("create a new GridLayout", function () {
         it("should have properties width, height, maximumNumberOfDice", function () {
             let l = new GridLayout();
-            expect(l.width).to.equal(DEFAULT_WIDTH);
-            expect(l.height).to.equal(DEFAULT_HEIGHT);
-            expect(l.maximumNumberOfDice).to.equal(100);
+            chai.expect(l.width).to.equal(DEFAULT_WIDTH);
+            chai.expect(l.height).to.equal(DEFAULT_HEIGHT);
+            chai.expect(l.maximumNumberOfDice).to.equal(100);
             
             l = new GridLayout({
                 width: 100,
                 height: 4000
             });
-            expect(l.width).to.equal(100);
-            expect(l.height).to.equal(4000);
-            expect(l.maximumNumberOfDice).to.equal(0);
+            chai.expect(l.width).to.equal(100);
+            chai.expect(l.height).to.equal(4000);
+            chai.expect(l.maximumNumberOfDice).to.equal(0);
 
             l = new GridLayout({
                 width: 200,
                 height: 200
             });
-            expect(l.width).to.equal(200);
-            expect(l.height).to.equal(200);
-            expect(l.maximumNumberOfDice).to.equal(1);
+            chai.expect(l.width).to.equal(200);
+            chai.expect(l.height).to.equal(200);
+            chai.expect(l.maximumNumberOfDice).to.equal(1);
         });
 
         it("should throw an error when height or width are <= 0", function () {
-            expect(() => new GridLayout({
+            chai.expect(() => new GridLayout({
                 width: -100,
                 height: 0,
             })).to.throw();
@@ -49,35 +48,35 @@ describe("GridLayout", function () {
         const grid = new GridLayout();
 
         it("should return an empty list when an empty list is supplied to layout", function () {
-            expect(grid.layout([])).to.be.empty;
+            chai.expect(grid.layout([])).to.be.empty;
         });
 
         it("should layout all dice", function () {
             const layoutDice = grid.layout(dice);
-            expect(layoutDice.length).to.equal(dice.length);
+            chai.expect(layoutDice.length).to.equal(dice.length);
             for (const die of layoutDice) {
-                expect(die.coordinates.x).to.be.above(-1).and.to.be.below(DEFAULT_WIDTH);
-                expect(die.coordinates.y).to.be.above(-1).and.to.be.below(DEFAULT_HEIGHT);
-                expect(die.rotation).to.exist;
+                chai.expect(die.coordinates.x).to.be.above(-1).and.to.be.below(DEFAULT_WIDTH);
+                chai.expect(die.coordinates.y).to.be.above(-1).and.to.be.below(DEFAULT_HEIGHT);
+                chai.expect(die.rotation).to.exist;
             }
         });
         
         it("should re-layout dice that are being held", function () {
             const player = new Player({name: "John", color: "red"});
             const notHoldDie = new Die();
-            expect(notHoldDie.isHeld()).to.be.false;
-            expect(notHoldDie.hasCoordinates()).to.be.false;
+            chai.expect(notHoldDie.isHeld()).to.be.false;
+            chai.expect(notHoldDie.hasCoordinates()).to.be.false;
 
             grid.layout([notHoldDie]);
-            expect(notHoldDie.isHeld()).to.be.false;
-            expect(notHoldDie.hasCoordinates()).to.be.true;
+            chai.expect(notHoldDie.isHeld()).to.be.false;
+            chai.expect(notHoldDie.hasCoordinates()).to.be.true;
 
             const firstCoordinates = notHoldDie.coordinates;
             const firstRotation = notHoldDie.rotation;
             
-            expect(firstCoordinates.x).to.be.above(-1).and.to.be.below(DEFAULT_WIDTH);
-            expect(firstCoordinates.y).to.be.above(-1).and.to.be.below(DEFAULT_HEIGHT);
-            expect(firstRotation).to.exist;
+            chai.expect(firstCoordinates.x).to.be.above(-1).and.to.be.below(DEFAULT_WIDTH);
+            chai.expect(firstCoordinates.y).to.be.above(-1).and.to.be.below(DEFAULT_HEIGHT);
+            chai.expect(firstRotation).to.exist;
 
             const NUMBER_OF_SAMPLES = 10;
             const coordinates = [];
@@ -95,32 +94,32 @@ describe("GridLayout", function () {
             const numberOfCoordinatesEqualToTheFirstCoordinates = coordinates
                 .filter(c => c.x === firstCoordinates.x || c.y === firstCoordinates.y)
                 .length;
-            expect(numberOfCoordinatesEqualToTheFirstCoordinates).not.to.equal(NUMBER_OF_SAMPLES);
+            chai.expect(numberOfCoordinatesEqualToTheFirstCoordinates).not.to.equal(NUMBER_OF_SAMPLES);
         });
         
         it("should not re-layout dice that are being held", function () {
             const player = new Player({name: "John", color: "red"});
             const holdDie = new Die({heldBy: player});
-            expect(holdDie.isHeld()).to.be.true;
-            expect(holdDie.hasCoordinates()).to.be.false;
+            chai.expect(holdDie.isHeld()).to.be.true;
+            chai.expect(holdDie.hasCoordinates()).to.be.false;
 
             grid.layout([holdDie]);
-            expect(holdDie.isHeld()).to.be.true;
-            expect(holdDie.hasCoordinates()).to.be.true;
+            chai.expect(holdDie.isHeld()).to.be.true;
+            chai.expect(holdDie.hasCoordinates()).to.be.true;
 
             const firstCoordinates = holdDie.coordinates;
             const firstRotation = holdDie.rotation;
             
-            expect(firstCoordinates.x).to.be.above(-1).and.to.be.below(DEFAULT_WIDTH);
-            expect(firstCoordinates.y).to.be.above(-1).and.to.be.below(DEFAULT_HEIGHT);
-            expect(firstRotation).to.exist;
+            chai.expect(firstCoordinates.x).to.be.above(-1).and.to.be.below(DEFAULT_WIDTH);
+            chai.expect(firstCoordinates.y).to.be.above(-1).and.to.be.below(DEFAULT_HEIGHT);
+            chai.expect(firstRotation).to.exist;
             
             grid.layout([holdDie]);
             const secondCoords = holdDie.coordinates;
             const secondRotation = holdDie.rotation;
-            expect(firstCoordinates.x).to.equal(secondCoords.x);
-            expect(firstCoordinates.y).to.equal(secondCoords.y);
-            expect(firstRotation).to.equal(secondRotation);
+            chai.expect(firstCoordinates.x).to.equal(secondCoords.x);
+            chai.expect(firstCoordinates.y).to.equal(secondCoords.y);
+            chai.expect(firstRotation).to.equal(secondRotation);
         });
 
 
@@ -132,33 +131,33 @@ describe("GridLayout", function () {
 
         it("should snap to coordinates of the cell closest to it", function () {
             c = grid.snapTo({x: 0, y: 0});
-            expect(c.x).to.equal(0);
-            expect(c.y).to.equal(0);
+            chai.expect(c.x).to.equal(0);
+            chai.expect(c.y).to.equal(0);
 
             c = grid.snapTo({x: 30, y: 40});
-            expect(c.x).to.equal(0);
-            expect(c.y).to.equal(0);
+            chai.expect(c.x).to.equal(0);
+            chai.expect(c.y).to.equal(0);
 
             c = grid.snapTo({x: -70, y: -10});
-            expect(c.x).to.equal(0);
-            expect(c.y).to.equal(0);
+            chai.expect(c.x).to.equal(0);
+            chai.expect(c.y).to.equal(0);
 
             c = grid.snapTo({x: 70, y: 70});
-            expect(c.x).to.equal(100);
-            expect(c.y).to.equal(100);
+            chai.expect(c.x).to.equal(100);
+            chai.expect(c.y).to.equal(100);
 
             c = grid.snapTo({x:150, y:312});
-            expect(c.x).to.equal(100);
-            expect(c.y).to.equal(300);
+            chai.expect(c.x).to.equal(100);
+            chai.expect(c.y).to.equal(300);
 
             c = grid.snapTo({x:151, y:312});
-            expect(c.x).to.equal(200);
-            expect(c.y).to.equal(300);
+            chai.expect(c.x).to.equal(200);
+            chai.expect(c.y).to.equal(300);
         });
 
         it("should return null if there is no meaningful closest cell", function () {
             c = grid.snapTo({x: -300, y: -300});
-            expect(c).to.be.null;
+            chai.expect(c).to.be.null;
         });
 
         it("should return the next bet fit if the closest cell is already taken", function () {
@@ -168,13 +167,13 @@ describe("GridLayout", function () {
             die.holdIt(player);
 
             c = grid.snapTo({x: 70, y: 75});
-            expect(c.x).to.equal(100);
-            expect(c.y).to.equal(100);
+            chai.expect(c.x).to.equal(100);
+            chai.expect(c.y).to.equal(100);
 
             grid.layout([die]);
             c = grid.snapTo({x: 70, y: 75});
-            expect(c.x).to.equal(0);
-            expect(c.y).to.equal(100);
+            chai.expect(c.x).to.equal(0);
+            chai.expect(c.y).to.equal(100);
         });
 
         it("should return the current coordinates if the current cell is the best fit", function () {
@@ -185,8 +184,8 @@ describe("GridLayout", function () {
 
             grid.layout([die]);
             c = grid.snapTo({die, x: 70, y: 75});
-            expect(c.x).to.equal(100);
-            expect(c.y).to.equal(100);
+            chai.expect(c.x).to.equal(100);
+            chai.expect(c.y).to.equal(100);
         });
     });
 });

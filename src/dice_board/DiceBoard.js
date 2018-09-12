@@ -325,7 +325,7 @@ const DiceBoard = class extends EventTarget {
         holdableDice = DEFAULT_HOLDABLE_DICE,
         holdDuration = DEFAULT_HOLD_DURATION,
         dispersion = DEFAULT_DISPERSION
-    }) {
+    } = {}) {
         super();
         setupDiceSVGSource();
 

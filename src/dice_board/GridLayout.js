@@ -40,6 +40,16 @@ const _dice = new WeakMap();
 const _dieSize = new WeakMap();
 const _dispersion = new WeakMap();
 
+/**
+ * @typedef {Object} GridLayoutConfiguration
+ * @property {Number} [config.width = DEFAULT_WIDTH] - The minimal width of this
+ * GridLayout in pixels. Defaults to DEFAULT_WIDTH;
+ * @property {Number} [config.height = DEFAULT_HEIGHT] - The minimal height of
+ * this GridLayout in pixels. Defaults to DEFAULT_HEIGHT.
+ * @property {Number} [config.dispersion = 2] - The distance from the center of the
+ * layout a die can be layout.
+ * @property {Number} [config.dieSize = DEFAULT_DIE_SIZE] - The size of a die.
+ */
 
 /**
  * GridLayout handles laying out the dice on a DiceBoard.
@@ -49,14 +59,7 @@ const GridLayout = class {
     /**
      * Create a new GridLayout.
      *
-     * @param {Object} config - The configuration of the GridLayout
-     * @param {Number} [config.width = DEFAULT_WIDTH] - The minimal width of this
-     * GridLayout in pixels. Defaults to DEFAULT_WIDTH;
-     * @param {Number} [config.height = DEFAULT_HEIGHT] - The minimal height of
-     * this GridLayout in pixels. Defaults to DEFAULT_HEIGHT.
-     * @param {Number} [config.dispersion = 2] - The distance from the center of the
-     * layout a die can be layout.
-     * @param {Number} [config.dieSize = DEFAULT_DIE_SIZE] - The size of a die.
+     * @param {GridLayoutConfiguration} config - The configuration of the GridLayout
      */
     constructor({
         width = DEFAULT_WIDTH,
