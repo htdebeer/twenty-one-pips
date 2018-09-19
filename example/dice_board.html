@@ -10,16 +10,16 @@
         <figure id="dice-board"></figure>
 
         <script type="module">
-            import {DiceBoard} from "../src/dice_board/DiceBoard.js";
+            import {SVGDiceBoard} from "../src/dice_board/SVGDiceBoard.js";
 import {Player} from "../src/Player.js";
 
 const NUMBER_OF_DICE = 10;
 const diceBoardElement = document.querySelector("#dice-board");
-const diceBoard = new DiceBoard({
+const diceBoard = new SVGDiceBoard({
     parent: diceBoardElement,
-    width: 400,
-    height: 400,
-    dieSize: 100,
+    width: 600,
+    height: 600,
+    dieSize: 75,
     dice: NUMBER_OF_DICE,
     background: "gold"
 });

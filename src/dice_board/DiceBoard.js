@@ -17,9 +17,6 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-import {SVGNS} from "./svg.js";
-import template from "./dice_svg_template.js";
-import {DieSVG} from "./DieSVG.js";
 import {ConfigurationError} from "../error/ConfigurationError.js";
 import {GridLayout} from "./GridLayout.js";
 import {DEFAULT_SYSTEM_PLAYER} from "../Player.js";
@@ -50,8 +47,6 @@ const DEFAULT_WIDTH = COLS * DEFAULT_DIE_SIZE; // px
 const DEFAULT_HEIGHT = ROWS * DEFAULT_DIE_SIZE; // px
 const DEFAULT_DISPERSION = 2;
 
-const MIN_DELTA = 3; //px
-
 // Private properties
 const _element = new WeakMap();
 const _layout = new WeakMap();
@@ -66,7 +61,6 @@ const _holdDuration = new WeakMap();
 const _dispersion = new WeakMap();
 
 const _renderedDice = new WeakMap();
-const _dragHandler = new WeakMap();
 
 const makeDice = function (dice) {
     if (Number.isInteger(dice)) {
@@ -88,195 +82,6 @@ const makeDice = function (dice) {
     }
 };
 
-// Interaction states
-const NONE = Symbol("no_interaction");
-const HOLD = Symbol("hold");
-const MOVE = Symbol("move");
-const INDETERMINED = Symbol("indetermined");
-const DRAGGING = Symbol("dragging");
-
-// Methods to handle interaction
-
-let offset = {};
-const startDragging = (board, point, dieElement) => {
-    offset = {
-        x: point.x,
-        y: point.y
-    };
-
-    const transform = dieElement.ownerSVGElement.createSVGTransform();
-    const transformList = dieElement.transform.baseVal;
-
-    _dragHandler.set(board, (event) => {
-        // Move dieElement to the top of the SVG so it moves over the other dice
-        // rather than below them. 
-        _element.get(board).removeChild(dieElement);
-        _element.get(board).appendChild(dieElement);
-
-        // Get a point in svgport coordinates
-        let mappedPoint = _element.get(board).createSVGPoint();
-        mappedPoint.x = event.clientX - document.body.scrollLeft;
-        mappedPoint.y = event.clientY - document.body.scrollTop;
-
-        // Transform them to user coordinates
-        mappedPoint = mappedPoint.matrixTransform(dieElement.getScreenCTM().inverse());
-
-        // Keep track of the offset so the dieElement that is being dragged stays
-        // under the cursor rather than having a jerk after starting dragging.
-        mappedPoint.x -= offset.x;
-        mappedPoint.y -= offset.y;
-
-        // Setup the transformation
-        transform.setTranslate(mappedPoint.x, mappedPoint.y);
-        transformList.appendItem(transform);
-        transformList.consolidate();
-    });
-
-    _element.get(board).addEventListener("mousemove", _dragHandler.get(board));
-};
-
-const stopDragging = (board) => {
-    _element.get(board).removeEventListener("mousemove", _dragHandler.get(board));
-};
-
-const renderDie = (board, {die, player}) => {
-    const dieSVG = new DieSVG(die);
-
-    // Setup interaction
-    let state = NONE;
-    let origin = {};
-    let holdTimeout = null;
-
-    const holdDie = () => {
-        if (HOLD === state || INDETERMINED === state) {
-            // toggle hold / release
-            if (die.isHeld()) {
-                die.releaseIt(player);
-            } else {
-                die.holdIt(player);
-            }
-            state = NONE;
-        }
-
-        holdTimeout = null;
-    };
-
-    const startHolding = () => {
-        holdTimeout = window.setTimeout(holdDie, board.holdDuration);
-    };
-
-    const stopHolding = () => {
-        window.clearTimeout(holdTimeout);
-        holdTimeout = null;
-    };
-
-    const startInteraction = (event) => {
-        if (NONE === state) {
-
-            origin = {
-                x: event.clientX,
-                y: event.clientY
-            };
-
-            if (board.holdableDice && board.draggableDice) {
-                state = INDETERMINED;
-                startHolding();
-            } else if (board.holdableDice) {
-                state = HOLD;
-                startHolding();
-            } else if (board.draggableDice) {
-                state = MOVE;
-            }
-
-        }
-    };
-
-    const showInteraction = () => {
-        dieSVG.element.setAttribute("cursor", "grab");
-    };
-
-    const hideInteraction = () => {
-        dieSVG.element.setAttribute("cursor", "default");
-    };
-
-    const move = (event) => {
-        if (MOVE === state || INDETERMINED === state) {
-            // Ignore small movements
-            const dx = Math.abs(origin.x - event.clientX);
-            const dy = Math.abs(origin.y - event.clientY);
-
-            if (MIN_DELTA < dx || MIN_DELTA < dy) {
-                state = DRAGGING;
-                stopHolding();
-
-                dieSVG.element.setAttribute("cursor", "grabbing");
-
-                let point = _element.get(board).createSVGPoint();
-                point.x = event.clientX - document.body.scrollLeft;
-                point.y = event.clientY - document.body.scrollTop;
-                point = point.matrixTransform(dieSVG.element.getScreenCTM().inverse());
-
-                startDragging(board, point, dieSVG.element, die);
-            }
-        }
-    };
-
-    const stopInteraction = (event) => {
-        if (DRAGGING === state) {
-            const dx = origin.x - event.clientX;
-            const dy = origin.y - event.clientY;
-
-            const {x, y} = die.coordinates;
-            const snapToCoords = _layout.get(board).snapTo({
-                die,
-                x: x - dx,
-                y: y - dy,
-            });
-
-            const newCoords = null != snapToCoords ? snapToCoords : {x, y};
-
-            die.coordinates = newCoords;
-            const scale = board.dieSize / NATURAL_DIE_SIZE;
-            dieSVG.element.setAttribute("transform", `translate(${newCoords.x},${newCoords.y})scale(${scale})`);
-
-            stopDragging(board);
-        }
-
-        state = NONE;
-    };
-
-    dieSVG.element.addEventListener("mousedown", startInteraction);
-    dieSVG.element.addEventListener("touchstart", startInteraction);
-
-    if (board.draggableDice) {
-        dieSVG.element.addEventListener("mousemove", move);
-        dieSVG.element.addEventListener("touchmove", move);
-    }
-
-    if (board.draggableDice || board.holdableDice) {
-        dieSVG.element.addEventListener("mouseover", showInteraction);
-        dieSVG.element.addEventListener("mouseout", hideInteraction);
-    }
-
-    dieSVG.element.addEventListener("mouseup", stopInteraction);
-    dieSVG.element.addEventListener("touchend", stopInteraction);
-
-    return dieSVG;
-};
-
-// Apparently, SVG definitions in a shadow DOM do not work (see
-// https://github.com/w3c/webcomponents/issues/179). As a workaround, the SVG
-// with the dice definitions is put on the BODY. As this SVG with definitions
-// only contains definitions, nothing is shown on the screen. However, to make
-// sure, it is hidden anyway.
-const setupDiceSVGSource = () => {
-    if (null === document.querySelector("svg.twenty-one-pips-dice")) {
-        const parser = new DOMParser();
-        const svgDocument = parser.parseFromString(template, "image/svg+xml");
-        const diceSVG = document.body.appendChild(document.importNode(svgDocument.documentElement, true));
-        diceSVG.style.display = "none";
-    }
-};
 
 /**
  * DiceBoard is a component to render and control dice 
@@ -327,10 +132,7 @@ const DiceBoard = class extends EventTarget {
         dispersion = DEFAULT_DISPERSION
     } = {}) {
         super();
-        setupDiceSVGSource();
-
-        // Setup element
-        _element.set(this, document.createElementNS(SVGNS, "svg"));
+        _element.set(this, this.createElement());
 
         if (null !== parent) {
             parent.appendChild(this.element);
@@ -357,6 +159,10 @@ const DiceBoard = class extends EventTarget {
         this.dispersion = dispersion;
     }
 
+    createElement() {
+        // Override in subclass
+    }
+
     /**
      * The DIV element that represents this DiceBoard.
      *
@@ -364,6 +170,15 @@ const DiceBoard = class extends EventTarget {
      */
     get element() {
         return _element.get(this);
+    }
+
+    /**
+     * The GridLayout used by this DiceBoard to layout the dice.
+     *
+     * @type {GridLayout}
+     */
+    get layout() {
+        return _layout.get(this);
     }
 
     /**
@@ -386,7 +201,7 @@ const DiceBoard = class extends EventTarget {
      * @return {Number} The maximum number of dice, 0 < maximum.
      */
     get maximumNumberOfDice() {
-        return _layout.get(this).maximumNumberOfDice;
+        return this.layout.maximumNumberOfDice;
     }
 
     /**
@@ -400,8 +215,8 @@ const DiceBoard = class extends EventTarget {
 
     set width(newWidth) {
         _width.set(this, newWidth);
-        _layout.get(this).width = newWidth;
-        _element.get(this).setAttribute("width", newWidth);
+        this.layout.width = newWidth;
+        this.element.setAttribute("width", newWidth);
     }
 
     /**
@@ -414,8 +229,8 @@ const DiceBoard = class extends EventTarget {
 
     set height(newHeight) {
         _height.set(this, newHeight);
-        _layout.get(this).height = newHeight;
-        _element.get(this).setAttribute("height", newHeight);
+        this.layout.height = newHeight;
+        this.element.setAttribute("height", newHeight);
     }
 
     /**
@@ -428,7 +243,7 @@ const DiceBoard = class extends EventTarget {
 
     set dispersion(newDispersion) {
         _dispersion.set(this, newDispersion);
-        _layout.get(this).dispersion = newDispersion;
+        this.layout.dispersion = newDispersion;
     }
 
     /**
@@ -441,7 +256,7 @@ const DiceBoard = class extends EventTarget {
 
     set background(newBackground) {
         _background.set(this, newBackground);
-        _element.get(this).style.background = newBackground;
+        this.element.style.background = newBackground;
     }
 
     /**
@@ -455,8 +270,7 @@ const DiceBoard = class extends EventTarget {
 
     set dieSize(newDieSize) {
         _dieSize.set(this, newDieSize);
-        _layout.get(this).dieSize = newDieSize;
-        DieSVG.size = newDieSize;
+        this.layout.dieSize = newDieSize;
     }
 
     /**
@@ -498,6 +312,11 @@ const DiceBoard = class extends EventTarget {
         _holdDuration.set(this, newHoldDuration);
     }
 
+    renderDie({die, player}) {
+        // Implement in sub class
+        console.log("Rendering: ", die, player);
+    }
+
     /**
      * Render dice for this player.
      *
@@ -517,12 +336,12 @@ const DiceBoard = class extends EventTarget {
             }
         }
 
-        _layout.get(this)
+        this.layout
             .layout(dice)
             .forEach(die => {
                 if (!renderedDice.has(die)) {
-                    const renderedDie = renderDie(this, {die, player});
-                    _element.get(this).appendChild(renderedDie.element);
+                    const renderedDie = this.renderDie({die, player});
+                    this.element.appendChild(renderedDie.element);
                     renderedDice.set(die, renderedDie);
                 }
 
@@ -568,5 +387,5 @@ export {
     DEFAULT_HOLDABLE_DICE,
     DEFAULT_WIDTH,
     DEFAULT_HEIGHT,
-    DEFAULT_DISPERSION,
+    DEFAULT_DISPERSION
 };
