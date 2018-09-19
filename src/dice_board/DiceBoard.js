@@ -556,34 +556,6 @@ const DiceBoard = class extends EventTarget {
         return this.dice;
     }
 
-    /**
-     * Place the dice on this board. Temporary method used for
-     * debugging. Might be moved in a sub class of board later on for
-     * explanatory purposes where putting a dice on a table makes sense.
-     *
-     * @param {Object} config - the throw configuration.
-     * @param {module:Player~Player} [config.player = DEFAULT_SYSTEM_PLAYER] - The throwing
-     * player. Dice are always thrown by a
-     * Player. If your application does not need Players, the
-     * DEFAULT_SYSTEM_PLAYER is used as a Player.
-     * @param {module:Die~Die[]|Number|null} [dice = null] - The dice to
-     * throw. By default, the dice already on the board are thrown.
-     * However, as a shorthand you can specify the dice to throw.
-     *
-     * @return {module:Die~Die[]} The list with thrown dice.
-     * @private
-     */
-    placeDice({
-        dice = null,
-        player = DEFAULT_SYSTEM_PLAYER,
-    } = {}) {
-        if (null !== dice) {
-            this.dice = dice;
-        }
-        this.renderDice({dice: this.dice, player});
-        return this.dice;
-    }
-
 };
 
 export {
