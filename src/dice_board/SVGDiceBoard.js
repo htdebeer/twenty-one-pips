@@ -191,6 +191,7 @@ const renderADie = (board, {die, player}) => {
             const newCoords = null != snapToCoords ? snapToCoords : {x, y};
 
             die.coordinates = newCoords;
+            console.log(board.dieSize, NATURAL_DIE_SIZE);
             const scale = board.dieSize / NATURAL_DIE_SIZE;
             dieSVG.element.setAttribute("transform", `translate(${newCoords.x},${newCoords.y})scale(${scale})`);
 
@@ -298,6 +299,10 @@ const SVGDiceBoard = class extends DiceBoard {
     createElement() {
         setupDiceSVGSource();
         return document.createElementNS(SVGNS, "svg");
+    }
+
+    get dieSize() {
+        return super.dieSize;
     }
 
     set dieSize(newDieSize) {
