@@ -17,9 +17,6 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-import {SVGNS} from "./svg.js";
-import template from "./dice_svg_template.js";
-import {DieSVG} from "./DieSVG.js";
 import {
     DiceBoard,
     NATURAL_DIE_SIZE,
@@ -94,8 +91,42 @@ const stopDragging = (board) => {
     board.element.removeEventListener("mousemove", _dragHandler.get(board));
 };
 
-const renderDie = (board, {die, player}) => {
-    const dieSVG = new DieSVG(die);
+const renderDie = (board, die) => {
+    const HALF = board.dieSize / 2;
+    const QUARTER = HALF / 2;
+    const {x, y} = die.coordinates;
+    if (die.isHeld()) {
+        // Render hold circle
+        board.context.beginPath();
+        board.context.fillStyle = die.heldBy.color;
+        board.context.arc(x + HALF, y + HALF, HALF, 0, 2 * Math.PI, false);
+        board.context.fill();
+    }
+
+    // Render die
+
+    board.context.fillStyle = die.color;
+    board.context.strokeStyle = "black";
+    board.context.fillRect(x + QUARTER, y + QUARTER, HALF, HALF);
+    board.context.strokeRect(x + QUARTER, y + QUARTER, HALF, HALF);
+
+
+};
+
+const renderDiceBoard = (board, {dice, player}) => {
+    board.context.clearRect(0, 0, board.width, board.height);
+
+    const layoutDice = board.layout.layout(dice);
+    for (const die of layoutDice) {
+        const {x, y} = die.coordinates;
+
+
+        renderDie(board, die);
+    }
+};
+
+const renderADie = (board, {die, player}) => {
+    const dieSVG = null;//new DieSVG(die);
 
     // Setup interaction
     let state = NONE;
@@ -191,6 +222,7 @@ const renderDie = (board, {die, player}) => {
             const newCoords = null != snapToCoords ? snapToCoords : {x, y};
 
             die.coordinates = newCoords;
+            console.log(board.dieSize, NATURAL_DIE_SIZE);
             const scale = board.dieSize / NATURAL_DIE_SIZE;
             dieSVG.element.setAttribute("transform", `translate(${newCoords.x},${newCoords.y})scale(${scale})`);
 
@@ -219,24 +251,11 @@ const renderDie = (board, {die, player}) => {
     return dieSVG;
 };
 
-// Apparently, SVG definitions in a shadow DOM do not work (see
-// https://github.com/w3c/webcomponents/issues/179). As a workaround, the SVG
-// with the dice definitions is put on the BODY. As this SVG with definitions
-// only contains definitions, nothing is shown on the screen. However, to make
-// sure, it is hidden anyway.
-const setupDiceSVGSource = () => {
-    if (null === document.querySelector("svg.twenty-one-pips-dice")) {
-        const parser = new DOMParser();
-        const svgDocument = parser.parseFromString(template, "image/svg+xml");
-        const diceSVG = document.body.appendChild(document.importNode(svgDocument.documentElement, true));
-        diceSVG.style.display = "none";
-    }
-};
-
 /**
- * SVGDiceBoard is a component to render and control dice using SVG.
+ * CanvasDiceBoard is a component to render and control dice using the
+ * CanvasHTMLElement.
  */
-const SVGDiceBoard = class extends DiceBoard {
+const CanvasDiceBoard = class extends DiceBoard {
 
     /**
      * @typedef {Object} DiceBoardConfiguration
@@ -293,39 +312,28 @@ const SVGDiceBoard = class extends DiceBoard {
             holdDuration,
             dispersion
         });
+
+    }
+
+    /***
+     * The 2D rendering context of this DiceBoard.
+     *
+     * @type {CanvasRenderingContext2D}
+     */
+    get context() {
+        return this.element.getContext("2d");
     }
 
     createElement() {
-        setupDiceSVGSource();
-        return document.createElementNS(SVGNS, "svg");
-    }
-
-    get dieSize() {
-        return super.dieSize;
-    }
-
-    set dieSize(newDieSize) {
-        super.dieSize = newDieSize;
-        DieSVG.size = newDieSize;
+        return document.createElement("canvas");
     }
 
     renderDice({dice, player}) {
         this.clearRenderedDice(dice);
-
-        this.layout
-            .layout(dice)
-            .forEach(die => {
-                if (!this.renderedDice.has(die)) {
-                    const renderedDie = renderDie(this, {die, player});
-                    this.element.appendChild(renderedDie.element);
-                    this.renderedDice.set(die, renderedDie);
-                }
-
-                this.renderedDice.get(die).render();
-            });
+        renderDiceBoard(this, {dice, player});
     }
 };
 
 export {
-    SVGDiceBoard
+    CanvasDiceBoard
 };

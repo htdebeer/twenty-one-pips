@@ -312,9 +312,13 @@ const DiceBoard = class extends EventTarget {
         _holdDuration.set(this, newHoldDuration);
     }
 
-    renderDie({die, player}) {
-        // Implement in sub class
-        console.log("Rendering: ", die, player);
+    /**
+     * List of rendered dice.
+     *
+     * @type {Die[]}
+     */
+    get renderedDice() {
+        return _renderedDice.get(this);
     }
 
     /**
@@ -325,28 +329,18 @@ const DiceBoard = class extends EventTarget {
      * is rendered.
      */
     renderDice({dice, player}) {
-        const renderedDice = _renderedDice.get(this);
+        console.log(dice, player);
+    }
 
+    clearRenderedDice(dice) {
         // Remove all rendered dice that are not to be rendered again
-        for (const die of renderedDice.keys()) {
+        for (const die of this.renderedDice.keys()) {
             if (!dice.includes(die)) {
-                const renderedDie = renderedDice.get(die);
+                const renderedDie = this.renderedDice.get(die);
                 renderedDie.element.parentElement.removeChild(renderedDie.element);
-                renderedDice.delete(die);
+                this.renderedDice.delete(die);
             }
         }
-
-        this.layout
-            .layout(dice)
-            .forEach(die => {
-                if (!renderedDice.has(die)) {
-                    const renderedDie = this.renderDie({die, player});
-                    this.element.appendChild(renderedDie.element);
-                    renderedDice.set(die, renderedDie);
-                }
-
-                renderedDice.get(die).render();
-            });
     }
 
     /**
