@@ -19,7 +19,7 @@
  */
 import {
     DiceBoard,
-    NATURAL_DIE_SIZE,
+    //NATURAL_DIE_SIZE,
     DEFAULT_DIE_SIZE,
     DEFAULT_HOLD_DURATION,
     DEFAULT_BACKGROUND,
@@ -33,7 +33,6 @@ import {
 /**
  * @module
  */
-
 const MIN_DELTA = 3; //px
 
 // Private properties
@@ -91,6 +90,16 @@ const stopDragging = (board) => {
     board.element.removeEventListener("mousemove", _dragHandler.get(board));
 };
 
+
+const convertWindowCoordinatesToCanvas = (canvas, xWindow, yWindow) => {
+    const canvasBox = canvas.getBoundingClientRect();
+
+    const x = xWindow - canvasBox.left * (canvas.width / canvasBox.width);
+    const y = yWindow - canvasBox.top * (canvas.height / canvasBox.height);
+
+    return {x, y};
+};
+
 const renderDie = (board, die) => {
     const HALF = board.dieSize / 2;
     const QUARTER = HALF / 2;
@@ -103,6 +112,8 @@ const renderDie = (board, die) => {
         board.context.fill();
     }
 
+    console.log(convertWindowCoordinatesToCanvas(board.context.canvas, 4, 34));
+
     // Render die
 
     board.context.fillStyle = die.color;
@@ -114,141 +125,15 @@ const renderDie = (board, die) => {
 };
 
 const renderDiceBoard = (board, {dice, player}) => {
+    console.log(player);
     board.context.clearRect(0, 0, board.width, board.height);
 
     const layoutDice = board.layout.layout(dice);
     for (const die of layoutDice) {
-        const {x, y} = die.coordinates;
 
 
         renderDie(board, die);
     }
-};
-
-const renderADie = (board, {die, player}) => {
-    const dieSVG = null;//new DieSVG(die);
-
-    // Setup interaction
-    let state = NONE;
-    let origin = {};
-    let holdTimeout = null;
-
-    const holdDie = () => {
-        if (HOLD === state || INDETERMINED === state) {
-            // toggle hold / release
-            if (die.isHeld()) {
-                die.releaseIt(player);
-            } else {
-                die.holdIt(player);
-            }
-            state = NONE;
-        }
-
-        holdTimeout = null;
-    };
-
-    const startHolding = () => {
-        holdTimeout = window.setTimeout(holdDie, board.holdDuration);
-    };
-
-    const stopHolding = () => {
-        window.clearTimeout(holdTimeout);
-        holdTimeout = null;
-    };
-
-    const startInteraction = (event) => {
-        if (NONE === state) {
-
-            origin = {
-                x: event.clientX,
-                y: event.clientY
-            };
-
-            if (board.holdableDice && board.draggableDice) {
-                state = INDETERMINED;
-                startHolding();
-            } else if (board.holdableDice) {
-                state = HOLD;
-                startHolding();
-            } else if (board.draggableDice) {
-                state = MOVE;
-            }
-
-        }
-    };
-
-    const showInteraction = () => {
-        dieSVG.element.setAttribute("cursor", "grab");
-    };
-
-    const hideInteraction = () => {
-        dieSVG.element.setAttribute("cursor", "default");
-    };
-
-    const move = (event) => {
-        if (MOVE === state || INDETERMINED === state) {
-            // Ignore small movements
-            const dx = Math.abs(origin.x - event.clientX);
-            const dy = Math.abs(origin.y - event.clientY);
-
-            if (MIN_DELTA < dx || MIN_DELTA < dy) {
-                state = DRAGGING;
-                stopHolding();
-
-                dieSVG.element.setAttribute("cursor", "grabbing");
-
-                let point = board.element.createSVGPoint();
-                point.x = event.clientX - document.body.scrollLeft;
-                point.y = event.clientY - document.body.scrollTop;
-                point = point.matrixTransform(dieSVG.element.getScreenCTM().inverse());
-
-                startDragging(board, point, dieSVG.element, die);
-            }
-        }
-    };
-
-    const stopInteraction = (event) => {
-        if (DRAGGING === state) {
-            const dx = origin.x - event.clientX;
-            const dy = origin.y - event.clientY;
-
-            const {x, y} = die.coordinates;
-            const snapToCoords = board.layout.snapTo({
-                die,
-                x: x - dx,
-                y: y - dy,
-            });
-
-            const newCoords = null != snapToCoords ? snapToCoords : {x, y};
-
-            die.coordinates = newCoords;
-            console.log(board.dieSize, NATURAL_DIE_SIZE);
-            const scale = board.dieSize / NATURAL_DIE_SIZE;
-            dieSVG.element.setAttribute("transform", `translate(${newCoords.x},${newCoords.y})scale(${scale})`);
-
-            stopDragging(board);
-        }
-
-        state = NONE;
-    };
-
-    dieSVG.element.addEventListener("mousedown", startInteraction);
-    dieSVG.element.addEventListener("touchstart", startInteraction);
-
-    if (board.draggableDice) {
-        dieSVG.element.addEventListener("mousemove", move);
-        dieSVG.element.addEventListener("touchmove", move);
-    }
-
-    if (board.draggableDice || board.holdableDice) {
-        dieSVG.element.addEventListener("mouseover", showInteraction);
-        dieSVG.element.addEventListener("mouseout", hideInteraction);
-    }
-
-    dieSVG.element.addEventListener("mouseup", stopInteraction);
-    dieSVG.element.addEventListener("touchend", stopInteraction);
-
-    return dieSVG;
 };
 
 /**
