@@ -431,6 +431,28 @@ const GridLayout = class {
     }
 
     /**
+     * Get the die at point (x, y);
+     *
+     * @param {Point} point - The point in (x, y) coordinates
+     * @return {Die|null} The die under coordinates (x, y) or null if no die
+     * is at the point.
+     */
+    getAt(point = {x: 0, y: 0}) {
+        for (const die of _dice.get(this)) {
+            const {x, y} = die.coordinates;
+
+            const xFit = x <= point.x && point.x <= x + this.dieSize;
+            const yFit = y <= point.y && point.y <= y + this.dieSize;
+
+            if (xFit && yFit) {
+                return die;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Calculate the grid size given width and height.
      *
      * @param {Number} width - The minimal width

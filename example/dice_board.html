@@ -94,8 +94,10 @@ const throwUntilMax = (board, name) => {
     return thrower;
 };
 
-throwUntilMax(svgDiceBoard, "SVG")();
-throwUntilMax(canvasDiceBoard, "Canvas")();
+//throwUntilMax(svgDiceBoard, "SVG")();
+//throwUntilMax(canvasDiceBoard, "Canvas")();
+svgDiceBoard.throwDice({player: PLAYER});
+canvasDiceBoard.throwDice({player: PLAYER});
         </script>
     </body>
 </html>

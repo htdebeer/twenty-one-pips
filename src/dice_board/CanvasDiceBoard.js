@@ -35,10 +35,6 @@ import {
  */
 const MIN_DELTA = 3; //px
 
-// Private properties
-const _dragHandler = new WeakMap();
-
-
 // Interaction states
 const NONE = Symbol("no_interaction");
 const HOLD = Symbol("hold");
@@ -48,48 +44,33 @@ const DRAGGING = Symbol("dragging");
 
 // Methods to handle interaction
 
-let offset = {};
-const startDragging = (board, point, dieElement) => {
-    offset = {
-        x: point.x,
-        y: point.y
-    };
+const renderDie = (board, die, point) => {
+    const HALF = board.dieSize / 2;
+    const QUARTER = HALF / 2;
+    const {x, y} = point;
+    if (die.isHeld()) {
+        // Render hold circle
+        board.context.beginPath();
+        board.context.fillStyle = die.heldBy.color;
+        board.context.arc(x + HALF, y + HALF, HALF, 0, 2 * Math.PI, false);
+        board.context.fill();
+    }
 
-    const transform = dieElement.ownerSVGElement.createSVGTransform();
-    const transformList = dieElement.transform.baseVal;
+    // Render die
 
-    _dragHandler.set(board, (event) => {
-        // Move dieElement to the top of the SVG so it moves over the other dice
-        // rather than below them. 
-        board.element.removeChild(dieElement);
-        board.element.appendChild(dieElement);
-
-        // Get a point in svgport coordinates
-        let mappedPoint = board.element.createSVGPoint();
-        mappedPoint.x = event.clientX - document.body.scrollLeft;
-        mappedPoint.y = event.clientY - document.body.scrollTop;
-
-        // Transform them to user coordinates
-        mappedPoint = mappedPoint.matrixTransform(dieElement.getScreenCTM().inverse());
-
-        // Keep track of the offset so the dieElement that is being dragged stays
-        // under the cursor rather than having a jerk after starting dragging.
-        mappedPoint.x -= offset.x;
-        mappedPoint.y -= offset.y;
-
-        // Setup the transformation
-        transform.setTranslate(mappedPoint.x, mappedPoint.y);
-        transformList.appendItem(transform);
-        transformList.consolidate();
-    });
-
-    board.element.addEventListener("mousemove", _dragHandler.get(board));
+    board.context.fillStyle = die.color;
+    board.context.strokeStyle = "black";
+    board.context.fillRect(x + QUARTER, y + QUARTER, HALF, HALF);
+    board.context.strokeRect(x + QUARTER, y + QUARTER, HALF, HALF);
 };
 
-const stopDragging = (board) => {
-    board.element.removeEventListener("mousemove", _dragHandler.get(board));
-};
+const renderDiceBoard = (board, dice) => {
+    board.context.clearRect(0, 0, board.width, board.height);
 
+    for (const die of dice) {
+        renderDie(board, die, die.coordinates);
+    }
+};
 
 const convertWindowCoordinatesToCanvas = (canvas, xWindow, yWindow) => {
     const canvasBox = canvas.getBoundingClientRect();
@@ -100,40 +81,145 @@ const convertWindowCoordinatesToCanvas = (canvas, xWindow, yWindow) => {
     return {x, y};
 };
 
-const renderDie = (board, die) => {
-    const HALF = board.dieSize / 2;
-    const QUARTER = HALF / 2;
-    const {x, y} = die.coordinates;
-    if (die.isHeld()) {
-        // Render hold circle
-        board.context.beginPath();
-        board.context.fillStyle = die.heldBy.color;
-        board.context.arc(x + HALF, y + HALF, HALF, 0, 2 * Math.PI, false);
-        board.context.fill();
+
+
+const setupInteraction = (board, player) => {
+    // Setup interaction
+    let origin = {};
+    let state = NONE;
+    let staticBoard = null;
+    let dieUnderCursor = null;
+    let holdTimeout = null;
+
+    const holdDie = () => {
+        if (HOLD === state || INDETERMINED === state) {
+            // toggle hold / release
+            if (dieUnderCursor.isHeld()) {
+                dieUnderCursor.releaseIt(player);
+            } else {
+                dieUnderCursor.holdIt(player);
+            }
+            state = NONE;
+
+            renderDiceBoard(board, board.dice);
+        }
+
+        holdTimeout = null;
+    };
+
+    const startHolding = () => {
+        holdTimeout = window.setTimeout(holdDie, board.holdDuration);
+    };
+
+    const stopHolding = () => {
+        window.clearTimeout(holdTimeout);
+        holdTimeout = null;
+    };
+
+    const startInteraction = (event) => {
+        if (NONE === state) {
+
+            origin = {
+                x: event.clientX,
+                y: event.clientY
+            };
+
+            dieUnderCursor = board.layout.getAt(convertWindowCoordinatesToCanvas(board.element, event.clientX, event.clientY));
+
+            if (null !== dieUnderCursor) {
+                // Only interaction with the board via a die
+                if (board.holdableDice && board.draggableDice) {
+                    state = INDETERMINED;
+                    startHolding();
+                } else if (board.holdableDice) {
+                    state = HOLD;
+                    startHolding();
+                } else if (board.draggableDice) {
+                    state = MOVE;
+                }
+            }
+
+        }
+    };
+
+    const showInteraction = (event) => {
+        const dieUnderCursor = board.layout.getAt(convertWindowCoordinatesToCanvas(board.element, event.clientX, event.clientY));
+
+        if (DRAGGING === state) {
+            board.element.style.cursor = "grabbing";
+        } else if (null !== dieUnderCursor) {
+            board.element.style.cursor = "grab";
+        } else {
+            board.element.style.cursor = "default";
+        }
+    };
+
+    const move = (event) => {
+        if (MOVE === state || INDETERMINED === state) {
+            // determine if a die is under the cursor
+            // Ignore small movements
+            const dx = Math.abs(origin.x - event.clientX);
+            const dy = Math.abs(origin.y - event.clientY);
+
+            if (MIN_DELTA < dx || MIN_DELTA < dy) {
+                state = DRAGGING;
+                stopHolding();
+
+                const diceWithoutDieUnderCursor = board.dice.filter(die => die !== dieUnderCursor);
+                renderDiceBoard(board, diceWithoutDieUnderCursor);
+                staticBoard = board.context.getImageData(0, 0, board.element.width, board.element.height);
+            }
+        } else if (DRAGGING === state) {
+            const dx = origin.x - event.clientX;
+            const dy = origin.y - event.clientY;
+
+            const {x, y} = dieUnderCursor.coordinates;
+
+            board.context.putImageData(staticBoard, 0, 0);
+            renderDie(board, dieUnderCursor, {x: x - dx, y: y - dy});
+        }
+    };
+
+    const stopInteraction = (event) => {
+        if (null !== dieUnderCursor && DRAGGING === state) {
+            const dx = origin.x - event.clientX;
+            const dy = origin.y - event.clientY;
+
+            const {x, y} = dieUnderCursor.coordinates;
+
+            const snapToCoords = board.layout.snapTo({
+                dieUnderCursor,
+                x: x - dx,
+                y: y - dy,
+            });
+
+            const newCoords = null != snapToCoords ? snapToCoords : {x, y};
+            dieUnderCursor.coordinates = newCoords;
+        }
+
+        // Clear state
+        dieUnderCursor = null;
+        state = NONE;
+
+        // Refresh board; Render dice
+        renderDiceBoard(board, board.dice);
+    };
+
+
+    // Register the actual event listeners defined above
+
+    board.element.addEventListener("mousedown", startInteraction);
+
+    if (board.draggableDice) {
+        board.element.addEventListener("mousemove", move);
     }
 
-    console.log(convertWindowCoordinatesToCanvas(board.context.canvas, 4, 34));
-
-    // Render die
-
-    board.context.fillStyle = die.color;
-    board.context.strokeStyle = "black";
-    board.context.fillRect(x + QUARTER, y + QUARTER, HALF, HALF);
-    board.context.strokeRect(x + QUARTER, y + QUARTER, HALF, HALF);
-
-
-};
-
-const renderDiceBoard = (board, {dice, player}) => {
-    console.log(player);
-    board.context.clearRect(0, 0, board.width, board.height);
-
-    const layoutDice = board.layout.layout(dice);
-    for (const die of layoutDice) {
-
-
-        renderDie(board, die);
+    if (board.draggableDice || board.holdableDice) {
+        board.element.addEventListener("mousemove", showInteraction);
     }
+
+    board.element.addEventListener("mouseup", stopInteraction);
+    board.element.addEventListener("mouseout", stopInteraction);
 };
 
 /**
@@ -197,7 +283,6 @@ const CanvasDiceBoard = class extends DiceBoard {
             holdDuration,
             dispersion
         });
-
     }
 
     /***
@@ -215,7 +300,8 @@ const CanvasDiceBoard = class extends DiceBoard {
 
     renderDice({dice, player}) {
         this.clearRenderedDice(dice);
-        renderDiceBoard(this, {dice, player});
+        renderDiceBoard(this, this.layout.layout(dice));
+        setupInteraction(this, player);
     }
 };
 
