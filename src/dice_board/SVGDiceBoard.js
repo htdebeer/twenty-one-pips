@@ -310,6 +310,7 @@ const SVGDiceBoard = class extends DiceBoard {
     }
 
     renderDice({dice, player}) {
+        super.renderDice({dice, player});
         this.clearRenderedDice(dice);
 
         this.layout

@@ -143,8 +143,8 @@ const setupInteraction = (board, player) => {
     };
 
     const showInteraction = (event) => {
+        /*
         const dieUnderCursor = board.layout.getAt(convertWindowCoordinatesToCanvas(board.element, event.clientX, event.clientY));
-
         if (DRAGGING === state) {
             board.element.style.cursor = "grabbing";
         } else if (null !== dieUnderCursor) {
@@ -152,6 +152,7 @@ const setupInteraction = (board, player) => {
         } else {
             board.element.style.cursor = "default";
         }
+        */
     };
 
     const move = (event) => {
@@ -299,6 +300,7 @@ const CanvasDiceBoard = class extends DiceBoard {
     }
 
     renderDice({dice, player}) {
+        super.renderDice({dice, player});
         this.clearRenderedDice(dice);
         renderDiceBoard(this, this.layout.layout(dice));
         setupInteraction(this, player);

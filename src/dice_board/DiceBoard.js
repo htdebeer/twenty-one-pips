@@ -61,6 +61,7 @@ const _holdDuration = new WeakMap();
 const _dispersion = new WeakMap();
 
 const _renderedDice = new WeakMap();
+const _currentPlayer = new WeakMap();
 
 const makeDice = function (dice) {
     if (Number.isInteger(dice)) {
@@ -140,6 +141,7 @@ const DiceBoard = class extends EventTarget {
 
         // Initialize component
         _renderedDice.set(this, new Map());
+        _currentPlayer.set(this, null);
         _layout.set(this, new GridLayout({
             width: width,
             height: height,
@@ -321,6 +323,10 @@ const DiceBoard = class extends EventTarget {
         return _renderedDice.get(this);
     }
 
+    get currentPlayer() {
+        return _currentPlayer.get(this);
+    }
+
     /**
      * Render dice for this player.
      *
@@ -329,7 +335,8 @@ const DiceBoard = class extends EventTarget {
      * is rendered.
      */
     renderDice({dice, player}) {
-        console.log(dice, player);
+        _dice.set(this, dice);
+        _currentPlayer.set(this, player);
     }
 
     clearRenderedDice(dice) {
@@ -367,6 +374,13 @@ const DiceBoard = class extends EventTarget {
         this.dice.forEach(die => die.throwIt());
         this.renderDice({dice: this.dice, player});
         return this.dice;
+    }
+
+    /**
+     * Redraw the board.
+     */
+    redraw() {
+        this.renderDice({dice: this.dice, player: this.currentPlayer});
     }
 
 };

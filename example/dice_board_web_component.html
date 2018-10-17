@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Twenty-One-Pips: Dice Board as a Web Component</title>
+        <script type="module"
+            src="../src/dice_board/TopDiceBoardHTMLElement.js"></script>
+    </head>
+    <body>
+        <h1>Dice Board as a Web Component</h1>
+
+        <top-dice-board
+            width="500"
+            height="500"
+            die-size="100"
+            background="green"
+            holdable-dice="false"
+        ></top-dice-board>
+
+        <script type="module">
+const NUMBER_OF_DICE = 5;
+
+const topDiceBoard = document.querySelector("top-dice-board");
+
+topDiceBoard.throwDice({dice: NUMBER_OF_DICE});
+        </script>
+    </body>
+</html>
