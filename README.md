@@ -1,4 +1,8 @@
+# A JavaScript Dice Library for Creating Dice Games and other Educational Purposes
 
-Twenty-one-pips is a JavaScript *dice game engine*. It is still being
-developed and there has been no official release yet. License: LGPL3.0.
+Twenty-one-pips is a JavaScript *dice library* to render and control dice.
+
+It is still very much under development and there has been no release yet.
+
+License: LGPL3.0.
 

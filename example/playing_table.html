@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Playing Table</title>
+        <style>
+            svg {
+                border: 1px solid dimgray;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Playing Table</h1>
+        <button id="thrower" type="button">Throw dice!</button>
+        <figure id="playing_table">
+        </figure>
+        <script type="module">
+            import {PlayingTable} from "../src/playing_table/PlayingTable.js";
+
+            const table = new PlayingTable({
+                parent: document.getElementById("playing_table"),
+                width: 400,
+                height: 400,
+                dieSize: 100,
+                dispersion: 5,
+                background: "green",
+                rotateDice: true,
+                draggableDice: true,
+                holdableDice: true
+            });
+
+            console.log(`The maximum number of dice is:
+                ${table.maximumNumberOfDice}.`);
+
+            table.throwDice({dice: 5});
+
+            const throwButton = document.getElementById("thrower");
+            throwButton.addEventListener("click", () => {
+                table.throwDice();
+                console.log(table.dice.reduce((sum, die) => sum + die.pips, 0));
+            });
+
+
+        </script>
+    </body>
+</html>
