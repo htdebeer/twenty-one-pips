@@ -142,7 +142,7 @@ const setupInteraction = (board, player) => {
         }
     };
 
-    const showInteraction = (event) => {
+    const showInteraction = () => {
         /*
         const dieUnderCursor = board.layout.getAt(convertWindowCoordinatesToCanvas(board.element, event.clientX, event.clientY));
         if (DRAGGING === state) {

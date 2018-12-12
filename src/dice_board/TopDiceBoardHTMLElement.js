@@ -20,6 +20,16 @@
 import {
     CanvasDiceBoard
 } from "./CanvasDiceBoard.js";
+import {
+    DEFAULT_DIE_SIZE,
+    DEFAULT_HOLD_DURATION,
+    DEFAULT_BACKGROUND,
+    DEFAULT_DRAGGABLE_DICE,
+    DEFAULT_HOLDABLE_DICE,
+    DEFAULT_WIDTH,
+    DEFAULT_HEIGHT,
+    DEFAULT_DISPERSION
+} from "./DiceBoard.js";
 import {DEFAULT_SYSTEM_PLAYER} from "../Player.js";
 
 
@@ -66,8 +76,27 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
     constructor() {
         super();
 
+        console.log("Width? ", this.getAttribute("width"));
+
+        const width = this.hasAttribute("width") ? this.getAttribute("width") : DEFAULT_WIDTH;
+        const height = this.hasAttribute("height") ? this.getAttribute("height") : DEFAULT_HEIGHT;
+        const background = this.hasAttribute("background") ? this.getAttribute("background") : DEFAULT_BACKGROUND;
+        const dieSize = this.hasAttribute("die-size") ? this.getAttribute("die-size") : DEFAULT_DIE_SIZE;
+        const draggableDice = this.hasAttribute("draggable-dice") ? this.getAttribute("draggable-dice") : DEFAULT_DRAGGABLE_DICE;
+        const holdableDice = this.hasAttribute("holdable-dice") ? this.getAttribute("holdable-dice") : DEFAULT_HOLDABLE_DICE;
+        const holdDuration = this.hasAttribute("hold-duration") ? this.getAttribute("hold-duration") : DEFAULT_HOLD_DURATION;
+        const dispersion = this.hasAttribute("dispersion") ? this.getAttribute("dispersion") : DEFAULT_DISPERSION;
+
         _diceBoard.set(this, new CanvasDiceBoard({
-            parent: this.attachShadow({mode: "closed"})
+            parent: this.attachShadow({mode: "closed"}),
+            width,
+            height,
+            background,
+            dieSize,
+            draggableDice,
+            holdableDice,
+            holdDuration,
+            dispersion
         }));
     }
 
@@ -78,6 +107,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
     attributeChangedCallback(name, oldValue, newValue) {
         const attribute = OBSERVED_ATTRIBUTES[name];
         const board = _diceBoard.get(this);
+        console.log("Changing", name, oldValue, newValue);
         board[attributeNameToPropertyName(name)] = attribute.convert(newValue);
         board.redraw();
     }

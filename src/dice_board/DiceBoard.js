@@ -219,6 +219,7 @@ const DiceBoard = class extends EventTarget {
         _width.set(this, newWidth);
         this.layout.width = newWidth;
         this.element.setAttribute("width", newWidth);
+        console.log("Width := ", newWidth);
     }
 
     /**
