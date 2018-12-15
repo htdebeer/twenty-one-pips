@@ -22,8 +22,8 @@ import {
     DEFAULT_WIDTH,
     DEFAULT_HEIGHT,
     DEFAULT_DISPERSION
-} from "./DiceBoard.js";
-import {ConfigurationError} from "../error/ConfigurationError.js";
+} from "./TopDiceBoardHTMLElement.js";
+import {ConfigurationError} from "./error/ConfigurationError.js";
 
 /**
  * @module
