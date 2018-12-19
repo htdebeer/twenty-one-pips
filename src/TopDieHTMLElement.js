@@ -26,14 +26,12 @@ import {ConfigurationError} from "./error/ConfigurationError.js";
 
 const NUMBER_OF_PIPS = 6; // Default / regular six sided die has 6 pips maximum.
 const DEFAULT_COLOR = "Ivory";
+const DEFAULT_X = 0;
+const DEFAULT_Y = 0;
+const DEFAULT_ROTATION = 0;
 
 // Private properties
-const _pips = new WeakMap(); // The number of pips of a die.
 const _heldBy = new WeakMap(); // Reference to the player that is holding a die.
-const _color = new WeakMap(); // The color of a die.
-const _x = new WeakMap(); // The x-coordinate of a die on the table.
-const _y = new WeakMap(); // The y-coordinate of a die on the table.
-const _rotation = new WeakMap(); // The rotation in degrees of a die on the table.
 
 /**
  * Is p a Player?
@@ -84,6 +82,9 @@ const unicodeToPips = (u) => {
  * undefined if p was not between 1 and 6 inclusive.
  */
 const pipsToUnicode = p => isPipNumber(p) ? DIE_UNICODE_CHARACTERS[p - 1] : undefined;
+
+const _board = new WeakMap();
+
 /**
  * TopDieHTMLElement is the "top-die" custom HTML element representing a die
  * on the dice board.
@@ -98,33 +99,24 @@ const TopDieHTMLElement = class extends HTMLElement {
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
-
     }
 
-    /**
-     * Create a new Die based on a unicode character of a die.
-     *
-     * @param {String} unicodeChar - The unicode character representing a die.
-     * @param {Object} config - The initial configuration of this Die.
-     * @param {String} [config.color = DEFAULT_COLOR] - The background color of
-     * this Die.
-     * @param {module:Player~Player|null} [config.heldBy = null] - The player that is holding
-     * this Die. Defaults to null, indicating that no player is holding this
-     * Die.
-     *
-     * @return {Die} The Die corresponding to the unicodeChar.
-     * @throws {module:error/ConfigurationError~ConfigurationError} The unicodeChar should be one of six
-     * unicode characters representing a die.
-     */
-    static fromUnicode(unicodeChar, {
-        heldBy = null,
-        color = DEFAULT_COLOR
-    } = {}) {
-        const pips = unicodeToPips(unicodeChar);
-        if (!isPipNumber(pips)) {
-            throw new ConfigurationError(`The String '${unicodeChar}' is not a unicode character representing a die.`);
+    connectedCallback() {
+        _board.set(this, this.parentNode);
+        // Ensure every die has a pips, 1 <= pips <= 6
+        if (!this.hasAttribute("pips")) {
+            this.setAttribute("pips", randomPips());
         }
-        return new Die({pips, heldBy, color});
+
+        _board.get(this).dispatchEvent(new Event("top-die:added"));
+    }
+
+    get ready() {
+        return _ready.get(this);
+    }
+
+    disconnectedCallback() {
+        _board.get(this).dispatchEvent(new Event("top-die:removed"));
     }
 
     /**
@@ -143,7 +135,7 @@ const TopDieHTMLElement = class extends HTMLElement {
      * @type {Number}
      */
     get pips() {
-        return this.getAttribute("pips");
+        return parseInt(this.getAttribute("pips"), 10);
     }
 
     /**
@@ -161,7 +153,10 @@ const TopDieHTMLElement = class extends HTMLElement {
      * @type {Player|null} 
      */
     get heldBy() {
-        return _heldBy.get(this);
+        return this.hasAttribute("held-by") ? this.getAttribute("held-by") : null;
+    }
+    set heldBy(player) {
+        this.setAttribute("held-by", player);
     }
 
     /**
@@ -170,19 +165,16 @@ const TopDieHTMLElement = class extends HTMLElement {
      * @type {Coordinates|null}
      */
     get coordinates() {
-        const x = _x.get(this);
-        const y = _y.get(this);
-
-        return null === x || null === y ? null : {x, y};
+        return null === this.x || null === this.y ? null : {x: this.x, y: this.y};
     }
     set coordinates(c) {
         if (null === c) {
-            _x.set(this, null);
-            _y.set(this, null);
+            this.x = null;
+            this.y = null;
         } else{
             const {x, y} = c;
-            _x.set(this, x);
-            _y.set(this, y);
+            this.x = x;
+            this.y = y;
         }
     }
 
@@ -195,16 +187,30 @@ const TopDieHTMLElement = class extends HTMLElement {
         return null !== this.coordinates;
     }
 
+    get x() {
+        return this.hasAttribute("x") ? parseInt(this.getAttribute("x"), 10) : DEFAULT_X;
+    }
+    set x(newX) {
+        this.setAttribute("x", newX);
+    }
+
+    get y() {
+        return this.hasAttribute("y") ? parseInt(this.getAttribute("y"), 10) : DEFAULT_Y;
+    }
+    set y(newY) {
+        this.setAttribute("y", newY);
+    }
+
     /**
      * The rotation of this Die.
      *
      * @type {Number} The rotation of this Die, 0 ≤ rotation ≤ 360.
      */
     get rotation() {
-        return _rotation.get(this);
+        return this.hasAttribute("rotation") ? parseInt(this.getAttribute("rotation"), 10) : DEFAULT_ROTATION;
     }
     set rotation(newR) {
-        _rotation.set(this, newR);
+        this.setAttribute("rotation", newR);
     }
 
     /**
@@ -215,7 +221,7 @@ const TopDieHTMLElement = class extends HTMLElement {
      */
     throwIt() {
         if (!this.isHeld()) {
-            _pips.set(this, randomPips());
+            this.setAttribute("pips", randomPips());
             this.dispatchEvent(new CustomEvent("top:throw-die", {detail: {
                 die: this
             }}));
@@ -231,7 +237,7 @@ const TopDieHTMLElement = class extends HTMLElement {
      */
     holdIt(player) {
         if (!this.isHeld()) {
-            _heldBy.set(this, player);
+            this.heldBy = player;
             this.dispatchEvent(new CustomEvent("top:hold-die", {detail: {
                 die: this,
                 player
@@ -245,7 +251,7 @@ const TopDieHTMLElement = class extends HTMLElement {
      * @return {Boolean} True when this Die is being held by any player, false otherwise.
      */
     isHeld() {
-        return null !== _heldBy.get(this);
+        return this.hasAttribute("held-by");
     }
 
     /**
@@ -263,6 +269,25 @@ const TopDieHTMLElement = class extends HTMLElement {
                 player
             }}));
         }
+    }
+
+    render(context, dieSize, coordinates = this.coordinates) {
+        const HALF = dieSize / 2;
+        const QUARTER = HALF / 2;
+        const {x, y} = coordinates;
+        if (this.isHeld()) {
+            // Render hold circle
+            context.beginPath();
+            context.fillStyle = this.heldBy.color;
+            context.arc(x + HALF, y + HALF, HALF, 0, 2 * Math.PI, false);
+            context.fill();
+        }
+
+        // Render die
+        context.fillStyle = this.color;
+        context.strokeStyle = "black";
+        context.fillRect(x + QUARTER, y + QUARTER, HALF, HALF);
+        context.strokeRect(x + QUARTER, y + QUARTER, HALF, HALF);
     }
 };
 

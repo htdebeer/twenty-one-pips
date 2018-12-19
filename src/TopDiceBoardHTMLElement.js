@@ -50,32 +50,11 @@ const INDETERMINED = Symbol("indetermined");
 const DRAGGING = Symbol("dragging");
 
 // Methods to handle interaction
-
-const renderDie = (board, die, point) => {
-    const HALF = board.dieSize / 2;
-    const QUARTER = HALF / 2;
-    const {x, y} = point;
-    if (die.isHeld()) {
-        // Render hold circle
-        board.context.beginPath();
-        board.context.fillStyle = die.heldBy.color;
-        board.context.arc(x + HALF, y + HALF, HALF, 0, 2 * Math.PI, false);
-        board.context.fill();
-    }
-
-    // Render die
-
-    board.context.fillStyle = die.color;
-    board.context.strokeStyle = "black";
-    board.context.fillRect(x + QUARTER, y + QUARTER, HALF, HALF);
-    board.context.strokeRect(x + QUARTER, y + QUARTER, HALF, HALF);
-};
-
 const _renderDiceBoard = (board, dice) => {
     board.context.clearRect(0, 0, board.width, board.height);
 
     for (const die of dice) {
-        renderDie(board, die, die.coordinates);
+        die.render(board.context, board.dieSize);
     }
 };
 
@@ -91,6 +70,8 @@ const convertWindowCoordinatesToCanvas = (canvas, xWindow, yWindow) => {
 
 
 const setupInteraction = (board) => {
+    const canvas = _canvas.get(board);
+
     // Setup interaction
     let origin = {};
     let state = NONE;
@@ -131,7 +112,7 @@ const setupInteraction = (board) => {
                 y: event.clientY
             };
 
-            dieUnderCursor = board.layout.getAt(convertWindowCoordinatesToCanvas(board.element, event.clientX, event.clientY));
+            dieUnderCursor = board.layout.getAt(convertWindowCoordinatesToCanvas(canvas, event.clientX, event.clientY));
 
             if (null !== dieUnderCursor) {
                 // Only interaction with the board via a die
@@ -149,17 +130,15 @@ const setupInteraction = (board) => {
         }
     };
 
-    const showInteraction = () => {
-        /*
-        const dieUnderCursor = board.layout.getAt(convertWindowCoordinatesToCanvas(board.element, event.clientX, event.clientY));
+    const showInteraction = (event) => {
+        const dieUnderCursor = board.layout.getAt(convertWindowCoordinatesToCanvas(canvas, event.clientX, event.clientY));
         if (DRAGGING === state) {
-            board.element.style.cursor = "grabbing";
+            canvas.style.cursor = "grabbing";
         } else if (null !== dieUnderCursor) {
-            board.element.style.cursor = "grab";
+            canvas.style.cursor = "grab";
         } else {
-            board.element.style.cursor = "default";
+            canvas.style.cursor = "default";
         }
-        */
     };
 
     const move = (event) => {
@@ -175,7 +154,7 @@ const setupInteraction = (board) => {
 
                 const diceWithoutDieUnderCursor = board.dice.filter(die => die !== dieUnderCursor);
                 _renderDiceBoard(board, diceWithoutDieUnderCursor);
-                staticBoard = board.context.getImageData(0, 0, board.element.width, board.element.height);
+                staticBoard = board.context.getImageData(0, 0, canvas.width, canvas.height);
             }
         } else if (DRAGGING === state) {
             const dx = origin.x - event.clientX;
@@ -184,7 +163,7 @@ const setupInteraction = (board) => {
             const {x, y} = dieUnderCursor.coordinates;
 
             board.context.putImageData(staticBoard, 0, 0);
-            renderDie(board, dieUnderCursor, {x: x - dx, y: y - dy});
+            dieUnderCursor.render(board.context, board.dieSize, {x: x - dx, y: y - dy});
         }
     };
 
@@ -217,48 +196,25 @@ const setupInteraction = (board) => {
 
     // Register the actual event listeners defined above
 
-    board.element.addEventListener("mousedown", startInteraction);
+    canvas.addEventListener("mousedown", startInteraction);
 
     if (board.draggableDice) {
-        board.element.addEventListener("mousemove", move);
+        canvas.addEventListener("mousemove", move);
     }
 
     if (board.draggableDice || board.holdableDice) {
-        board.element.addEventListener("mousemove", showInteraction);
+        canvas.addEventListener("mousemove", showInteraction);
     }
 
-    board.element.addEventListener("mouseup", stopInteraction);
-    board.element.addEventListener("mouseout", stopInteraction);
+    canvas.addEventListener("mouseup", stopInteraction);
+    canvas.addEventListener("mouseout", stopInteraction);
 };
 
 // Private properties
-const _element = new WeakMap();
+const _canvas = new WeakMap();
 const _layout = new WeakMap();
 const _dice = new WeakMap();
-const _renderedDice = new WeakMap();
 const _currentPlayer = new WeakMap();
-
-const makeDice = function (dice) {
-    if (Number.isInteger(dice)) {
-        return (new Array(dice)).fill(null).map(_ => new Die());
-    } else if (Array.isArray(dice)) {
-        return dice.map((die) => {
-            if (Number.isInteger(die)) {
-                return new Die({pips: die});
-            } else if ("string" === typeof die) {
-                return Die.fromUnicode(die);
-            } else if (die instanceof Die) {
-                return die;
-            } else {
-                throw new ConfigurationError(`Die specification '${die}' cannot be interpreted as a die.`);
-            }
-        });
-    } else {
-        throw new ConfigurationError(`Dice specification '${dice}' cannot be interpreted as dice or number of dice`);
-    }
-};
-
-
 
 const _diceBoard = new WeakMap();
 const OBSERVED_ATTRIBUTES = {
@@ -266,14 +222,14 @@ const OBSERVED_ATTRIBUTES = {
         convert: (v) => parseInt(v, 10),
         setter: (board, v) => {
             board.layout.width = v;
-            board.element.setAttribute("width", v);
+            _canvas.get(board).setAttribute("width", v);
         }
     },
     "height": {
         convert: (v) => parseInt(v, 10),
         setter: (board, v) => {
             board.layout.height = v;
-            board.element.setAttribute("height", v);
+            _canvas.get(board).setAttribute("height", v);
         }
     },
     "dispersion": {
@@ -295,7 +251,7 @@ const OBSERVED_ATTRIBUTES = {
     },
     "background": {
         convert: (v) => v,
-        setter: (board, v) => board.element.style.background = v
+        setter: (board, v) => _canvas.get(board).style.background = v
     }
 };
 
@@ -325,12 +281,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
         const canvas = document.createElement("canvas");
         shadow.appendChild(canvas);
 
-        _element.set(this, canvas);
-
-        this.dice = [];
-        
-        // Initialize component
-        _renderedDice.set(this, new Map());
+        _canvas.set(this, canvas);
         _currentPlayer.set(this, null);
         _layout.set(this, new GridLayout({
             width: this.width,
@@ -338,7 +289,6 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
             dieSize: this.dieSize,
             dispersion: this.dispersion
         }));
-        
         setupInteraction(this);
     }
 
@@ -348,21 +298,36 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
 
     attributeChangedCallback(name, oldValue, newValue) {
         const attribute = OBSERVED_ATTRIBUTES[name];
-        const board = _diceBoard.get(this);
 
         if (attribute.setter) {
             attribute.setter(this, attribute.convert(newValue));
         }
-        
-        this._redraw();
+    }
+
+    connectedCallback() {
+        let numberOfReadyDice = 0;
+
+        this.addEventListener("top-die:added", () => {
+            numberOfReadyDice++;
+            if (numberOfReadyDice === this.dice.length) {
+                _renderDiceBoard(this, this.layout.layout(this.dice));
+            }
+        });
+
+        this.addEventListener("top-die:removed", () => {
+            _renderDiceBoard(this, this.layout.layout(this.dice));
+            numberOfReadyDice--;
+        });
+    }
+
+    disconnectedCallback() {
+    }
+
+    adoptedCallback() {
     }
 
     get context() {
-        return _element.get(this).getContext("2d");
-    }
-
-    get element() {
-        return _element.get(this);
+        return _canvas.get(this).getContext("2d");
     }
 
     /**
@@ -381,11 +346,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
      * @type {module:Die~Die[]}
      */
     get dice() {
-        return _dice.get(this);
-    }
-    set dice(dice) {
-        // TODO: Complain if |dice| > this.maximumNumberOfDice
-        _dice.set(this, makeDice(dice));
+        return [...this.getElementsByTagName("top-die")];
     }
 
     /**
@@ -466,32 +427,8 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
         return this.hasAttribute("hold-duration") ? this.getAttribute("hold-duration") : DEFAULT_HOLD_DURATION;
     }
 
-    /**
-     * List of rendered dice.
-     *
-     * @type {Die[]}
-     */
-    get renderedDice() {
-        return _renderedDice.get(this);
-    }
-
     get currentPlayer() {
         return _currentPlayer.get(this);
-    }
-
-    _renderDice({dice, player}) {
-        this._clearRenderedDice(dice);
-        _currentPlayer.set(this, player);
-        _renderDiceBoard(this, this.layout.layout(dice));
-    }
-
-    _clearRenderedDice(dice) {
-        // Remove all rendered dice that are not to be rendered again
-        for (const die of this.renderedDice.keys()) {
-            if (!dice.includes(die)) {
-                this.renderedDice.delete(die);
-            }
-        }
     }
 
     throwDice(player = DEFAULT_SYSTEM_PLAYER) {
@@ -499,14 +436,10 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
             this.dice = [];
         }
         this.dice.forEach(die => die.throwIt());
-        this._renderDice({dice: this.dice, player});
+        _currentPlayer.set(this, player);
+        _renderDiceBoard(this, this.layout.layout(this.dice));
         return this.dice;
     }
-
-    _redraw() {
-        this._renderDice({dice: this.dice, player: this.currentPlayer});
-    }
-
 };
 
 window.customElements.define("top-dice-board", TopDiceBoardHTMLElement);

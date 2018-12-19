@@ -231,7 +231,7 @@ const GridLayout = class {
             availableCells.splice(randomIndex, 1);
 
             die.coordinates = this._numberToCoordinates(randomCell);
-            die.rotation = Math.random() * FULL_CIRCLE_IN_DEGREES;
+            die.rotation = Math.round(Math.random() * FULL_CIRCLE_IN_DEGREES);
             alreadyLayoutDice.push(die);
         }
 
