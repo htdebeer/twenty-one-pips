@@ -5,6 +5,8 @@
         <title>Twenty-One-Pips: Dice Board as a Web Component</title>
         <script type="module" src="../src/TopDiceBoardHTMLElement.js"></script>
         <script type="module" src="../src/TopDieHTMLElement.js"></script>
+        <script type="module" src="../src/TopPlayerListHTMLElement.js"></script>
+        <script type="module" src="../src/TopPlayerHTMLElement.js"></script>
     </head>
     <body>
         <h1>Dice Board as a Web Component</h1>
@@ -13,12 +15,11 @@
             <button type="button" id="throwDice">Click this button to throw the dice!</button>
         </p>
 
-        <top-dice-board
-            width="500"
-            height="500"
-            die-size="100"
-            background="green"
-        >
+        <top-dice-board width="500" height="500" die-size="100" background="green">
+            <top-player-list>
+                <top-player name="Huub" color="red"></top-player>
+                <top-player name="Aisha" color="navy"></top-player>
+            </top-player-list>
             <top-die pips="3"></top-die>    
             <top-die pips="2"></top-die>
             <top-die></top-die>
@@ -31,8 +32,9 @@
 
         <script type="module">
             const board = document.querySelector("top-dice-board");
+            const firstPlayer = board.querySelector("top-player[name='Huub']");
             const button = document.getElementById("throwDice");
-            button.addEventListener("click", () => board.throwDice());
+            button.addEventListener("click", () => board.throwDice(firstPlayer));
         </script>
     </body>
 </html>

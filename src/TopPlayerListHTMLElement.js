@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright (c) 2018 Huub de Beer
  *
  * This file is part of twenty-one-pips.
@@ -17,20 +17,46 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-/**
- * @module
- */
-/**
- * Base class for models.
- */
-const Model = class extends EventTarget {
 
-    /**
-     * Create a new Model.
-     */
+/**
+ * TopPlayerListHTMLElement to describe the players in the game
+ */
+const TopPlayerListHTMLElement = class extends HTMLElement {
     constructor() {
         super();
     }
+
+    static get observedAttributes() {
+        return [];
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+    }
+
+    connectedCallback() {
+    }
+
+    disconnectedCallback() {
+    }
+
+    get players() {
+        return [...this.getElementsByTagName("top-player")];
+    }
+
+    contains(player) {
+        return this.players.filter(p => p.equals(player));
+    }
+
+    find(player) {
+        const foundPlayers = this.players.filter(p => p.equals(player));
+        return 0 === foundPlayers.length ? null : foundPlayers[0];
+    }
+
+
 };
 
-export {Model};
+window.customElements.define("top-player-list", TopPlayerListHTMLElement);
+
+export {
+    TopPlayerListHTMLElement
+};

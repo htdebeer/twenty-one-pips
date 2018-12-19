@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright (c) 2018 Huub de Beer
  *
  * This file is part of twenty-one-pips.
@@ -17,50 +17,37 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-
-import {Model} from "./Model.js";
 import {ConfigurationError} from "./error/ConfigurationError.js";
 
 /**
- * @module
- */
-
-const _name = new WeakMap();
-const _color = new WeakMap();
-
-/**
- * A Player of a dice game.
+ * TopPlayerHTMLElement -- A Player of a dice game.
  *
- * A Player' name and color should be unique in a game. Two different Player
+ * A Player's name and color should be unique in a game. Two different Player
  * instances with the same name and same color are considered the same Player.
  *
- * @property {String} name - This Player's name.
- * @property {String} color - The color associated with this Player.
- * 
- * @extends module:Model~Model
  */
-const Player = class extends Model {
-    /**
-     * Create a new Player given a name and a color.
-     *
-     * @param {Object} config - The initial configuration of this Player.
-     * @param {String} config.name - This Player's name.
-     * @param {String} config.color - The color associated with this Player.
-     *
-     * @throws {module:error/ConfigurationError~ConfigurationError} A Player must have a name and a
-     * color.
-     */
-    constructor({name, color}) {
+const TopPlayerHTMLElement = class extends HTMLElement {
+    constructor() {
         super();
-        if ("string" !== typeof name || "" === name) {
+    }
+
+    static get observedAttributes() {
+        return [];
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+    }
+
+    connectedCallback() {
+        if ("string" !== typeof this.name || "" === this.name) {
             throw new ConfigurationError("A Player needs a name, which is a String.");
         }
-        if ("string" !== typeof color || "" === color) {
+        if ("string" !== typeof this.color || "" === this.color) {
             throw new ConfigurationError("A Player needs a color, which is a String.");
         }
+    }
 
-        _name.set(this, name);
-        _color.set(this, color);
+    disconnectedCallback() {
     }
 
     /**
@@ -69,7 +56,7 @@ const Player = class extends Model {
      * @return {String} This Player's name.
      */
     get name() {
-        return _name.get(this);
+        return this.getAttribute("name");
     }
 
     /**
@@ -78,7 +65,11 @@ const Player = class extends Model {
      * @return {String} This Player's color.
      */
     get color() {
-        return _color.get(this);
+        return this.getAttribute("color");
+    }
+
+    toString() {
+        return `${this.name}`;
     }
 
     /**
@@ -89,9 +80,12 @@ const Player = class extends Model {
      * or when both name and color are the same.
      */
     equals(other) {
-        return other === this || other.name === this.name && other.color === this.color;
+        const name = "string" === typeof other ? other : other.name;
+        return other === this || name === this.name;
     }
 };
+
+window.customElements.define("top-player", TopPlayerHTMLElement);
 
 /**
  * The default system player. Dice are thrown by a player. For situations
@@ -100,9 +94,11 @@ const Player = class extends Model {
  * change the name and/or the color, create and use your own "system player".
  * @const
  */
-const DEFAULT_SYSTEM_PLAYER = new Player({name: "DEFAULT_SYSTEM_PLAYER", color: "red"});
+const DEFAULT_SYSTEM_PLAYER = new TopPlayerHTMLElement();
+DEFAULT_SYSTEM_PLAYER.setAttribute("name", "DEFAULT_SYSTEM_PLAYER");
+DEFAULT_SYSTEM_PLAYER.setAttribute("color", "red");
 
 export {
-    Player,
+    TopPlayerHTMLElement,
     DEFAULT_SYSTEM_PLAYER
 };

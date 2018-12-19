@@ -18,7 +18,7 @@
  * @ignore
  */
 
-import {ConfigurationError} from "./error/ConfigurationError.js";
+//import {ConfigurationError} from "./error/ConfigurationError.js";
 
 /**
  * @module
@@ -30,19 +30,12 @@ const DEFAULT_X = 0;
 const DEFAULT_Y = 0;
 const DEFAULT_ROTATION = 0;
 
-// Private properties
-const _heldBy = new WeakMap(); // Reference to the player that is holding a die.
+const ROUNDED_CORNER_RADIUS = 15; // px
+const PIP_COLOR = "black";
 
-/**
- * Is p a Player?
- *
- * Testing framework + babel results in instanceof not working correctly. So
- * checking for compatibility instead in the meantime.
- *
- * @param {*} p - The thing to check.
- * @return {Boolean} True is p is a Player.
- */
-const isPlayer = p => null === p || (Boolean(p.color) && Boolean(p.name));
+const deg2rad = (deg) => {
+    return deg * (Math.PI / 180);
+};
 
 const isPipNumber = n => {
     const number = parseInt(n, 10);
@@ -83,6 +76,47 @@ const unicodeToPips = (u) => {
  */
 const pipsToUnicode = p => isPipNumber(p) ? DIE_UNICODE_CHARACTERS[p - 1] : undefined;
 
+
+const renderHold = (context, x, y, width, color) => {
+    context.beginPath();
+    context.fillStyle = color;
+    context.arc(x + width, y + width, width, 0, 2 * Math.PI, false);
+    context.fill();
+};
+
+const renderDie = (context, x, y, width, color) => {
+    const HALF_INNER_SIZE = Math.sqrt(width ** 2 / 2);
+    const INNER_SIZE = 2 * HALF_INNER_SIZE;
+
+    const startX = x + width - HALF_INNER_SIZE + ROUNDED_CORNER_RADIUS;
+    const startY = y + width - HALF_INNER_SIZE;
+    const INNER_SIZE_ROUNDED = INNER_SIZE - 2 * ROUNDED_CORNER_RADIUS;
+    context.beginPath();
+    context.fillStyle = color;
+    context.strokeStyle = "black";
+    context.moveTo(startX, startY);
+    context.lineTo(startX + INNER_SIZE_ROUNDED, startY);
+    context.arc(startX + INNER_SIZE_ROUNDED, startY + ROUNDED_CORNER_RADIUS, ROUNDED_CORNER_RADIUS, deg2rad(270), deg2rad(0));
+    context.lineTo(startX + INNER_SIZE_ROUNDED + ROUNDED_CORNER_RADIUS, startY + INNER_SIZE_ROUNDED + ROUNDED_CORNER_RADIUS);
+    context.arc(startX + INNER_SIZE_ROUNDED, startY + INNER_SIZE_ROUNDED + ROUNDED_CORNER_RADIUS, ROUNDED_CORNER_RADIUS, deg2rad(0), deg2rad(90));
+    context.lineTo(startX, startY + INNER_SIZE);
+    context.arc(startX, startY + INNER_SIZE_ROUNDED + ROUNDED_CORNER_RADIUS, ROUNDED_CORNER_RADIUS, deg2rad(90), deg2rad(180));
+    context.lineTo(startX - ROUNDED_CORNER_RADIUS, startY + ROUNDED_CORNER_RADIUS);
+    context.arc(startX, startY + ROUNDED_CORNER_RADIUS, ROUNDED_CORNER_RADIUS, deg2rad(180), deg2rad(270));
+
+    context.stroke();
+    context.fill();
+};
+
+const renderPip = (context, x, y, width) => {
+    context.beginPath();
+    context.fillStyle = PIP_COLOR;
+    context.moveTo(x, y);
+    context.arc(x, y, width, 0, 2 * Math.PI, false);
+    context.fill();
+};
+
+
 const _board = new WeakMap();
 
 /**
@@ -93,9 +127,9 @@ const TopDieHTMLElement = class extends HTMLElement {
     constructor() {
         super();
     }
-    
+
     static get observedAttributes() {
-        return ["x", "y", "rotation", "pips", "held-by"]
+        return ["x", "y", "rotation", "pips", "held-by"];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -109,10 +143,6 @@ const TopDieHTMLElement = class extends HTMLElement {
         }
 
         _board.get(this).dispatchEvent(new Event("top-die:added"));
-    }
-
-    get ready() {
-        return _ready.get(this);
     }
 
     disconnectedCallback() {
@@ -153,10 +183,15 @@ const TopDieHTMLElement = class extends HTMLElement {
      * @type {Player|null} 
      */
     get heldBy() {
-        return this.hasAttribute("held-by") ? this.getAttribute("held-by") : null;
+        const playerName = this.hasAttribute("held-by") ? this.getAttribute("held-by") : null;
+        return _board.get(this).getPlayer(playerName);
     }
     set heldBy(player) {
-        this.setAttribute("held-by", player);
+        if (null === player) {
+            this.removeAttribute("held-by");
+        } else {
+            this.setAttribute("held-by", player.toString());
+        }
     }
 
     /**
@@ -263,7 +298,7 @@ const TopDieHTMLElement = class extends HTMLElement {
      */
     releaseIt(player) {
         if (this.isHeld() && this.heldBy.equals(player)) {
-            _heldBy.set(this, null);
+            this.heldBy = null;
             this.dispatchEvent(new CustomEvent("top:release-die", {detail: {
                 die: this,
                 player
@@ -273,26 +308,67 @@ const TopDieHTMLElement = class extends HTMLElement {
 
     render(context, dieSize, coordinates = this.coordinates) {
         const HALF = dieSize / 2;
-        const QUARTER = HALF / 2;
+        const THIRD = dieSize / 3;
         const {x, y} = coordinates;
+
         if (this.isHeld()) {
-            // Render hold circle
-            context.beginPath();
-            context.fillStyle = this.heldBy.color;
-            context.arc(x + HALF, y + HALF, HALF, 0, 2 * Math.PI, false);
-            context.fill();
+            renderHold(context, x, y, HALF, this.heldBy.color);
         }
 
-        // Render die
-        context.fillStyle = this.color;
-        context.strokeStyle = "black";
-        context.fillRect(x + QUARTER, y + QUARTER, HALF, HALF);
-        context.strokeRect(x + QUARTER, y + QUARTER, HALF, HALF);
+        renderDie(context, x, y, HALF, this.color);
+
+        const PIP_SIZE = dieSize / 15;
+        switch (this.pips) {
+            case 1: {
+                renderPip(context, x + HALF, y + HALF, PIP_SIZE);
+                break;
+            }
+            case 2: {
+                renderPip(context, x + THIRD, y + THIRD, PIP_SIZE);
+                renderPip(context, x + 2 * THIRD, y + 2 * THIRD, PIP_SIZE);
+                break;
+            }
+            case 3: {
+                renderPip(context, x + THIRD, y + THIRD, PIP_SIZE);
+                renderPip(context, x + HALF, y + HALF, PIP_SIZE);
+                renderPip(context, x + 2 * THIRD, y + 2 * THIRD, PIP_SIZE);
+                break;
+            }
+            case 4: {
+                renderPip(context, x + THIRD, y + THIRD, PIP_SIZE);
+                renderPip(context, x + THIRD, y + 2 * THIRD, PIP_SIZE);
+                renderPip(context, x + 2 * THIRD, y + 2 * THIRD, PIP_SIZE);
+                renderPip(context, x + 2 * THIRD, y + THIRD, PIP_SIZE);
+                break;
+            }
+            case 5: {
+                renderPip(context, x + THIRD, y + THIRD, PIP_SIZE);
+                renderPip(context, x + THIRD, y + 2 * THIRD, PIP_SIZE);
+                renderPip(context, x + HALF, y + HALF, PIP_SIZE);
+                renderPip(context, x + 2 * THIRD, y + 2 * THIRD, PIP_SIZE);
+                renderPip(context, x + 2 * THIRD, y + THIRD, PIP_SIZE);
+                break;
+            }
+            case 6: {
+                renderPip(context, x + THIRD, y + THIRD, PIP_SIZE);
+                renderPip(context, x + THIRD, y + 2 * THIRD, PIP_SIZE);
+                renderPip(context, x + THIRD, y + HALF, PIP_SIZE);
+                renderPip(context, x + 2 * THIRD, y + 2 * THIRD, PIP_SIZE);
+                renderPip(context, x + 2 * THIRD, y + THIRD, PIP_SIZE);
+                renderPip(context, x + 2 * THIRD, y + HALF, PIP_SIZE);
+                break;
+            }
+            default: {
+                // ??
+            }
+        }
     }
 };
 
 window.customElements.define("top-die", TopDieHTMLElement);
 
 export {
-    TopDieHTMLElement
+    TopDieHTMLElement,
+    unicodeToPips,
+    pipsToUnicode
 };

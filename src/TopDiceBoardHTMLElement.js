@@ -17,10 +17,9 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-import {ConfigurationError} from "./error/ConfigurationError.js";
+//import {ConfigurationError} from "./error/ConfigurationError.js";
 import {GridLayout} from "./GridLayout.js";
-import {DEFAULT_SYSTEM_PLAYER} from "./Player.js";
-import {Die} from "./Die.js";
+import {DEFAULT_SYSTEM_PLAYER} from "./TopPlayerHTMLElement.js";
 
 /**
  * @module
@@ -41,6 +40,11 @@ const DEFAULT_HEIGHT = ROWS * DEFAULT_DIE_SIZE; // px
 const DEFAULT_DISPERSION = 2;
 
 const MIN_DELTA = 3; //px
+
+// Private properties
+const _canvas = new WeakMap();
+const _layout = new WeakMap();
+const _currentPlayer = new WeakMap();
 
 // Interaction states
 const NONE = Symbol("no_interaction");
@@ -210,13 +214,6 @@ const setupInteraction = (board) => {
     canvas.addEventListener("mouseout", stopInteraction);
 };
 
-// Private properties
-const _canvas = new WeakMap();
-const _layout = new WeakMap();
-const _dice = new WeakMap();
-const _currentPlayer = new WeakMap();
-
-const _diceBoard = new WeakMap();
 const OBSERVED_ATTRIBUTES = {
     "width": {
         convert: (v) => parseInt(v, 10),
@@ -234,7 +231,9 @@ const OBSERVED_ATTRIBUTES = {
     },
     "dispersion": {
         convert: (v) => parseInt(v, 10),
-        setter: (board, v) => board.layout.dispersion = v
+        setter: (board, v) => {
+            board.layout.dispersion = v;
+        }
     },
     "draggable-dice": {
         convert: (v) => v
@@ -247,24 +246,17 @@ const OBSERVED_ATTRIBUTES = {
     },
     "die-size": {
         convert: (v) => parseInt(v, 10),
-        setter: (board, v) => board.layout.dieSize = v
+        setter: (board, v) => {
+            board.layout.dieSize = v;
+        }
     },
     "background": {
         convert: (v) => v,
-        setter: (board, v) => _canvas.get(board).style.background = v
+        setter: (board, v) => {
+            _canvas.get(board).style.background = v;
+        }
     }
 };
-
-const attributeNameToPropertyName = (name) => {
-    return name.split("-").map((part, index) => {
-        if (0 === index) {
-            return part;
-        } else {
-            return part[0].toUpperCase() + part.slice(1);
-        }
-    }).join("");
-};
-
 
 /**
  * TopDiceBoardHTMLElement is the "top-dice-board" custom HTML element.
@@ -429,6 +421,11 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
 
     get currentPlayer() {
         return _currentPlayer.get(this);
+    }
+
+    getPlayer(playerName) {
+        const playerList = this.querySelector("top-player-list");
+        return null === playerList ? null : playerList.find(playerName);
     }
 
     throwDice(player = DEFAULT_SYSTEM_PLAYER) {
