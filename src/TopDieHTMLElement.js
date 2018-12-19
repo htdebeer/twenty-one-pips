@@ -78,9 +78,10 @@ const pipsToUnicode = p => isPipNumber(p) ? DIE_UNICODE_CHARACTERS[p - 1] : unde
 
 
 const renderHold = (context, x, y, width, color) => {
+    const SEPERATOR = width / 30;
     context.beginPath();
     context.fillStyle = color;
-    context.arc(x + width, y + width, width, 0, 2 * Math.PI, false);
+    context.arc(x + width, y + width, width - SEPERATOR, 0, 2 * Math.PI, false);
     context.fill();
 };
 
@@ -315,6 +316,12 @@ const TopDieHTMLElement = class extends HTMLElement {
             renderHold(context, x, y, HALF, this.heldBy.color);
         }
 
+        if (0 !== this.rotation) {
+            context.translate(x + HALF, y + HALF);
+            context.rotate(deg2rad(this.rotation));
+            context.translate(- (x + HALF), - (y + HALF));
+        }
+
         renderDie(context, x, y, HALF, this.color);
 
         const PIP_SIZE = dieSize / 15;
@@ -362,6 +369,8 @@ const TopDieHTMLElement = class extends HTMLElement {
                 // ??
             }
         }
+
+        context.setTransform(1, 0, 0, 1, 0, 0);
     }
 };
 
