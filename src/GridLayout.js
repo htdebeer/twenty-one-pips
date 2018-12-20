@@ -21,7 +21,8 @@ import {
     DEFAULT_DIE_SIZE,
     DEFAULT_WIDTH,
     DEFAULT_HEIGHT,
-    DEFAULT_DISPERSION
+    DEFAULT_DISPERSION,
+    DEFAULT_ROTATING_DICE_DISABLED
 } from "./TopDiceBoardHTMLElement.js";
 import {ConfigurationError} from "./error/ConfigurationError.js";
 
@@ -43,6 +44,7 @@ const _rows = new WeakMap();
 const _dice = new WeakMap();
 const _dieSize = new WeakMap();
 const _dispersion = new WeakMap();
+const _rotate = new WeakMap();
 
 /**
  * @typedef {Object} GridLayoutConfiguration
@@ -75,6 +77,7 @@ const GridLayout = class {
         _dieSize.set(this, 1);
         _width.set(this, 0);
         _height.set(this, 0);
+        _rotate.set(this, !DEFAULT_ROTATING_DICE_DISABLED);
 
         this.dispersion = dispersion;
         this.dieSize = dieSize;
@@ -164,6 +167,15 @@ const GridLayout = class {
         this._calculateGrid(this.width, this.height);
     }
 
+    get rotate() {
+        const r = _rotate.get(this);
+        return undefined === r ? !DEFAULT_ROTATING_DICE_DISABLED : r;
+    }
+
+    set rotate(r) {
+        _rotate.set(this, r);
+    }
+
     /**
      * The number of rows in this GridLayout.
      *
@@ -235,7 +247,7 @@ const GridLayout = class {
             availableCells.splice(randomIndex, 1);
 
             die.coordinates = this._numberToCoordinates(randomCell);
-            die.rotation = Math.round(Math.random() * FULL_CIRCLE_IN_DEGREES);
+            die.rotation = this.rotate ? Math.round(Math.random() * FULL_CIRCLE_IN_DEGREES) : null;
             alreadyLayoutDice.push(die);
         }
 

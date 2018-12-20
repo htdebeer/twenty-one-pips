@@ -29,6 +29,7 @@ const DEFAULT_DIE_SIZE = 100; // px
 const DEFAULT_HOLD_DURATION = 375; // ms
 const DEFAULT_DRAGGING_DICE_DISABLED = false;
 const DEFAULT_HOLDING_DICE_DISABLED = false;
+const DEFAULT_ROTATING_DICE_DISABLED = false;
 
 const ROWS = 10;
 const COLS = 10;
@@ -45,6 +46,7 @@ const DISPERSION_ATTRIBUTE = "dispersion";
 const DIE_SIZE_ATTRIBUTE = "die-size";
 const DRAGGING_DICE_DISABLED_ATTRIBUTE = "dragging-dice-disabled";
 const HOLDING_DICE_DISABLED_ATTRIBUTE = "holding-dice-disabled";
+const ROTATING_DICE_DISABLED_ATTRIBUTE = "rotating-dice-disabled";
 const HOLD_DURATION_ATTRIBUTE = "hold-duration";
 
 
@@ -70,9 +72,20 @@ const getPositiveNumberAttribute = (element, name, defaultValue) => {
     return defaultValue;
 };
 
+const getBoolean = (booleanString, trueValue, defaultValue) => {
+    if (trueValue === booleanString || "true" === booleanString) {
+        return true;
+    } else if ("false" === booleanString) {
+        return false;
+    } else {
+        return defaultValue;
+    }
+};
+
 const getBooleanAttribute = (element, name, defaultValue) => {
     if (element.hasAttribute(name)) {
-        return name === element.getAttribute(name) ? true : defaultValue;
+        const valueString = element.getAttribute(name);
+        return getBoolean(valueString, [valueString, "true"], ["false"], defaultValue);
     }
 
     return defaultValue;
@@ -285,6 +298,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
             DISPERSION_ATTRIBUTE,
             DIE_SIZE_ATTRIBUTE,
             DRAGGING_DICE_DISABLED_ATTRIBUTE,
+            ROTATING_DICE_DISABLED_ATTRIBUTE,
             HOLDING_DICE_DISABLED_ATTRIBUTE,
             HOLD_DURATION_ATTRIBUTE
         ];
@@ -313,6 +327,11 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
         case DIE_SIZE_ATTRIBUTE: {
             const dieSize = getPositiveNumber(newValue, parseNumber(oldValue) || DEFAULT_DIE_SIZE);
             this.layout.dieSize = dieSize;
+            break;
+        }
+        case ROTATING_DICE_DISABLED_ATTRIBUTE: {
+            const disabledRotation = getBoolean(newValue, ROTATING_DICE_DISABLED_ATTRIBUTE, getBoolean(oldValue, ROTATING_DICE_DISABLED_ATTRIBUTE, DEFAULT_ROTATING_DICE_DISABLED));
+            this.layout.rotate = !disabledRotation;
             break;
         }
         default: {
@@ -426,6 +445,14 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
     }
 
     /**
+     * Is rotating dice on this board disabled?
+     * @type {Boolean}
+     */
+    get disabledRotatingDice() {
+        return getBooleanAttribute(this, ROTATING_DICE_DISABLED_ATTRIBUTE, DEFAULT_ROTATING_DICE_DISABLED);
+    }
+
+    /**
      * The duration in ms to press the mouse / touch a die before it bekomes
      * held by the Player. It has only an effect when this.holdableDice ===
      * true.
@@ -465,5 +492,6 @@ export {
     DEFAULT_HOLD_DURATION,
     DEFAULT_WIDTH,
     DEFAULT_HEIGHT,
-    DEFAULT_DISPERSION
+    DEFAULT_DISPERSION,
+    DEFAULT_ROTATING_DICE_DISABLED
 };

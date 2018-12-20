@@ -26,15 +26,18 @@
 
 const NUMBER_OF_PIPS = 6; // Default / regular six sided die has 6 pips maximum.
 const DEFAULT_COLOR = "Ivory";
-const DEFAULT_X = 0;
-const DEFAULT_Y = 0;
-const DEFAULT_ROTATION = 0;
+const DEFAULT_X = 0; // px
+const DEFAULT_Y = 0; // px
+const DEFAULT_ROTATION = 0; // degrees
+const DEFAULT_OPACITY = 0.5;
 
 const BASE_DIE_SIZE = 100; // px
-const HALF = BASE_DIE_SIZE / 2;
-const THIRD = BASE_DIE_SIZE / 3;
-const PIP_SIZE = BASE_DIE_SIZE / 15;
 const BASE_ROUNDED_CORNER_RADIUS = 15; // px
+const BASE_STROKE_WIDTH = 2.5; // px
+const MIN_STROKE_WIDTH = 1; // px
+const HALF = BASE_DIE_SIZE / 2; // px
+const THIRD = BASE_DIE_SIZE / 3; // px
+const PIP_SIZE = BASE_DIE_SIZE / 15; //px
 const PIP_COLOR = "black";
 
 const deg2rad = (deg) => {
@@ -83,23 +86,31 @@ const pipsToUnicode = p => isPipNumber(p) ? DIE_UNICODE_CHARACTERS[p - 1] : unde
 
 const renderHold = (context, x, y, width, color) => {
     const SEPERATOR = width / 30;
+    context.save();
+    context.globalAlpha = DEFAULT_OPACITY;
     context.beginPath();
     context.fillStyle = color;
     context.arc(x + width, y + width, width - SEPERATOR, 0, 2 * Math.PI, false);
     context.fill();
+    context.restore();
 };
 
 const renderDie = (context, x, y, width, color) => {
+    const SCALE = (width / HALF);
     const HALF_INNER_SIZE = Math.sqrt(width ** 2 / 2);
     const INNER_SIZE = 2 * HALF_INNER_SIZE;
+    const ROUNDED_CORNER_RADIUS = BASE_ROUNDED_CORNER_RADIUS * SCALE;
+    const INNER_SIZE_ROUNDED = INNER_SIZE - 2 * ROUNDED_CORNER_RADIUS;
+    const STROKE_WIDTH = Math.max(MIN_STROKE_WIDTH, BASE_STROKE_WIDTH * SCALE);
 
-    const ROUNDED_CORNER_RADIUS = BASE_ROUNDED_CORNER_RADIUS * (width/HALF);
     const startX = x + width - HALF_INNER_SIZE + ROUNDED_CORNER_RADIUS;
     const startY = y + width - HALF_INNER_SIZE;
-    const INNER_SIZE_ROUNDED = INNER_SIZE - 2 * ROUNDED_CORNER_RADIUS;
+
+    context.save();
     context.beginPath();
     context.fillStyle = color;
     context.strokeStyle = "black";
+    context.lineWidth = STROKE_WIDTH;
     context.moveTo(startX, startY);
     context.lineTo(startX + INNER_SIZE_ROUNDED, startY);
     context.arc(startX + INNER_SIZE_ROUNDED, startY + ROUNDED_CORNER_RADIUS, ROUNDED_CORNER_RADIUS, deg2rad(270), deg2rad(0));
@@ -112,14 +123,17 @@ const renderDie = (context, x, y, width, color) => {
 
     context.stroke();
     context.fill();
+    context.restore();
 };
 
 const renderPip = (context, x, y, width) => {
+    context.save();
     context.beginPath();
     context.fillStyle = PIP_COLOR;
     context.moveTo(x, y);
     context.arc(x, y, width, 0, 2 * Math.PI, false);
     context.fill();
+    context.restore();
 };
 
 
@@ -139,6 +153,7 @@ const TopDieHTMLElement = class extends HTMLElement {
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
+        console.log(name, oldValue, newValue);
     }
 
     connectedCallback() {
@@ -251,7 +266,11 @@ const TopDieHTMLElement = class extends HTMLElement {
         return this.hasAttribute("rotation") ? parseInt(this.getAttribute("rotation"), 10) : DEFAULT_ROTATION;
     }
     set rotation(newR) {
-        this.setAttribute("rotation", newR);
+        if (null === newR) {
+            this.removeAttribute("rotation");
+        } else {
+            this.setAttribute("rotation", newR);
+        }
     }
 
     /**
@@ -328,56 +347,55 @@ const TopDieHTMLElement = class extends HTMLElement {
         if (0 !== this.rotation) {
             context.translate(x + SHALF, y + SHALF);
             context.rotate(deg2rad(this.rotation));
-            context.translate(- (x + SHALF), - (y + SHALF));
+            context.translate(-1 * (x + SHALF), -1 * (y + SHALF));
         }
 
         renderDie(context, x, y, SHALF, this.color);
 
         switch (this.pips) {
-            case 1: {
-                renderPip(context, x + SHALF, y + SHALF, SPIP_SIZE);
-                break;
-            }
-            case 2: {
-                renderPip(context, x + STHIRD, y + STHIRD, SPIP_SIZE);
-                renderPip(context, x + 2 * STHIRD, y + 2 * STHIRD, SPIP_SIZE);
-                break;
-            }
-            case 3: {
-                renderPip(context, x + STHIRD, y + STHIRD, SPIP_SIZE);
-                renderPip(context, x + SHALF, y + SHALF, SPIP_SIZE);
-                renderPip(context, x + 2 * STHIRD, y + 2 * STHIRD, SPIP_SIZE);
-                break;
-            }
-            case 4: {
-                renderPip(context, x + STHIRD, y + STHIRD, SPIP_SIZE);
-                renderPip(context, x + STHIRD, y + 2 * STHIRD, SPIP_SIZE);
-                renderPip(context, x + 2 * STHIRD, y + 2 * STHIRD, SPIP_SIZE);
-                renderPip(context, x + 2 * STHIRD, y + STHIRD, SPIP_SIZE);
-                break;
-            }
-            case 5: {
-                renderPip(context, x + STHIRD, y + STHIRD, SPIP_SIZE);
-                renderPip(context, x + STHIRD, y + 2 * STHIRD, SPIP_SIZE);
-                renderPip(context, x + SHALF, y + SHALF, SPIP_SIZE);
-                renderPip(context, x + 2 * STHIRD, y + 2 * STHIRD, SPIP_SIZE);
-                renderPip(context, x + 2 * STHIRD, y + STHIRD, SPIP_SIZE);
-                break;
-            }
-            case 6: {
-                renderPip(context, x + STHIRD, y + STHIRD, SPIP_SIZE);
-                renderPip(context, x + STHIRD, y + 2 * STHIRD, SPIP_SIZE);
-                renderPip(context, x + STHIRD, y + SHALF, SPIP_SIZE);
-                renderPip(context, x + 2 * STHIRD, y + 2 * STHIRD, SPIP_SIZE);
-                renderPip(context, x + 2 * STHIRD, y + STHIRD, SPIP_SIZE);
-                renderPip(context, x + 2 * STHIRD, y + SHALF, SPIP_SIZE);
-                break;
-            }
-            default: {
-                // ??
-            }
+        case 1: {
+            renderPip(context, x + SHALF, y + SHALF, SPIP_SIZE);
+            break;
+        }
+        case 2: {
+            renderPip(context, x + STHIRD, y + STHIRD, SPIP_SIZE);
+            renderPip(context, x + 2 * STHIRD, y + 2 * STHIRD, SPIP_SIZE);
+            break;
+        }
+        case 3: {
+            renderPip(context, x + STHIRD, y + STHIRD, SPIP_SIZE);
+            renderPip(context, x + SHALF, y + SHALF, SPIP_SIZE);
+            renderPip(context, x + 2 * STHIRD, y + 2 * STHIRD, SPIP_SIZE);
+            break;
+        }
+        case 4: {
+            renderPip(context, x + STHIRD, y + STHIRD, SPIP_SIZE);
+            renderPip(context, x + STHIRD, y + 2 * STHIRD, SPIP_SIZE);
+            renderPip(context, x + 2 * STHIRD, y + 2 * STHIRD, SPIP_SIZE);
+            renderPip(context, x + 2 * STHIRD, y + STHIRD, SPIP_SIZE);
+            break;
+        }
+        case 5: {
+            renderPip(context, x + STHIRD, y + STHIRD, SPIP_SIZE);
+            renderPip(context, x + STHIRD, y + 2 * STHIRD, SPIP_SIZE);
+            renderPip(context, x + SHALF, y + SHALF, SPIP_SIZE);
+            renderPip(context, x + 2 * STHIRD, y + 2 * STHIRD, SPIP_SIZE);
+            renderPip(context, x + 2 * STHIRD, y + STHIRD, SPIP_SIZE);
+            break;
+        }
+        case 6: {
+            renderPip(context, x + STHIRD, y + STHIRD, SPIP_SIZE);
+            renderPip(context, x + STHIRD, y + 2 * STHIRD, SPIP_SIZE);
+            renderPip(context, x + STHIRD, y + SHALF, SPIP_SIZE);
+            renderPip(context, x + 2 * STHIRD, y + 2 * STHIRD, SPIP_SIZE);
+            renderPip(context, x + 2 * STHIRD, y + STHIRD, SPIP_SIZE);
+            renderPip(context, x + 2 * STHIRD, y + SHALF, SPIP_SIZE);
+            break;
+        }
+        default: // No other values allowed / possible
         }
 
+        // Clear context
         context.setTransform(1, 0, 0, 1, 0, 0);
     }
 };
