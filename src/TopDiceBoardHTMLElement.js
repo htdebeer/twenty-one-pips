@@ -35,7 +35,7 @@ const COLS = 10;
 
 const DEFAULT_WIDTH = COLS * DEFAULT_DIE_SIZE; // px
 const DEFAULT_HEIGHT = ROWS * DEFAULT_DIE_SIZE; // px
-const DEFAULT_DISPERSION = 2;
+const DEFAULT_DISPERSION = Math.floor(ROWS / 2);
 
 const MIN_DELTA = 3; //px
 

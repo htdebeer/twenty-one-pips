@@ -31,6 +31,10 @@ import {ConfigurationError} from "./error/ConfigurationError.js";
 
 const FULL_CIRCLE_IN_DEGREES = 360;
 
+const randomizeCenter = (n) => {
+    return (0.5 <= Math.random() ? Math.floor : Math.ceil).call(0, n);
+};
+
 // Private fields
 const _width = new WeakMap();
 const _height = new WeakMap();
@@ -187,8 +191,8 @@ const GridLayout = class {
      * @private
      */
     get _center() {
-        const row = Math.floor(this._rows / 2) - 1;
-        const col = Math.floor(this._cols / 2) - 1;
+        const row = randomizeCenter(this._rows / 2) - 1;
+        const col = randomizeCenter(this._cols / 2) - 1;
 
         return {row, col};
     }
