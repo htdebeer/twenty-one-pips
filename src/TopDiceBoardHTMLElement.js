@@ -72,16 +72,7 @@ const getPositiveNumberAttribute = (element, name, defaultValue) => {
 
 const getBooleanAttribute = (element, name, defaultValue) => {
     if (element.hasAttribute(name)) {
-        const valueString = element.getAttribute(name);
-        if ([name, "true", "on", "yes"].includes(valueString)) {
-            return true;
-        }
-
-        if (["false", "off", "no"].includes(valueString)) {
-            return false;
-        }
-
-        console.warn(`Unable to parse the value of attribute '${name}', '${valueString}', as a Boolean value. Using ${defaultValue} instead.`);
+        return name === element.getAttribute(name) ? true : defaultValue;
     }
 
     return defaultValue;
@@ -301,7 +292,6 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
 
     attributeChangedCallback(name, oldValue, newValue) {
         const canvas = _canvas.get(this);
-        console.log("Changing attr: ", name, oldValue, newValue);
         switch (name) {
         case WIDTH_ATTRIBUTE: {
             const width = getPositiveNumber(newValue, parseNumber(oldValue) || DEFAULT_WIDTH);
@@ -399,7 +389,6 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
      * @type {Number}
      */
     get height() {
-        console.log("Getn height: ", getPositiveNumberAttribute(this, HEIGHT_ATTRIBUTE, DEFAULT_HEIGHT));
         return getPositiveNumberAttribute(this, HEIGHT_ATTRIBUTE, DEFAULT_HEIGHT);
     }
 

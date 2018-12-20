@@ -187,8 +187,8 @@ const GridLayout = class {
      * @private
      */
     get _center() {
-        const row = Math.floor(this._rows / 2);
-        const col = Math.floor(this._cols / 2);
+        const row = Math.floor(this._rows / 2) - 1;
+        const col = Math.floor(this._cols / 2) - 1;
 
         return {row, col};
     }
