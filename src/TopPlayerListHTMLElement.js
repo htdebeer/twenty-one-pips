@@ -17,6 +17,7 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
+import {DEFAULT_SYSTEM_PLAYER} from "./TopPlayerHTMLElement.js";
 
 /**
  * TopPlayerListHTMLElement to describe the players in the game
@@ -34,6 +35,7 @@ const TopPlayerListHTMLElement = class extends HTMLElement {
     }
 
     connectedCallback() {
+        this.appendChild(DEFAULT_SYSTEM_PLAYER);
     }
 
     disconnectedCallback() {

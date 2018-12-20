@@ -25,8 +25,7 @@ import {DEFAULT_SYSTEM_PLAYER} from "./TopPlayerHTMLElement.js";
  * @module
  */
 
-const NATURAL_DIE_SIZE = 145; // px
-const DEFAULT_DIE_SIZE = NATURAL_DIE_SIZE; // px
+const DEFAULT_DIE_SIZE = 100; // px
 const DEFAULT_HOLD_DURATION = 375; // ms
 const DEFAULT_BACKGROUND = "#FFFFAA";
 const DEFAULT_DRAGGABLE_DICE = true;
@@ -274,7 +273,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
         shadow.appendChild(canvas);
 
         _canvas.set(this, canvas);
-        _currentPlayer.set(this, null);
+        _currentPlayer.set(this, DEFAULT_SYSTEM_PLAYER);
         _layout.set(this, new GridLayout({
             width: this.width,
             height: this.height,
@@ -356,7 +355,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
      * @type {Number}
      */
     get width() {
-        return this.hasAttribute("width") ? this.getAttribute("width") : DEFAULT_WIDTH;
+        return this.hasAttribute("width") ? parseInt(this.getAttribute("width"), 10) : DEFAULT_WIDTH;
     }
 
     /**
@@ -364,7 +363,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
      * @type {Number}
      */
     get height() {
-        return this.hasAttribute("height") ? this.getAttribute("height") : DEFAULT_HEIGHT;
+        return this.hasAttribute("height") ? parseInt(this.getAttribute("height"), 10) : DEFAULT_HEIGHT;
     }
 
     /**
@@ -372,7 +371,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
      * @type {Number}
      */
     get dispersion() {
-        return this.hasAttribute("dispersion") ? this.getAttribute("dispersion") : DEFAULT_DISPERSION;
+        return this.hasAttribute("dispersion") ? parseInt(this.getAttribute("dispersion"), 10) : DEFAULT_DISPERSION;
     }
 
     /**
@@ -389,7 +388,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
      * @type {Number}
      */
     get dieSize() {
-        return this.hasAttribute("die-size") ? this.getAttribute("die-size") : DEFAULT_DIE_SIZE;
+        return this.hasAttribute("die-size") ? parseInt(this.getAttribute("die-size"), 10) : DEFAULT_DIE_SIZE;
     }
 
     /**
@@ -416,7 +415,11 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
      * @type {Number}
      */
     get holdDuration() {
-        return this.hasAttribute("hold-duration") ? this.getAttribute("hold-duration") : DEFAULT_HOLD_DURATION;
+        return this.hasAttribute("hold-duration") ? parseInt(this.getAttribute("hold-duration"), 10) : DEFAULT_HOLD_DURATION;
+    }
+
+    set currentPlayer(newPlayer) {
+        _currentPlayer.set(this, newPlayer);
     }
 
     get currentPlayer() {
@@ -429,11 +432,8 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
     }
 
     throwDice(player = DEFAULT_SYSTEM_PLAYER) {
-        if (!this.dice) {
-            this.dice = [];
-        }
         this.dice.forEach(die => die.throwIt());
-        _currentPlayer.set(this, player);
+        this.currentPlayer = player;;
         _renderDiceBoard(this, this.layout.layout(this.dice));
         return this.dice;
     }
@@ -443,7 +443,6 @@ window.customElements.define("top-dice-board", TopDiceBoardHTMLElement);
 
 export {
     TopDiceBoardHTMLElement,
-    NATURAL_DIE_SIZE,
     DEFAULT_DIE_SIZE,
     DEFAULT_HOLD_DURATION,
     DEFAULT_BACKGROUND,

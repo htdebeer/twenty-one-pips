@@ -30,7 +30,11 @@ const DEFAULT_X = 0;
 const DEFAULT_Y = 0;
 const DEFAULT_ROTATION = 0;
 
-const ROUNDED_CORNER_RADIUS = 15; // px
+const BASE_DIE_SIZE = 100; // px
+const HALF = BASE_DIE_SIZE / 2;
+const THIRD = BASE_DIE_SIZE / 3;
+const PIP_SIZE = BASE_DIE_SIZE / 15;
+const BASE_ROUNDED_CORNER_RADIUS = 15; // px
 const PIP_COLOR = "black";
 
 const deg2rad = (deg) => {
@@ -89,6 +93,7 @@ const renderDie = (context, x, y, width, color) => {
     const HALF_INNER_SIZE = Math.sqrt(width ** 2 / 2);
     const INNER_SIZE = 2 * HALF_INNER_SIZE;
 
+    const ROUNDED_CORNER_RADIUS = BASE_ROUNDED_CORNER_RADIUS * (width/HALF);
     const startX = x + width - HALF_INNER_SIZE + ROUNDED_CORNER_RADIUS;
     const startY = y + width - HALF_INNER_SIZE;
     const INNER_SIZE_ROUNDED = INNER_SIZE - 2 * ROUNDED_CORNER_RADIUS;
@@ -308,61 +313,64 @@ const TopDieHTMLElement = class extends HTMLElement {
     }
 
     render(context, dieSize, coordinates = this.coordinates) {
-        const HALF = dieSize / 2;
-        const THIRD = dieSize / 3;
+        const scale = dieSize / BASE_DIE_SIZE;
+        const SHALF = HALF * scale;
+        const STHIRD = THIRD * scale;
+        const SPIP_SIZE = PIP_SIZE * scale;
+
+
         const {x, y} = coordinates;
 
         if (this.isHeld()) {
-            renderHold(context, x, y, HALF, this.heldBy.color);
+            renderHold(context, x, y, SHALF, this.heldBy.color);
         }
 
         if (0 !== this.rotation) {
-            context.translate(x + HALF, y + HALF);
+            context.translate(x + SHALF, y + SHALF);
             context.rotate(deg2rad(this.rotation));
-            context.translate(- (x + HALF), - (y + HALF));
+            context.translate(- (x + SHALF), - (y + SHALF));
         }
 
-        renderDie(context, x, y, HALF, this.color);
+        renderDie(context, x, y, SHALF, this.color);
 
-        const PIP_SIZE = dieSize / 15;
         switch (this.pips) {
             case 1: {
-                renderPip(context, x + HALF, y + HALF, PIP_SIZE);
+                renderPip(context, x + SHALF, y + SHALF, SPIP_SIZE);
                 break;
             }
             case 2: {
-                renderPip(context, x + THIRD, y + THIRD, PIP_SIZE);
-                renderPip(context, x + 2 * THIRD, y + 2 * THIRD, PIP_SIZE);
+                renderPip(context, x + STHIRD, y + STHIRD, SPIP_SIZE);
+                renderPip(context, x + 2 * STHIRD, y + 2 * STHIRD, SPIP_SIZE);
                 break;
             }
             case 3: {
-                renderPip(context, x + THIRD, y + THIRD, PIP_SIZE);
-                renderPip(context, x + HALF, y + HALF, PIP_SIZE);
-                renderPip(context, x + 2 * THIRD, y + 2 * THIRD, PIP_SIZE);
+                renderPip(context, x + STHIRD, y + STHIRD, SPIP_SIZE);
+                renderPip(context, x + SHALF, y + SHALF, SPIP_SIZE);
+                renderPip(context, x + 2 * STHIRD, y + 2 * STHIRD, SPIP_SIZE);
                 break;
             }
             case 4: {
-                renderPip(context, x + THIRD, y + THIRD, PIP_SIZE);
-                renderPip(context, x + THIRD, y + 2 * THIRD, PIP_SIZE);
-                renderPip(context, x + 2 * THIRD, y + 2 * THIRD, PIP_SIZE);
-                renderPip(context, x + 2 * THIRD, y + THIRD, PIP_SIZE);
+                renderPip(context, x + STHIRD, y + STHIRD, SPIP_SIZE);
+                renderPip(context, x + STHIRD, y + 2 * STHIRD, SPIP_SIZE);
+                renderPip(context, x + 2 * STHIRD, y + 2 * STHIRD, SPIP_SIZE);
+                renderPip(context, x + 2 * STHIRD, y + STHIRD, SPIP_SIZE);
                 break;
             }
             case 5: {
-                renderPip(context, x + THIRD, y + THIRD, PIP_SIZE);
-                renderPip(context, x + THIRD, y + 2 * THIRD, PIP_SIZE);
-                renderPip(context, x + HALF, y + HALF, PIP_SIZE);
-                renderPip(context, x + 2 * THIRD, y + 2 * THIRD, PIP_SIZE);
-                renderPip(context, x + 2 * THIRD, y + THIRD, PIP_SIZE);
+                renderPip(context, x + STHIRD, y + STHIRD, SPIP_SIZE);
+                renderPip(context, x + STHIRD, y + 2 * STHIRD, SPIP_SIZE);
+                renderPip(context, x + SHALF, y + SHALF, SPIP_SIZE);
+                renderPip(context, x + 2 * STHIRD, y + 2 * STHIRD, SPIP_SIZE);
+                renderPip(context, x + 2 * STHIRD, y + STHIRD, SPIP_SIZE);
                 break;
             }
             case 6: {
-                renderPip(context, x + THIRD, y + THIRD, PIP_SIZE);
-                renderPip(context, x + THIRD, y + 2 * THIRD, PIP_SIZE);
-                renderPip(context, x + THIRD, y + HALF, PIP_SIZE);
-                renderPip(context, x + 2 * THIRD, y + 2 * THIRD, PIP_SIZE);
-                renderPip(context, x + 2 * THIRD, y + THIRD, PIP_SIZE);
-                renderPip(context, x + 2 * THIRD, y + HALF, PIP_SIZE);
+                renderPip(context, x + STHIRD, y + STHIRD, SPIP_SIZE);
+                renderPip(context, x + STHIRD, y + 2 * STHIRD, SPIP_SIZE);
+                renderPip(context, x + STHIRD, y + SHALF, SPIP_SIZE);
+                renderPip(context, x + 2 * STHIRD, y + 2 * STHIRD, SPIP_SIZE);
+                renderPip(context, x + 2 * STHIRD, y + STHIRD, SPIP_SIZE);
+                renderPip(context, x + 2 * STHIRD, y + SHALF, SPIP_SIZE);
                 break;
             }
             default: {

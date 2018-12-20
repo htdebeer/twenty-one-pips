@@ -15,7 +15,7 @@
             <button type="button" id="throwDice">Click this button to throw the dice!</button>
         </p>
 
-        <top-dice-board width="500" height="500" die-size="100" background="green">
+        <top-dice-board width="500" height="500" die-size="25" background="green">
             <top-player-list>
                 <top-player name="Huub" color="red"></top-player>
                 <top-player name="Aisha" color="navy"></top-player>
@@ -32,9 +32,8 @@
 
         <script type="module">
             const board = document.querySelector("top-dice-board");
-            const firstPlayer = board.querySelector("top-player[name='Huub']");
             const button = document.getElementById("throwDice");
-            button.addEventListener("click", () => board.throwDice(firstPlayer));
+            button.addEventListener("click", () => board.throwDice());
         </script>
     </body>
 </html>
