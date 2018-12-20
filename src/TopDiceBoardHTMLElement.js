@@ -27,9 +27,8 @@ import {DEFAULT_SYSTEM_PLAYER} from "./TopPlayerHTMLElement.js";
 
 const DEFAULT_DIE_SIZE = 100; // px
 const DEFAULT_HOLD_DURATION = 375; // ms
-const DEFAULT_BACKGROUND = "#FFFFAA";
-const DEFAULT_DRAGGABLE_DICE = true;
-const DEFAULT_HOLDABLE_DICE = true;
+const DEFAULT_DRAGGING_DICE_DISABLED = false;
+const DEFAULT_HOLDING_DICE_DISABLED = false;
 
 const ROWS = 10;
 const COLS = 10;
@@ -39,6 +38,54 @@ const DEFAULT_HEIGHT = ROWS * DEFAULT_DIE_SIZE; // px
 const DEFAULT_DISPERSION = 2;
 
 const MIN_DELTA = 3; //px
+
+const WIDTH_ATTRIBUTE = "width";
+const HEIGHT_ATTRIBUTE = "height";
+const DISPERSION_ATTRIBUTE = "dispersion";
+const DIE_SIZE_ATTRIBUTE = "die-size";
+const DRAGGING_DICE_DISABLED_ATTRIBUTE = "dragging-dice-disabled";
+const HOLDING_DICE_DISABLED_ATTRIBUTE = "holding-dice-disabled";
+const HOLD_DURATION_ATTRIBUTE = "hold-duration";
+
+
+const parseNumber = (numberString, defaultNumber = 0) => {
+    const number = parseInt(numberString, 10);
+    return Number.isNaN(number) ? defaultNumber : number;
+};
+
+const validatePositiveNumber = (number, maxNumber = Infinity) => {
+    return 0 <= number && number < maxNumber;
+};
+
+const getPositiveNumber = (numberString, defaultValue) => {
+    const value = parseNumber(numberString, defaultValue);
+    return validatePositiveNumber(value) ? value : defaultValue;
+};
+
+const getPositiveNumberAttribute = (element, name, defaultValue) => {
+    if (element.hasAttribute(name)) {
+        const valueString = element.getAttribute(name);
+        return getPositiveNumber(valueString, defaultValue);
+    }
+    return defaultValue;
+};
+
+const getBooleanAttribute = (element, name, defaultValue) => {
+    if (element.hasAttribute(name)) {
+        const valueString = element.getAttribute(name);
+        if ([name, "true", "on", "yes"].includes(valueString)) {
+            return true;
+        }
+
+        if (["false", "off", "no"].includes(valueString)) {
+            return false;
+        }
+
+        console.warn(`Unable to parse the value of attribute '${name}', '${valueString}', as a Boolean value. Using ${defaultValue} instead.`);
+    }
+
+    return defaultValue;
+};
 
 // Private properties
 const _canvas = new WeakMap();
@@ -119,13 +166,13 @@ const setupInteraction = (board) => {
 
             if (null !== dieUnderCursor) {
                 // Only interaction with the board via a die
-                if (board.holdableDice && board.draggableDice) {
+                if (!board.disabledHoldingDice && !board.disabledDraggingDice) {
                     state = INDETERMINED;
                     startHolding();
-                } else if (board.holdableDice) {
+                } else if (!board.disabledHoldingDice) {
                     state = HOLD;
                     startHolding();
-                } else if (board.draggableDice) {
+                } else if (!board.disabledDraggingDice) {
                     state = MOVE;
                 }
             }
@@ -201,60 +248,16 @@ const setupInteraction = (board) => {
 
     canvas.addEventListener("mousedown", startInteraction);
 
-    if (board.draggableDice) {
+    if (!board.disabledDraggingDice) {
         canvas.addEventListener("mousemove", move);
     }
 
-    if (board.draggableDice || board.holdableDice) {
+    if (!board.disabledDraggingDice || !board.disabledHoldingDice) {
         canvas.addEventListener("mousemove", showInteraction);
     }
 
     canvas.addEventListener("mouseup", stopInteraction);
     canvas.addEventListener("mouseout", stopInteraction);
-};
-
-const OBSERVED_ATTRIBUTES = {
-    "width": {
-        convert: (v) => parseInt(v, 10),
-        setter: (board, v) => {
-            board.layout.width = v;
-            _canvas.get(board).setAttribute("width", v);
-        }
-    },
-    "height": {
-        convert: (v) => parseInt(v, 10),
-        setter: (board, v) => {
-            board.layout.height = v;
-            _canvas.get(board).setAttribute("height", v);
-        }
-    },
-    "dispersion": {
-        convert: (v) => parseInt(v, 10),
-        setter: (board, v) => {
-            board.layout.dispersion = v;
-        }
-    },
-    "draggable-dice": {
-        convert: (v) => v
-    },
-    "holdable-dice": {
-        convert: (v) => v
-    },
-    "hold-duration": {
-        convert: (v) => v
-    },
-    "die-size": {
-        convert: (v) => parseInt(v, 10),
-        setter: (board, v) => {
-            board.layout.dieSize = v;
-        }
-    },
-    "background": {
-        convert: (v) => v,
-        setter: (board, v) => {
-            _canvas.get(board).style.background = v;
-        }
-    }
 };
 
 /**
@@ -268,6 +271,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
      */
     constructor() {
         super();
+        this.style.display = "inline-block";
         const shadow = this.attachShadow({mode: "closed"});
         const canvas = document.createElement("canvas");
         shadow.appendChild(canvas);
@@ -284,14 +288,46 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
     }
 
     static get observedAttributes() {
-        return Object.keys(OBSERVED_ATTRIBUTES);
+        return [
+            WIDTH_ATTRIBUTE,
+            HEIGHT_ATTRIBUTE,
+            DISPERSION_ATTRIBUTE,
+            DIE_SIZE_ATTRIBUTE,
+            DRAGGING_DICE_DISABLED_ATTRIBUTE,
+            HOLDING_DICE_DISABLED_ATTRIBUTE,
+            HOLD_DURATION_ATTRIBUTE
+        ];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
-        const attribute = OBSERVED_ATTRIBUTES[name];
-
-        if (attribute.setter) {
-            attribute.setter(this, attribute.convert(newValue));
+        const canvas = _canvas.get(this);
+        console.log("Changing attr: ", name, oldValue, newValue);
+        switch (name) {
+        case WIDTH_ATTRIBUTE: {
+            const width = getPositiveNumber(newValue, parseNumber(oldValue) || DEFAULT_WIDTH);
+            this.layout.width = width;
+            canvas.setAttribute(WIDTH_ATTRIBUTE, width);
+            break;
+        }
+        case HEIGHT_ATTRIBUTE: {
+            const height = getPositiveNumber(newValue, parseNumber(oldValue) || DEFAULT_HEIGHT);
+            this.layout.height = height;
+            canvas.setAttribute(HEIGHT_ATTRIBUTE, height);
+            break;
+        }
+        case DISPERSION_ATTRIBUTE: {
+            const dispersion = getPositiveNumber(newValue, parseNumber(oldValue) || DEFAULT_DISPERSION);
+            this.layout.dispersion = dispersion;
+            break;
+        }
+        case DIE_SIZE_ATTRIBUTE: {
+            const dieSize = getPositiveNumber(newValue, parseNumber(oldValue) || DEFAULT_DIE_SIZE);
+            this.layout.dieSize = dieSize;
+            break;
+        }
+        default: {
+            // The value is determined when using the getter
+        }
         }
     }
 
@@ -355,7 +391,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
      * @type {Number}
      */
     get width() {
-        return this.hasAttribute("width") ? parseInt(this.getAttribute("width"), 10) : DEFAULT_WIDTH;
+        return getPositiveNumberAttribute(this, WIDTH_ATTRIBUTE, DEFAULT_WIDTH);
     }
 
     /**
@@ -363,7 +399,8 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
      * @type {Number}
      */
     get height() {
-        return this.hasAttribute("height") ? parseInt(this.getAttribute("height"), 10) : DEFAULT_HEIGHT;
+        console.log("Getn height: ", getPositiveNumberAttribute(this, HEIGHT_ATTRIBUTE, DEFAULT_HEIGHT));
+        return getPositiveNumberAttribute(this, HEIGHT_ATTRIBUTE, DEFAULT_HEIGHT);
     }
 
     /**
@@ -371,15 +408,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
      * @type {Number}
      */
     get dispersion() {
-        return this.hasAttribute("dispersion") ? parseInt(this.getAttribute("dispersion"), 10) : DEFAULT_DISPERSION;
-    }
-
-    /**
-     * The background color of this board.
-     * @type {String}
-     */
-    get background() {
-        return this.hasAttribute("background") ? this.getAttribute("background") : DEFAULT_BACKGROUND;
+        return getPositiveNumberAttribute(this, DISPERSION_ATTRIBUTE, DEFAULT_DISPERSION);
     }
 
     /**
@@ -388,23 +417,23 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
      * @type {Number}
      */
     get dieSize() {
-        return this.hasAttribute("die-size") ? parseInt(this.getAttribute("die-size"), 10) : DEFAULT_DIE_SIZE;
+        return getPositiveNumberAttribute(this, DIE_SIZE_ATTRIBUTE, DEFAULT_DIE_SIZE);
     }
 
     /**
      * Can dice on this board be dragged?
      * @type {Boolean}
      */
-    get draggableDice() {
-        return this.hasAttribute("draggable-dice") ? this.getAttribute("draggable-dice") : DEFAULT_DRAGGABLE_DICE;
+    get disabledDraggingDice() {
+        return getBooleanAttribute(this, DRAGGING_DICE_DISABLED_ATTRIBUTE, DEFAULT_DRAGGING_DICE_DISABLED);
     }
 
     /**
      * Can dice on this board be held by a Player?
      * @type {Boolean}
      */
-    get holdableDice() {
-        return this.hasAttribute("holdable-dice") ? this.getAttribute("holdable-dice") : DEFAULT_HOLDABLE_DICE;
+    get disabledHoldingDice() {
+        return getBooleanAttribute(this, HOLDING_DICE_DISABLED_ATTRIBUTE, DEFAULT_HOLDING_DICE_DISABLED);
     }
 
     /**
@@ -415,7 +444,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
      * @type {Number}
      */
     get holdDuration() {
-        return this.hasAttribute("hold-duration") ? parseInt(this.getAttribute("hold-duration"), 10) : DEFAULT_HOLD_DURATION;
+        return getPositiveNumberAttribute(this, HOLD_DURATION_ATTRIBUTE, DEFAULT_HOLD_DURATION);
     }
 
     set currentPlayer(newPlayer) {
@@ -433,7 +462,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
 
     throwDice(player = DEFAULT_SYSTEM_PLAYER) {
         this.dice.forEach(die => die.throwIt());
-        this.currentPlayer = player;;
+        this.currentPlayer = player;
         _renderDiceBoard(this, this.layout.layout(this.dice));
         return this.dice;
     }
@@ -445,9 +474,6 @@ export {
     TopDiceBoardHTMLElement,
     DEFAULT_DIE_SIZE,
     DEFAULT_HOLD_DURATION,
-    DEFAULT_BACKGROUND,
-    DEFAULT_DRAGGABLE_DICE,
-    DEFAULT_HOLDABLE_DICE,
     DEFAULT_WIDTH,
     DEFAULT_HEIGHT,
     DEFAULT_DISPERSION
