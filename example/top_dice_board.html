@@ -2,40 +2,108 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>Twenty-One-Pips: Dice Board as a Web Component</title>
+        <title>Sixes!</title>
         <script type="module" src="../src/TopDiceBoardHTMLElement.js"></script>
         <script type="module" src="../src/TopDieHTMLElement.js"></script>
         <script type="module" src="../src/TopPlayerListHTMLElement.js"></script>
         <script type="module" src="../src/TopPlayerHTMLElement.js"></script>
 
         <style>
+            body {
+                margin: 0;
+                padding: 0;
+                width: 502px;
+                border: 1px solid dimgray;
+            }
+
+            header {
+                margin: 0;
+                padding: 0;
+                padding-left: 1ex;
+                padding-bottom: 1ex;
+                border-bottom: 1px solid dimgray;
+                text-align: center;
+                background-color: gold;
+            }
+            
+            header h1, header h1 + p {
+                display: inline-block;
+            }
+
+            header h1 {
+                margin: 0;
+                padding: 0;
+            }
+
+            header p {
+                margin: 0;
+                padding: 0;
+            }
+
             top-dice-board {
                 background: white;
-                border: 1px solid dimgray;
+            }
+
+            #score {
+                font-weight: bold;
+                color: navy;
             }
         </style>
     </head>
     <body>
-        <h1>Dice Board as a Web Component</h1>
+        <header>
+            <h1>Sixes!</h1>
 
-        <p>
-            <button type="button" id="throwDice">Click this button to throw the dice!</button>
-        </p>
+            <p>
+                How many throws do <em>you</em> need to get only sixes?
+            </p>
+
+            <p>
+                <button type="button" id="throwDice">Throw</button>
+            </p>
+
+            <p>
+                You scored <span id="score">0</span> points in <span id="throws">0</span> throws! 
+            </p>
+        </header>
 
         <top-dice-board width="500" height="500">
-            <top-player-list>
-                <top-player name="Huub" color="red"></top-player>
-                <top-player name="Aisha" color="navy"></top-player>
-            </top-player-list>
-            <top-die pips="3"></top-die>    
-            <top-die pips="2"></top-die>
-            <top-die pips="6"></top-die>
+            <top-die></top-die>    
+            <top-die></top-die>
+            <top-die></top-die>
+            <top-die></top-die>
+            <top-die></top-die>
         </top-dice-board>
 
+
         <script type="module">
+            let numberOfThrows = 1; // Board starts with first throw.
+            
             const board = document.querySelector("top-dice-board");
-            const button = document.getElementById("throwDice");
-            button.addEventListener("click", () => board.throwDice());
+
+            const scoreIndicator = document.getElementById("score");
+            const throwsIndicator = document.getElementById("throws");
+
+            const updateScore = (dice) => {
+                const score = dice.reduce((s, die) => s + die.pips, 0);
+
+                scoreIndicator.innerHTML = score;
+                throwsIndicator.innerHTML = numberOfThrows;
+
+                if (score === dice.length * 6) {
+                    alert(`You won in ${numberOfThrows} throws!`);
+                    window.location.reload(false);
+                }
+            };
+
+            document
+                .getElementById("throwDice")
+                .addEventListener("click", () => {
+                    numberOfThrows++;
+                    updateScore(board.throwDice());
+                });
+
+            updateScore(board.dice);
         </script>
     </body>
 </html>

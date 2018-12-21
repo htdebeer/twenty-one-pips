@@ -369,6 +369,12 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
             _renderDiceBoard(this, this.layout.layout(this.dice));
             numberOfReadyDice--;
         });
+
+        // All dice boards do have a player list. If there isn't one yet,
+        // create one.
+        if (null === this.querySelector("top-player-list")) {
+            this.appendChild(document.createElement("top-player-list"));
+        }
     }
 
     disconnectedCallback() {
