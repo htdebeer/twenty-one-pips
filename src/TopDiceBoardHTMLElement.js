@@ -121,8 +121,6 @@ const convertWindowCoordinatesToCanvas = (canvas, xWindow, yWindow) => {
     return {x, y};
 };
 
-
-
 const setupInteraction = (board) => {
     const canvas = _canvas.get(board);
 
@@ -248,11 +246,27 @@ const setupInteraction = (board) => {
     };
 
 
-    // Register the actual event listeners defined above
+    // Register the actual event listeners defined above. Map touch events to
+    // equivalent mouse events. Because the "touchend" event does not have a
+    // clientX and clientY, record and use the last ones from the "touchmove"
+    // (or "touchstart") events.
 
+    let touchCoordinates = {clientX: 0, clientY: 0};
+    const touch2mouseEvent = (mouseEventName) => {
+        return (touchEvent) => {
+            if (touchEvent && 0 < touchEvent.touches.length) {
+                const {clientX, clientY} = touchEvent.touches[0];
+                touchCoordinates = {clientX, clientY};
+            }
+            canvas.dispatchEvent(new MouseEvent(mouseEventName, touchCoordinates));
+        };
+    };
+
+    canvas.addEventListener("touchstart", touch2mouseEvent("mousedown"));
     canvas.addEventListener("mousedown", startInteraction);
 
     if (!board.disabledDraggingDice) {
+        canvas.addEventListener("touchmove", touch2mouseEvent("mousemove"));
         canvas.addEventListener("mousemove", move);
     }
 
@@ -260,6 +274,7 @@ const setupInteraction = (board) => {
         canvas.addEventListener("mousemove", showInteraction);
     }
 
+    canvas.addEventListener("touchend", touch2mouseEvent("mouseup"));
     canvas.addEventListener("mouseup", stopInteraction);
     canvas.addEventListener("mouseout", stopInteraction);
 };

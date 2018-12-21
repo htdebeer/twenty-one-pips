@@ -95,7 +95,7 @@ window.customElements.define("top-player", TopPlayerHTMLElement);
  * @const
  */
 const DEFAULT_SYSTEM_PLAYER = new TopPlayerHTMLElement();
-DEFAULT_SYSTEM_PLAYER.setAttribute("name", "DEFAULT_SYSTEM_PLAYER");
+DEFAULT_SYSTEM_PLAYER.setAttribute("name", "*");
 DEFAULT_SYSTEM_PLAYER.setAttribute("color", "red");
 
 export {
