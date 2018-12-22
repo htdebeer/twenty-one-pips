@@ -17,13 +17,6 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-import {
-    DEFAULT_DIE_SIZE,
-    DEFAULT_WIDTH,
-    DEFAULT_HEIGHT,
-    DEFAULT_DISPERSION,
-    DEFAULT_ROTATING_DICE_DISABLED
-} from "./TopDiceBoardHTMLElement.js";
 import {ConfigurationError} from "./error/ConfigurationError.js";
 
 /**
@@ -48,13 +41,13 @@ const _rotate = new WeakMap();
 
 /**
  * @typedef {Object} GridLayoutConfiguration
- * @property {Number} [config.width = DEFAULT_WIDTH] - The minimal width of this
- * GridLayout in pixels. Defaults to DEFAULT_WIDTH;
- * @property {Number} [config.height = DEFAULT_HEIGHT] - The minimal height of
- * this GridLayout in pixels. Defaults to DEFAULT_HEIGHT.
- * @property {Number} [config.dispersion = 2] - The distance from the center of the
+ * @property {Number} config.width - The minimal width of this
+ * GridLayout in pixels.;
+ * @property {Number} config.height] - The minimal height of
+ * this GridLayout in pixels..
+ * @property {Number} config.dispersion - The distance from the center of the
  * layout a die can be layout.
- * @property {Number} [config.dieSize = DEFAULT_DIE_SIZE] - The size of a die.
+ * @property {Number} config.dieSize - The size of a die.
  */
 
 /**
@@ -68,16 +61,16 @@ const GridLayout = class {
      * @param {GridLayoutConfiguration} config - The configuration of the GridLayout
      */
     constructor({
-        width = DEFAULT_WIDTH,
-        height = DEFAULT_HEIGHT,
-        dispersion = DEFAULT_DISPERSION,
-        dieSize = DEFAULT_DIE_SIZE
+        width,
+        height,
+        dispersion,
+        dieSize
     } = {}) {
         _dice.set(this, []);
         _dieSize.set(this, 1);
         _width.set(this, 0);
         _height.set(this, 0);
-        _rotate.set(this, !DEFAULT_ROTATING_DICE_DISABLED);
+        _rotate.set(this, true);
 
         this.dispersion = dispersion;
         this.dieSize = dieSize;
@@ -169,7 +162,7 @@ const GridLayout = class {
 
     get rotate() {
         const r = _rotate.get(this);
-        return undefined === r ? !DEFAULT_ROTATING_DICE_DISABLED : r;
+        return undefined === r ? true : r;
     }
 
     set rotate(r) {

@@ -95,6 +95,20 @@ const getBooleanAttribute = (element, name, defaultValue) => {
 const _canvas = new WeakMap();
 const _layout = new WeakMap();
 const _currentPlayer = new WeakMap();
+const _numberOfReadyDice = new WeakMap();
+
+const getReadyDice = (board) => {
+    if (undefined === _numberOfReadyDice.get(board)) {
+        _numberOfReadyDice.set(board, 0);
+    }
+
+    return _numberOfReadyDice.get(board);
+};
+
+const updateReadyDice = (board, update) => {
+    _numberOfReadyDice.set(board, getReadyDice(board) + update);
+};
+
 
 // Interaction states
 const NONE = Symbol("no_interaction");
@@ -104,14 +118,6 @@ const INDETERMINED = Symbol("indetermined");
 const DRAGGING = Symbol("dragging");
 
 // Methods to handle interaction
-const _renderDiceBoard = (board, dice) => {
-    board.context.clearRect(0, 0, board.width, board.height);
-
-    for (const die of dice) {
-        die.render(board.context, board.dieSize);
-    }
-};
-
 const convertWindowCoordinatesToCanvas = (canvas, xWindow, yWindow) => {
     const canvasBox = canvas.getBoundingClientRect();
 
@@ -141,7 +147,7 @@ const setupInteraction = (board) => {
             }
             state = NONE;
 
-            _renderDiceBoard(board, board.dice);
+            board._update();
         }
 
         holdTimeout = null;
@@ -205,7 +211,7 @@ const setupInteraction = (board) => {
                 stopHolding();
 
                 const diceWithoutDieUnderCursor = board.dice.filter(die => die !== dieUnderCursor);
-                _renderDiceBoard(board, diceWithoutDieUnderCursor);
+                board._update(diceWithoutDieUnderCursor);
                 staticBoard = board.context.getImageData(0, 0, canvas.width, canvas.height);
             }
         } else if (DRAGGING === state) {
@@ -242,7 +248,7 @@ const setupInteraction = (board) => {
         state = NONE;
 
         // Refresh board; Render dice
-        _renderDiceBoard(board, board.dice);
+        board._update();
     };
 
 
@@ -353,21 +359,21 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
             // The value is determined when using the getter
         }
         }
+
+        this._update();
     }
 
     connectedCallback() {
-        let numberOfReadyDice = 0;
-
         this.addEventListener("top-die:added", () => {
-            numberOfReadyDice++;
-            if (numberOfReadyDice === this.dice.length) {
-                _renderDiceBoard(this, this.layout.layout(this.dice));
+            updateReadyDice(this, 1);
+            if (this._isReady()) {
+                this._update(this.layout.layout(this.dice));
             }
         });
 
         this.addEventListener("top-die:removed", () => {
-            _renderDiceBoard(this, this.layout.layout(this.dice));
-            numberOfReadyDice--;
+            this._update(this.layout.layout(this.dice));
+            updateReadyDice(this, -1);
         });
 
         // All dice boards do have a player list. If there isn't one yet,
@@ -500,8 +506,22 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
     throwDice(player = DEFAULT_SYSTEM_PLAYER) {
         this.dice.forEach(die => die.throwIt());
         this.currentPlayer = player;
-        _renderDiceBoard(this, this.layout.layout(this.dice));
+        this._update(this.layout.layout(this.dice));
         return this.dice;
+    }
+
+    _isReady() {
+        return getReadyDice(this) === this.dice.length;
+    }
+
+    _update(dice = this.dice) {
+        if (this._isReady()) {
+            this.context.clearRect(0, 0, this.width, this.height);
+
+            for (const die of dice) {
+                die.render(this.context, this.dieSize);
+            }
+        }
     }
 };
 

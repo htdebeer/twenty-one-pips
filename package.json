@@ -27,12 +27,21 @@
   },
   "homepage": "https://twntyonepips.org",
   "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.2.3",
+    "babel-loader": "^8.0.4",
     "chai": "^4.2.0",
     "docdash": "^1.0.0",
     "eslint": "^5.8.0",
+    "gulp": "^4.0.0",
+    "gulp-babel": "^8.0.0",
+    "gulp-rename": "^1.4.0",
+    "gulp-rollup": "^2.16.2",
+    "gulp-sourcemaps": "^2.6.4",
     "http-server": "^0.11.1",
     "jsdoc": "^3.5.5",
-    "mocha": "^5.2.0"
+    "mocha": "^5.2.0",
+    "rollup-plugin-babel": "^4.1.0"
   },
   "dependencies": {
     "@webcomponents/webcomponentsjs": "^2.1.3",

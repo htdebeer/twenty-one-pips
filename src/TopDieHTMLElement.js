@@ -138,6 +138,11 @@ const renderPip = (context, x, y, width) => {
 
 
 const _board = new WeakMap();
+const _pips = new WeakMap();
+const _x = new WeakMap();
+const _y = new WeakMap();
+const _rotation = new WeakMap();
+const _heldBy = new WeakMap();
 
 /**
  * TopDieHTMLElement is the "top-die" custom HTML element representing a die
@@ -146,22 +151,35 @@ const _board = new WeakMap();
 const TopDieHTMLElement = class extends HTMLElement {
     constructor() {
         super();
+
+        _pips.set(this, 0);
+        _x.set(this, 0);
+        _y.set(this, 0);
+        _rotation.set(this, 0);
+        _heldBy.set(this, null);
     }
 
     static get observedAttributes() {
-        return ["x", "y", "rotation", "pips", "held-by"];
+        return ["x", "y", "rotation"];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
-        console.log(name, oldValue, newValue);
     }
 
     connectedCallback() {
         _board.set(this, this.parentNode);
         // Ensure every die has a pips, 1 <= pips <= 6
-        if (!this.hasAttribute("pips")) {
-            this.setAttribute("pips", randomPips());
+        let pips = NaN;
+        if (this.hasAttribute("pips")) {
+            pips = parseInt(this.getAttribute("pips"), 10);
         }
+
+        if (Number.isNaN(pips) || 1 > pips || 6 < pips) {
+            pips = randomPips();
+            this.setAttribute("pips", pips);
+        }
+
+        _pips.set(this, pips);
 
         _board.get(this).dispatchEvent(new Event("top-die:added"));
     }
