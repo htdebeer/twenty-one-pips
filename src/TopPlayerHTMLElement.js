@@ -18,6 +18,7 @@
  * @ignore
  */
 import {ConfigurationError} from "./error/ConfigurationError.js";
+import {ReadOnlyAttributes} from "./ReadOnlyAttributes.js";
 
 const COLOR_ATTRIBUTE = "color";
 const NAME_ATTRIBUTE = "name";
@@ -33,7 +34,7 @@ const _name = new WeakMap();
  * instances with the same name and same color are considered the same Player.
  *
  */
-const TopPlayerHTMLElement = class extends HTMLElement {
+const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
 
     constructor({color, name} = {}) {
         super();

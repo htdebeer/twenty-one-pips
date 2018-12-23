@@ -19,6 +19,7 @@
  */
 
 //import {ConfigurationError} from "./error/ConfigurationError.js";
+import {ReadOnlyAttributes} from "./ReadOnlyAttributes.js";
 
 /**
  * @module
@@ -38,10 +39,6 @@ const ROTATION_ATTRIBUTE = "rotation";
 const X_ATTRIBUTE = "x";
 const Y_ATTRIBUTE = "y";
 
-const attribute2property = (name) => {
-    const [first, ...rest] = name.split("-");
-    return first + rest.map(word => word.slice(0, 1).toUpperCase() + word.slice(1)).join();
-};
 
 const BASE_DIE_SIZE = 100; // px
 const BASE_ROUNDED_CORNER_RADIUS = 15; // px
@@ -162,7 +159,7 @@ const _y = new WeakMap();
  * TopDieHTMLElement is the "top-die" custom HTML element representing a die
  * on the dice board.
  */
-const TopDieHTMLElement = class extends HTMLElement {
+const TopDieHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
 
     /**
      * Create a new TopDieHTMLElement.
@@ -225,16 +222,6 @@ const TopDieHTMLElement = class extends HTMLElement {
             X_ATTRIBUTE,
             Y_ATTRIBUTE
         ];
-    }
-
-    attributeChangedCallback(name, oldValue, newValue) {
-        // All attributes are made read-only to prevent cheating by changing
-        // the attribute values on a top-die element. Of course, this is by no
-        // guarantee that users will not cheat in a different way.
-        const property = attribute2property(name);
-        if (newValue !== `${this[property]}`) {
-            this.setAttribute(name, this[property]);
-        }
     }
 
     connectedCallback() {
