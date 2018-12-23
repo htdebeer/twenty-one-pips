@@ -19,6 +19,13 @@
  */
 import {ConfigurationError} from "./error/ConfigurationError.js";
 
+const COLOR_ATTRIBUTE = "color";
+const NAME_ATTRIBUTE = "name";
+
+// Private properties
+const _color = new WeakMap();
+const _name = new WeakMap();
+
 /**
  * TopPlayerHTMLElement -- A Player of a dice game.
  *
@@ -27,24 +34,45 @@ import {ConfigurationError} from "./error/ConfigurationError.js";
  *
  */
 const TopPlayerHTMLElement = class extends HTMLElement {
-    constructor() {
+
+    constructor({color, name} = {}) {
         super();
+
+        if (color && "" !== color) {
+            _color.set(this, color);
+            this.setAttribute(COLOR_ATTRIBUTE, this.color);
+        } else if (this.hasAttribute(COLOR_ATTRIBUTE) && "" !== this.getAttribute(COLOR_ATTRIBUTE)) {
+            _color.set(this, this.getAttribute(COLOR_ATTRIBUTE));
+        } else {
+            throw new ConfigurationError("A Player needs a color, which is a String.");
+        }
+
+        if (name && "" !== name) {
+            _name.set(this, name);
+            this.setAttribute(NAME_ATTRIBUTE, this.name);
+        } else if (this.hasAttribute(NAME_ATTRIBUTE) && "" !== this.getAttribute(NAME_ATTRIBUTE)) {
+            _name.set(this, this.getAttribute(NAME_ATTRIBUTE));
+        } else {
+            throw new ConfigurationError("A Player needs a name, which is a String.");
+        }
     }
 
     static get observedAttributes() {
-        return [];
+        return [
+            COLOR_ATTRIBUTE,
+            NAME_ATTRIBUTE
+        ];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
+        // All attributes are made read-only to prevent cheating by changing
+        // the player's properties via the DOM.
+        if (newValue !== `${this[name]}`) {
+            this.setAttribute(name, this[name]);
+        }
     }
 
     connectedCallback() {
-        if ("string" !== typeof this.name || "" === this.name) {
-            throw new ConfigurationError("A Player needs a name, which is a String.");
-        }
-        if ("string" !== typeof this.color || "" === this.color) {
-            throw new ConfigurationError("A Player needs a color, which is a String.");
-        }
     }
 
     disconnectedCallback() {
@@ -56,7 +84,7 @@ const TopPlayerHTMLElement = class extends HTMLElement {
      * @return {String} This Player's name.
      */
     get name() {
-        return this.getAttribute("name");
+        return _name.get(this);
     }
 
     /**
@@ -65,7 +93,7 @@ const TopPlayerHTMLElement = class extends HTMLElement {
      * @return {String} This Player's color.
      */
     get color() {
-        return this.getAttribute("color");
+        return _color.get(this);
     }
 
     toString() {
@@ -94,9 +122,7 @@ window.customElements.define("top-player", TopPlayerHTMLElement);
  * change the name and/or the color, create and use your own "system player".
  * @const
  */
-const DEFAULT_SYSTEM_PLAYER = new TopPlayerHTMLElement();
-DEFAULT_SYSTEM_PLAYER.setAttribute("name", "*");
-DEFAULT_SYSTEM_PLAYER.setAttribute("color", "red");
+const DEFAULT_SYSTEM_PLAYER = new TopPlayerHTMLElement({color: "red", name: "*"});
 
 export {
     TopPlayerHTMLElement,
