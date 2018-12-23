@@ -1,30 +1,29 @@
 const gulp = require("gulp");
-//const babel = require("rollup-plugin-babel");
-const babel = require("gulp-babel");
-const sourcemaps = require("gulp-sourcemaps");
-const rollup = require("gulp-rollup");
+const uglifyEs = require("gulp-uglify-es").default;
 const rename = require("gulp-rename");
+const rollup = require("gulp-rollup");
+const sourcemaps = require("gulp-sourcemaps");
+
+const BASE_NAME = "twenty-one-pips";
+const SOURCE = "./src";
+const DESTINATION = "./lib";
 
 const defaultTask = function () {
-    return gulp.src("./src/**/*.js")
-        .pipe(sourcemaps.init({
-        }))
-        .pipe(rollup({
-            input: "./src/twenty-one-pips.js",
-            output: {
-                format: "es",
-            }
-        }))
-        .pipe(rename("twenty-one-pips.es.js"))
-        .pipe(gulp.dest("./dist"))
-        .pipe(babel({
-            presets: [
-                "@babel/preset-env"
-            ]
-        }))
-        .pipe(rename("twenty-one-pips.js"))
-        .pipe(sourcemaps.write("."))
-        .pipe(gulp.dest("./dist"));
+    return gulp.src(`${SOURCE}/**/*.js`)
+        .pipe(sourcemaps.init())
+            .pipe(rollup({
+                input: `${SOURCE}/${BASE_NAME}.js`,
+                output: {
+                    format: "es",
+                }
+            }))
+            .pipe(rename(`${BASE_NAME}.js`))
+            .pipe(sourcemaps.write())
+        .pipe(gulp.dest(DESTINATION))
+            .pipe(uglifyEs())
+            .pipe(rename(`${BASE_NAME}.min.js`))
+            .pipe(sourcemaps.write("."))
+        .pipe(gulp.dest(DESTINATION));
 };
 
 exports.default = defaultTask;

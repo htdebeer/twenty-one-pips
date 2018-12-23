@@ -24,8 +24,8 @@ import {TopPlayerListHTMLElement} from "./TopPlayerListHTMLElement.js";
 
 window.twentyonepips = {
     version: "0.0.1",
-    TopDiceBoard: TopDiceBoardHTMLElement,
-    TopDie: TopDieHTMLElement,
-    TopPlayer: TopPlayerHTMLElement,
-    TopPlayerList: TopPlayerListHTMLElement
+    TopDiceBoardHTMLElement: TopDiceBoardHTMLElement,
+    TopDieHTMLElement: TopDieHTMLElement,
+    TopPlayerHTMLElement: TopPlayerHTMLElement,
+    TopPlayerListHTMLElement: TopPlayerListHTMLElement
 };
