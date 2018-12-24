@@ -39,7 +39,6 @@ const ROTATION_ATTRIBUTE = "rotation";
 const X_ATTRIBUTE = "x";
 const Y_ATTRIBUTE = "y";
 
-
 const BASE_DIE_SIZE = 100; // px
 const BASE_ROUNDED_CORNER_RADIUS = 15; // px
 const BASE_STROKE_WIDTH = 2.5; // px
@@ -80,7 +79,6 @@ const unicodeToPips = (u) => {
     return 0 <= dieCharIndex ? dieCharIndex + 1 : undefined;
 };
 
-
 /**
  * Convert a number of pips, 1 ≤ pips ≤ 6 to a unicode character
  * representation of the corresponding die face. This function is the reverse
@@ -91,7 +89,6 @@ const unicodeToPips = (u) => {
  * undefined if p was not between 1 and 6 inclusive.
  */
 const pipsToUnicode = p => isPipNumber(p) ? DIE_UNICODE_CHARACTERS[p - 1] : undefined;
-
 
 const renderHold = (context, x, y, width, color) => {
     const SEPERATOR = width / 30;
@@ -370,7 +367,7 @@ const TopDieHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
         if (!this.isHeld()) {
             _pips.set(this, randomPips());
             this.setAttribute(PIPS_ATTRIBUTE, this.pips);
-            this.dispatchEvent(new CustomEvent("top:throw-die", {
+            this.dispatchEvent(new Event("top:throw-die", {
                 detail: {
                     die: this
                 }
@@ -388,10 +385,12 @@ const TopDieHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
     holdIt(player) {
         if (!this.isHeld()) {
             this.heldBy = player;
-            this.dispatchEvent(new CustomEvent("top:hold-die", {detail: {
-                die: this,
-                player
-            }}));
+            this.dispatchEvent(new Event("top:hold-die", {
+                detail: {
+                    die: this,
+                    player
+                }
+            }));
         }
     }
 
