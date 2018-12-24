@@ -15,17 +15,20 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
- * @ignore
  */
 import {TopDiceBoardHTMLElement} from "./TopDiceBoardHTMLElement.js";
 import {TopDieHTMLElement} from "./TopDieHTMLElement.js";
 import {TopPlayerHTMLElement} from "./TopPlayerHTMLElement.js";
 import {TopPlayerListHTMLElement} from "./TopPlayerListHTMLElement.js";
 
-window.twentyonepips = {
-    version: "0.0.1",
-    TopDiceBoardHTMLElement: TopDiceBoardHTMLElement,
-    TopDieHTMLElement: TopDieHTMLElement,
-    TopPlayerHTMLElement: TopPlayerHTMLElement,
-    TopPlayerListHTMLElement: TopPlayerListHTMLElement
-};
+window.twentyonepips = window.twentyonepips || Object.freeze({
+    VERSION: "0.0.1",
+    LICENSE: "LGPL 3.0",
+    WEBSITE: "https://twentyonepips.org",
+    HTMLElements: {
+        TopDiceBoardHTMLElement: TopDiceBoardHTMLElement,
+        TopDieHTMLElement: TopDieHTMLElement,
+        TopPlayerHTMLElement: TopPlayerHTMLElement,
+        TopPlayerListHTMLElement: TopPlayerListHTMLElement
+    }
+});
