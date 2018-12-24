@@ -145,6 +145,13 @@ const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
      * Start a turn for this player.
      */
     startTurn() {
+        if (this.isConnected) {
+            this.parentNode.dispatchEvent(new CustomEvent("top:start-turn", {
+                detail: {
+                    player: this
+                }
+            }));
+        }
         _hasTurn.set(this, true);
         this.setAttribute(HAS_TURN_ATTRIBUTE, true);
     }

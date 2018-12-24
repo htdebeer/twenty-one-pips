@@ -35,6 +35,13 @@ const TopPlayerListHTMLElement = class extends HTMLElement {
         if (0 >= this.players.length) {
             this.appendChild(DEFAULT_SYSTEM_PLAYER);
         }
+
+        this.addEventListener("top:start-turn", (event) => {
+            // Only one player can have a turn at any given time.
+            this.players
+                .filter(p => !p.equals(event.detail.player))
+                .forEach(p => p.endTurn());
+        });
     }
 
     disconnectedCallback() {

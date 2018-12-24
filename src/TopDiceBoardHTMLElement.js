@@ -520,7 +520,6 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
      */
     throwDice(player = DEFAULT_SYSTEM_PLAYER) {
         if (player && !player.hasTurn) {
-            this.players.forEach(p => p.endTurn());
             player.startTurn();
         }
         this.dice.forEach(die => die.throwIt());
