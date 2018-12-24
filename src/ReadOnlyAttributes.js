@@ -37,6 +37,7 @@ const attribute2property = (name) => {
  * assumption is that attribute "my-attribute" corresponds with property "this.myAttribute".
  *
  * @param {Class} Sup - The class to mixin this ReadOnlyAttributes.
+ * @return {ReadOnlyAttributes} The mixed in class.
  */
 const ReadOnlyAttributes = (Sup) => class extends Sup {
 

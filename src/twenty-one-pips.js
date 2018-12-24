@@ -23,7 +23,7 @@ import {TopPlayerListHTMLElement} from "./TopPlayerListHTMLElement.js";
 
 window.twentyonepips = window.twentyonepips || Object.freeze({
     VERSION: "0.0.1",
-    LICENSE: "LGPL 3.0",
+    LICENSE: "LGPL-3.0",
     WEBSITE: "https://twentyonepips.org",
     HTMLElements: {
         TopDiceBoardHTMLElement: TopDiceBoardHTMLElement,

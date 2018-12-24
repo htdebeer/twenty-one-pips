@@ -23,11 +23,13 @@ import {ReadOnlyAttributes} from "./ReadOnlyAttributes.js";
 const COLOR_ATTRIBUTE = "color";
 const NAME_ATTRIBUTE = "name";
 const SCORE_ATTRIBUTE = "score";
+const HAS_TURN_ATTRIBUTE = "has-turn";
 
 // Private properties
 const _color = new WeakMap();
 const _name = new WeakMap();
 const _score = new WeakMap();
+const _hasTurn = new WeakMap();
 
 /**
  * TopPlayerHTMLElement - A Player in a dice game.
@@ -45,8 +47,9 @@ const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
      * @param {String} [color = null] - This player's color used in the game.
      * @param {String} [name = null] - This player's name.
      * @param {Number} [score = null] - This player's score.
+     * @param {Boolean} [hasTurn = null] - This player has a turn.
      */
-    constructor({color = null, name = null, score = null}) {
+    constructor({color = null, name = null, score = null, hasTurn = null}) {
         super();
 
         if (color && "" !== color) {
@@ -77,13 +80,23 @@ const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
             _score.set(this, null);
         }
 
+        if (true === hasTurn) {
+            _hasTurn.set(this, hasTurn);
+            this.setAttribute(HAS_TURN_ATTRIBUTE, hasTurn);
+        } else if (this.hasAttribute(HAS_TURN_ATTRIBUTE)) {
+            _hasTurn.set(this, true);
+        } else {
+            // Okay, A player does not always have a turn.
+            _hasTurn.set(this, null);
+        }
     }
 
     static get observedAttributes() {
         return [
             COLOR_ATTRIBUTE,
             NAME_ATTRIBUTE,
-            SCORE_ATTRIBUTE
+            SCORE_ATTRIBUTE,
+            HAS_TURN_ATTRIBUTE
         ];
     }
 
@@ -126,6 +139,31 @@ const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
         } else {
             this.setAttribute(SCORE_ATTRIBUTE, newScore);
         }
+    }
+
+    /**
+     * Start a turn for this player.
+     */
+    startTurn() {
+        _hasTurn.set(this, true);
+        this.setAttribute(HAS_TURN_ATTRIBUTE, true);
+    }
+
+    /**
+     * End a turn for this player.
+     */
+    endTurn() {
+        _hasTurn.set(this, null);
+        this.removeAttribute(HAS_TURN_ATTRIBUTE);
+    }
+
+    /**
+     * Does this player have a turn?
+     *
+     * @type {Boolean}
+     */
+    get hasTurn() {
+        return true === _hasTurn.get(this);
     }
 
     /**

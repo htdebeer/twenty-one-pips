@@ -23,38 +23,31 @@ import {DEFAULT_SYSTEM_PLAYER} from "./TopPlayerHTMLElement.js";
  * TopPlayerListHTMLElement to describe the players in the game
  */
 const TopPlayerListHTMLElement = class extends HTMLElement {
+
+    /**
+     * Create a new TopPlayerListHTMLElement.
+     */
     constructor() {
         super();
     }
 
-    static get observedAttributes() {
-        return [];
-    }
-
-    attributeChangedCallback(name, oldValue, newValue) {
-    }
-
     connectedCallback() {
-        this.appendChild(DEFAULT_SYSTEM_PLAYER);
+        if (0 >= this.players.length) {
+            this.appendChild(DEFAULT_SYSTEM_PLAYER);
+        }
     }
 
     disconnectedCallback() {
     }
 
+    /**
+     * The players in this list.
+     *
+     * @type {TopPlayerHTMLElement[]}
+     */
     get players() {
         return [...this.getElementsByTagName("top-player")];
     }
-
-    contains(player) {
-        return this.players.filter(p => p.equals(player));
-    }
-
-    find(player) {
-        const foundPlayers = this.players.filter(p => p.equals(player));
-        return 0 === foundPlayers.length ? null : foundPlayers[0];
-    }
-
-
 };
 
 window.customElements.define("top-player-list", TopPlayerListHTMLElement);

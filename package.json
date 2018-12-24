@@ -27,7 +27,7 @@
   "bugs": {
     "url": "https://github.com/htdebeer/twenty-one-pips/issues"
   },
-  "homepage": "https://twntyonepips.org",
+  "homepage": "https://twentyonepips.org",
   "devDependencies": {
     "chai": "^4.2.0",
     "docdash": "^1.0.0",
@@ -43,7 +43,6 @@
     "rollup-plugin-babel": "^4.1.0"
   },
   "dependencies": {
-    "@webcomponents/webcomponentsjs": "^2.1.3",
     "npm": "^6.4.1"
   }
 }
