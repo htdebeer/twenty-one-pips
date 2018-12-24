@@ -18,12 +18,36 @@
  * @ignore
  */
 
+/*
+ * Convert an HTML attribute to an instance's property. 
+ *
+ * @param {String} name - The attribute's name
+ * @return {String} The corresponding property's name. For example, "my-attr"
+ * will be converted to "myAttr", and "disabled" to "disabled".
+ */
 const attribute2property = (name) => {
     const [first, ...rest] = name.split("-");
     return first + rest.map(word => word.slice(0, 1).toUpperCase() + word.slice(1)).join();
 };
 
+/**
+ * Mixin to make all attributes on a custom HTMLElement read-only in the sense
+ * that when the attribute gets a new value that differs from the value of the
+ * corresponding property, it is reset to that property's value. The
+ * assumption is that attribute "my-attribute" corresponds with property "this.myAttribute".
+ *
+ * @param {Class} Sup - The class to mixin this ReadOnlyAttributes.
+ */
 const ReadOnlyAttributes = (Sup) => class extends Sup {
+
+    /**
+     * Callback that is executed when an observed attribute's value is
+     * changed.
+     *
+     * @param {String} name - The attribute's name
+     * @param {String} oldValue - The attribute's value before the change
+     * @param {String} newValue - The attribute's value with this change.
+     */
     attributeChangedCallback(name, oldValue, newValue) {
         // All attributes are made read-only to prevent cheating by changing
         // the attribute values. Of course, this is by no
