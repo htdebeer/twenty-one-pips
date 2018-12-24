@@ -22,13 +22,15 @@ import {ReadOnlyAttributes} from "./ReadOnlyAttributes.js";
 
 const COLOR_ATTRIBUTE = "color";
 const NAME_ATTRIBUTE = "name";
+const SCORE_ATTRIBUTE = "score";
 
 // Private properties
 const _color = new WeakMap();
 const _name = new WeakMap();
+const _score = new WeakMap();
 
 /**
- * TopPlayerHTMLElement -- A Player of a dice game.
+ * TopPlayerHTMLElement - A Player in a dice game.
  *
  * A Player's name and color should be unique in a game. Two different Player
  * instances with the same name and same color are considered the same Player.
@@ -36,7 +38,15 @@ const _name = new WeakMap();
  */
 const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
 
-    constructor({color, name} = {}) {
+    /**
+     * Create a new TopPlayerHTMLElement, optionally based on an intitial
+     * configuration via an object parameter or declared attributes in HTML.
+     *
+     * @param {String} [color = null] - This player's color used in the game.
+     * @param {String} [name = null] - This player's name.
+     * @param {Number} [score = null] - This player's score.
+     */
+    constructor({color = null, name = null, score = null}) {
         super();
 
         if (color && "" !== color) {
@@ -56,27 +66,40 @@ const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
         } else {
             throw new ConfigurationError("A Player needs a name, which is a String.");
         }
+
+        if (score) {
+            _score.set(this, score);
+            this.setAttribute(SCORE_ATTRIBUTE, this.score);
+        } else if (this.hasAttribute(SCORE_ATTRIBUTE) && Number.isNaN(parseInt(this.getAttribute(SCORE_ATTRIBUTE), 10))) {
+            _score.set(this, parseInt(this.getAttribute(SCORE_ATTRIBUTE), 10));
+        } else {
+            // Okay. A player does not need to have a score.
+            _score.set(this, null);
+        }
+
     }
 
     static get observedAttributes() {
         return [
             COLOR_ATTRIBUTE,
-            NAME_ATTRIBUTE
+            NAME_ATTRIBUTE,
+            SCORE_ATTRIBUTE
         ];
-    }
-
-    attributeChangedCallback(name, oldValue, newValue) {
-        // All attributes are made read-only to prevent cheating by changing
-        // the player's properties via the DOM.
-        if (newValue !== `${this[name]}`) {
-            this.setAttribute(name, this[name]);
-        }
     }
 
     connectedCallback() {
     }
 
     disconnectedCallback() {
+    }
+
+    /**
+     * This Player's color.
+     *
+     * @return {String} This Player's color.
+     */
+    get color() {
+        return _color.get(this);
     }
 
     /**
@@ -89,14 +112,27 @@ const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
     }
 
     /**
-     * This Player's color.
+     * This Player's score.
      *
-     * @return {String} This Player's color.
+     * @return {Number} This player's score.
      */
-    get color() {
-        return _color.get(this);
+    get score() {
+        return null === _score.get(this) ? 0 : _score.get(this);
+    }
+    set score(newScore) {
+        _score.set(this, newScore);
+        if (null === newScore) {
+            this.removeAttribute(SCORE_ATTRIBUTE);
+        } else {
+            this.setAttribute(SCORE_ATTRIBUTE, newScore);
+        }
     }
 
+    /**
+     * A String representation of this Player, his or hers name.
+     *
+     * @return {String} The Player's name represents the player as a string.
+     */
     toString() {
         return `${this.name}`;
     }
