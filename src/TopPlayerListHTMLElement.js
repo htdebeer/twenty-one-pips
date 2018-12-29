@@ -20,7 +20,9 @@
 import {DEFAULT_SYSTEM_PLAYER} from "./TopPlayerHTMLElement.js";
 
 /**
- * TopPlayerListHTMLElement to describe the players in the game
+ * TopPlayerListHTMLElement to describe the players in the game.
+ *
+ * @extends HTMLElement
  */
 const TopPlayerListHTMLElement = class extends HTMLElement {
 
@@ -50,7 +52,7 @@ const TopPlayerListHTMLElement = class extends HTMLElement {
     /**
      * The players in this list.
      *
-     * @type {TopPlayerHTMLElement[]}
+     * @type {module:TopPlayerHTMLElement~TopPlayerHTMLElement[]}
      */
     get players() {
         return [...this.getElementsByTagName("top-player")];

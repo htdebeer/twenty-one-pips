@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>TopPlayerHTMLElement.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module-error_ConfigurationError-ConfigurationError.html">ConfigurationError</a></li><li><a href="module-error_NoSuchEventTypeError-NoSuchEventTypeError.html">NoSuchEventTypeError</a></li><li><a href="module-GridLayout-GridLayout.html">GridLayout</a><ul class='methods'><li data-type='method'><a href="module-GridLayout-GridLayout.html#getAt">getAt</a></li><li data-type='method'><a href="module-GridLayout-GridLayout.html#layout">layout</a></li><li data-type='method'><a href="module-GridLayout-GridLayout.html#snapTo">snapTo</a></li></ul></li><li><a href="module-TopDiceBoardHTMLElement-TopDiceBoardHTMLElement.html">TopDiceBoardHTMLElement</a><ul class='methods'><li data-type='method'><a href="module-TopDiceBoardHTMLElement-TopDiceBoardHTMLElement.html#throwDice">throwDice</a></li></ul></li><li><a href="module-TopDieHTMLElement-TopDieHTMLElement.html">TopDieHTMLElement</a><ul class='methods'><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#hasCoordinates">hasCoordinates</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#holdIt">holdIt</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#isHeld">isHeld</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#releaseIt">releaseIt</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#render">render</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#throwIt">throwIt</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#toString">toString</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#toUnicode">toUnicode</a></li></ul></li><li><a href="TopPlayerHTMLElement.html">TopPlayerHTMLElement</a><ul class='methods'><li data-type='method'><a href="TopPlayerHTMLElement.html#endTurn">endTurn</a></li><li data-type='method'><a href="TopPlayerHTMLElement.html#equals">equals</a></li><li data-type='method'><a href="TopPlayerHTMLElement.html#startTurn">startTurn</a></li><li data-type='method'><a href="TopPlayerHTMLElement.html#toString">toString</a></li></ul></li><li><a href="TopPlayerListHTMLElement.html">TopPlayerListHTMLElement</a></li></ul><h3>Modules</h3><ul><li><a href="module-error_ConfigurationError.html">error/ConfigurationError</a></li><li><a href="module-error_NoSuchEventTypeError.html">error/NoSuchEventTypeError</a></li><li><a href="module-GridLayout.html">GridLayout</a></li><li><a href="module-TopDiceBoardHTMLElement.html">TopDiceBoardHTMLElement</a></li><li><a href="module-TopDieHTMLElement.html">TopDieHTMLElement</a><ul class='methods'><li data-type='method'><a href="module-TopDieHTMLElement.html#~pipsToUnicode">pipsToUnicode</a></li><li data-type='method'><a href="module-TopDieHTMLElement.html#~randomPips">randomPips</a></li><li data-type='method'><a href="module-TopDieHTMLElement.html#~unicodeToPips">unicodeToPips</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#attributeChangedCallback">attributeChangedCallback</a></li><li><a href="global.html#DEFAULT_SYSTEM_PLAYER">DEFAULT_SYSTEM_PLAYER</a></li><li><a href="global.html#ReadOnlyAttributes">ReadOnlyAttributes</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">TopPlayerHTMLElement.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Copyright (c) 2018 Huub de Beer
+ *
+ * This file is part of twenty-one-pips.
+ *
+ * Twenty-one-pips is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * Twenty-one-pips is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+ * License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with twenty-one-pips.  If not, see &lt;http://www.gnu.org/licenses/>.
+ * @ignore
+ */
+import {ConfigurationError} from "./error/ConfigurationError.js";
+import {ReadOnlyAttributes} from "./ReadOnlyAttributes.js";
+
+// The names of the (observed) attributes of the TopPlayerHTMLElement.
+const COLOR_ATTRIBUTE = "color";
+const NAME_ATTRIBUTE = "name";
+const SCORE_ATTRIBUTE = "score";
+const HAS_TURN_ATTRIBUTE = "has-turn";
+
+// The private properties of the TopPlayerHTMLElement 
+const _color = new WeakMap();
+const _name = new WeakMap();
+const _score = new WeakMap();
+const _hasTurn = new WeakMap();
+
+/**
+ * A Player in a dice game.
+ *
+ * A player's name should be unique in the game. Two different
+ * TopPlayerHTMLElement elements with the same name attribute are treated as
+ * the same player.
+ *
+ * In general it is recommended that no two players do have the same color,
+ * although it is not unconceivable that certain dice games have players work
+ * in teams where it would make sense for two or more different players to
+ * have the same color.
+ *
+ * The name and color attributes are required. The score and has-turn
+ * attributes are not.
+ *
+ *  @extends {HTMLElement}
+ */
+const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
+
+    /**
+     * Create a new TopPlayerHTMLElement, optionally based on an intitial
+     * configuration via an object parameter or declared attributes in HTML.
+     *
+     * @param {String} [color = null] - This player's color used in the game.
+     * @param {String} [name = null] - This player's name.
+     * @param {Number} [score = null] - This player's score.
+     * @param {Boolean} [hasTurn = null] - This player has a turn.
+     */
+    constructor({color = null, name = null, score = null, hasTurn = null}) {
+        super();
+
+        if (color &amp;&amp; "" !== color) {
+            _color.set(this, color);
+            this.setAttribute(COLOR_ATTRIBUTE, this.color);
+        } else if (this.hasAttribute(COLOR_ATTRIBUTE) &amp;&amp; "" !== this.getAttribute(COLOR_ATTRIBUTE)) {
+            _color.set(this, this.getAttribute(COLOR_ATTRIBUTE));
+        } else {
+            throw new ConfigurationError("A Player needs a color, which is a String.");
+        }
+
+        if (name &amp;&amp; "" !== name) {
+            _name.set(this, name);
+            this.setAttribute(NAME_ATTRIBUTE, this.name);
+        } else if (this.hasAttribute(NAME_ATTRIBUTE) &amp;&amp; "" !== this.getAttribute(NAME_ATTRIBUTE)) {
+            _name.set(this, this.getAttribute(NAME_ATTRIBUTE));
+        } else {
+            throw new ConfigurationError("A Player needs a name, which is a String.");
+        }
+
+        if (score) {
+            _score.set(this, score);
+            this.setAttribute(SCORE_ATTRIBUTE, this.score);
+        } else if (this.hasAttribute(SCORE_ATTRIBUTE) &amp;&amp; Number.isNaN(parseInt(this.getAttribute(SCORE_ATTRIBUTE), 10))) {
+            _score.set(this, parseInt(this.getAttribute(SCORE_ATTRIBUTE), 10));
+        } else {
+            // Okay. A player does not need to have a score.
+            _score.set(this, null);
+        }
+
+        if (true === hasTurn) {
+            _hasTurn.set(this, hasTurn);
+            this.setAttribute(HAS_TURN_ATTRIBUTE, hasTurn);
+        } else if (this.hasAttribute(HAS_TURN_ATTRIBUTE)) {
+            _hasTurn.set(this, true);
+        } else {
+            // Okay, A player does not always have a turn.
+            _hasTurn.set(this, null);
+        }
+    }
+
+    static get observedAttributes() {
+        return [
+            COLOR_ATTRIBUTE,
+            NAME_ATTRIBUTE,
+            SCORE_ATTRIBUTE,
+            HAS_TURN_ATTRIBUTE
+        ];
+    }
+
+    connectedCallback() {
+    }
+
+    disconnectedCallback() {
+    }
+
+    /**
+     * This Player's color.
+     *
+     * @return {String} This Player's color.
+     */
+    get color() {
+        return _color.get(this);
+    }
+
+    /**
+     * This Player's name.
+     *
+     * @return {String} This Player's name.
+     */
+    get name() {
+        return _name.get(this);
+    }
+
+    /**
+     * This Player's score.
+     *
+     * @return {Number} This player's score.
+     */
+    get score() {
+        return null === _score.get(this) ? 0 : _score.get(this);
+    }
+    set score(newScore) {
+        _score.set(this, newScore);
+        if (null === newScore) {
+            this.removeAttribute(SCORE_ATTRIBUTE);
+        } else {
+            this.setAttribute(SCORE_ATTRIBUTE, newScore);
+        }
+    }
+
+    /**
+     * Start a turn for this player.
+     */
+    startTurn() {
+        if (this.isConnected) {
+            this.parentNode.dispatchEvent(new CustomEvent("top:start-turn", {
+                detail: {
+                    player: this
+                }
+            }));
+        }
+        _hasTurn.set(this, true);
+        this.setAttribute(HAS_TURN_ATTRIBUTE, true);
+    }
+
+    /**
+     * End a turn for this player.
+     */
+    endTurn() {
+        _hasTurn.set(this, null);
+        this.removeAttribute(HAS_TURN_ATTRIBUTE);
+    }
+
+    /**
+     * Does this player have a turn?
+     *
+     * @type {Boolean}
+     */
+    get hasTurn() {
+        return true === _hasTurn.get(this);
+    }
+
+    /**
+     * A String representation of this Player, his or hers name.
+     *
+     * @return {String} The Player's name represents the player as a string.
+     */
+    toString() {
+        return `${this.name}`;
+    }
+
+    /**
+     * Is this Player equat another player?
+     * 
+     * @param {Player} other - The other Player to compare this Player with.
+     * @return {Boolean} True when either the object references are the same
+     * or when both name and color are the same.
+     */
+    equals(other) {
+        const name = "string" === typeof other ? other : other.name;
+        return other === this || name === this.name;
+    }
+};
+
+window.customElements.define("top-player", TopPlayerHTMLElement);
+
+/**
+ * The default system player. Dice are thrown by a player. For situations
+ * where you want to render a bunch of dice without needing the concept of Players
+ * this DEFAULT_SYSTEM_PLAYER can be a substitute. Of course, if you'd like to
+ * change the name and/or the color, create and use your own "system player".
+ * @const
+ */
+const DEFAULT_SYSTEM_PLAYER = new TopPlayerHTMLElement({color: "red", name: "*"});
+
+export {
+    TopPlayerHTMLElement,
+    DEFAULT_SYSTEM_PLAYER
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Dec 29 2018 14:42:35 GMT+0100 (Central European Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+
+</body>
+</html>

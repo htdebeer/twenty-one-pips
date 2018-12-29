@@ -1,4 +1,47 @@
-/**
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>TopDiceBoardHTMLElement.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module-error_ConfigurationError-ConfigurationError.html">ConfigurationError</a></li><li><a href="module-error_NoSuchEventTypeError-NoSuchEventTypeError.html">NoSuchEventTypeError</a></li><li><a href="module-GridLayout-GridLayout.html">GridLayout</a><ul class='methods'><li data-type='method'><a href="module-GridLayout-GridLayout.html#getAt">getAt</a></li><li data-type='method'><a href="module-GridLayout-GridLayout.html#layout">layout</a></li><li data-type='method'><a href="module-GridLayout-GridLayout.html#snapTo">snapTo</a></li></ul></li><li><a href="module-TopDiceBoardHTMLElement-TopDiceBoardHTMLElement.html">TopDiceBoardHTMLElement</a><ul class='methods'><li data-type='method'><a href="module-TopDiceBoardHTMLElement-TopDiceBoardHTMLElement.html#throwDice">throwDice</a></li></ul></li><li><a href="module-TopDieHTMLElement-TopDieHTMLElement.html">TopDieHTMLElement</a><ul class='methods'><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#hasCoordinates">hasCoordinates</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#holdIt">holdIt</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#isHeld">isHeld</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#releaseIt">releaseIt</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#render">render</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#throwIt">throwIt</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#toString">toString</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#toUnicode">toUnicode</a></li></ul></li><li><a href="TopPlayerHTMLElement.html">TopPlayerHTMLElement</a><ul class='methods'><li data-type='method'><a href="TopPlayerHTMLElement.html#endTurn">endTurn</a></li><li data-type='method'><a href="TopPlayerHTMLElement.html#equals">equals</a></li><li data-type='method'><a href="TopPlayerHTMLElement.html#startTurn">startTurn</a></li><li data-type='method'><a href="TopPlayerHTMLElement.html#toString">toString</a></li></ul></li><li><a href="TopPlayerListHTMLElement.html">TopPlayerListHTMLElement</a></li></ul><h3>Modules</h3><ul><li><a href="module-error_ConfigurationError.html">error/ConfigurationError</a></li><li><a href="module-error_NoSuchEventTypeError.html">error/NoSuchEventTypeError</a></li><li><a href="module-GridLayout.html">GridLayout</a></li><li><a href="module-TopDiceBoardHTMLElement.html">TopDiceBoardHTMLElement</a></li><li><a href="module-TopDieHTMLElement.html">TopDieHTMLElement</a><ul class='methods'><li data-type='method'><a href="module-TopDieHTMLElement.html#~pipsToUnicode">pipsToUnicode</a></li><li data-type='method'><a href="module-TopDieHTMLElement.html#~randomPips">randomPips</a></li><li data-type='method'><a href="module-TopDieHTMLElement.html#~unicodeToPips">unicodeToPips</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#attributeChangedCallback">attributeChangedCallback</a></li><li><a href="global.html#DEFAULT_SYSTEM_PLAYER">DEFAULT_SYSTEM_PLAYER</a></li><li><a href="global.html#ReadOnlyAttributes">ReadOnlyAttributes</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">TopDiceBoardHTMLElement.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
  * Copyright (c) 2018 Huub de Beer
  *
  * This file is part of twenty-one-pips.
@@ -14,7 +57,7 @@
  * License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
+ * along with twenty-one-pips.  If not, see &lt;http://www.gnu.org/licenses/>.
  * @ignore
  */
 //import {ConfigurationError} from "./error/ConfigurationError.js";
@@ -56,7 +99,7 @@ const parseNumber = (numberString, defaultNumber = 0) => {
 };
 
 const validatePositiveNumber = (number, maxNumber = Infinity) => {
-    return 0 <= number && number < maxNumber;
+    return 0 &lt;= number &amp;&amp; number &lt; maxNumber;
 };
 
 const getPositiveNumber = (numberString, defaultValue) => {
@@ -189,7 +232,7 @@ const setupInteraction = (board) => {
 
             if (null !== dieUnderCursor) {
                 // Only interaction with the board via a die
-                if (!board.disabledHoldingDice && !board.disabledDraggingDice) {
+                if (!board.disabledHoldingDice &amp;&amp; !board.disabledDraggingDice) {
                     state = INDETERMINED;
                     startHolding();
                 } else if (!board.disabledHoldingDice) {
@@ -221,7 +264,7 @@ const setupInteraction = (board) => {
             const dx = Math.abs(origin.x - event.clientX);
             const dy = Math.abs(origin.y - event.clientY);
 
-            if (MIN_DELTA < dx || MIN_DELTA < dy) {
+            if (MIN_DELTA &lt; dx || MIN_DELTA &lt; dy) {
                 state = DRAGGING;
                 stopHolding();
 
@@ -241,7 +284,7 @@ const setupInteraction = (board) => {
     };
 
     const stopInteraction = (event) => {
-        if (null !== dieUnderCursor && DRAGGING === state) {
+        if (null !== dieUnderCursor &amp;&amp; DRAGGING === state) {
             const dx = origin.x - event.clientX;
             const dy = origin.y - event.clientY;
 
@@ -275,7 +318,7 @@ const setupInteraction = (board) => {
     let touchCoordinates = {clientX: 0, clientY: 0};
     const touch2mouseEvent = (mouseEventName) => {
         return (touchEvent) => {
-            if (touchEvent && 0 < touchEvent.touches.length) {
+            if (touchEvent &amp;&amp; 0 &lt; touchEvent.touches.length) {
                 const {clientX, clientY} = touchEvent.touches[0];
                 touchCoordinates = {clientX, clientY};
             }
@@ -304,7 +347,6 @@ const setupInteraction = (board) => {
  * TopDiceBoardHTMLElement is a custom HTML element to render and control a
  * dice board. 
  *
- * @extends HTMLElement
  */
 const TopDiceBoardHTMLElement = class extends HTMLElement {
 
@@ -409,7 +451,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
     /**
      * The GridLayout used by this DiceBoard to layout the dice.
      *
-     * @type {module:GridLayout~GridLayout}
+     * @type {GridLayout}
      */
     get layout() {
         return _layout.get(this);
@@ -417,9 +459,9 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
 
     /**
      * The dice on this board. Note, to actually throw the dice use
-     * {@link throwDice}. 
+     * @see{throwDice}. 
      *
-     * @type {module:TopDieHTMLElement~TopDieHTMLElement[]}
+     * @type {module:Die~Die[]}
      */
     get dice() {
         return [...this.getElementsByTagName("top-die")];
@@ -428,7 +470,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
     /**
      * The maximum number of dice that can be put on this board.
      *
-     * @return {Number} The maximum number of dice, 0 < maximum.
+     * @return {Number} The maximum number of dice, 0 &lt; maximum.
      */
     get maximumNumberOfDice() {
         return this.layout.maximumNumberOfDice;
@@ -506,7 +548,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
     /**
      * The players playing on this board.
      *
-     * @type {module:TopPlayerHTMLElement~TopPlayerHTMLElement[]}
+     * @type {TopPlayerHTMLElement[]}
      */
     get players() {
         return this.querySelector("top-player-list").players;
@@ -515,13 +557,13 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
     /**
      * As player, throw the dice on this board.
      *
-     * @param {module:TopPlayerHTMLElement~TopPlayerHTMLElement} [player = DEFAULT_SYSTEM_PLAYER] - The
+     * @param {TopPlayerHTMLElement} [player = DEFAULT_SYSTEM_PLAYER] - The
      * player that is throwing the dice on this board.
      *
-     * @return {module:TopDieHTMLElement~TopDieHTMLElement[]} The thrown dice on this board. This list of dice is the same as this TopDiceBoardHTMLElement's {@see dice} property
+     * @return {TopDieHTMLElement[]} The thrown dice on this board.
      */
     throwDice(player = DEFAULT_SYSTEM_PLAYER) {
-        if (player && !player.hasTurn) {
+        if (player &amp;&amp; !player.hasTurn) {
             player.startTurn();
         }
         this.dice.forEach(die => die.throwIt());
@@ -541,3 +583,26 @@ export {
     DEFAULT_DISPERSION,
     DEFAULT_ROTATING_DICE_DISABLED
 };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Dec 29 2018 14:42:35 GMT+0100 (Central European Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+
+</body>
+</html>

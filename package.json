@@ -10,7 +10,7 @@
     "src": "src"
   },
   "scripts": {
-    "doc": "node_modules/.bin/jsdoc ./src --destination doc/api --recurse --template node_modules/docdash --package ./package.json",
+    "doc": "node_modules/.bin/jsdoc ./src --configure jsdoc.conf.json",
     "build": "node_modules/.bin/gulp"
   },
   "repository": {
@@ -30,8 +30,8 @@
   "homepage": "https://twentyonepips.org",
   "devDependencies": {
     "chai": "^4.2.0",
-    "docdash": "^1.0.0",
-    "eslint": "^5.8.0",
+    "docdash": "^1.0.1",
+    "eslint": "^5.11.1",
     "gulp": "^4.0.0",
     "gulp-rename": "^1.4.0",
     "gulp-rollup": "^2.16.2",
@@ -43,6 +43,6 @@
     "rollup-plugin-babel": "^4.1.0"
   },
   "dependencies": {
-    "npm": "^6.4.1"
+    "npm": "^6.5.0"
   }
 }

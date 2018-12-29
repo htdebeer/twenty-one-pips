@@ -17,26 +17,41 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
+/**
+ * @module
+ */
 import {ConfigurationError} from "./error/ConfigurationError.js";
-import {ReadOnlyAttributes} from "./ReadOnlyAttributes.js";
+import {ReadOnlyAttributes} from "./mixin/ReadOnlyAttributes.js";
 
+// The names of the (observed) attributes of the TopPlayerHTMLElement.
 const COLOR_ATTRIBUTE = "color";
 const NAME_ATTRIBUTE = "name";
 const SCORE_ATTRIBUTE = "score";
 const HAS_TURN_ATTRIBUTE = "has-turn";
 
-// Private properties
+// The private properties of the TopPlayerHTMLElement 
 const _color = new WeakMap();
 const _name = new WeakMap();
 const _score = new WeakMap();
 const _hasTurn = new WeakMap();
 
 /**
- * TopPlayerHTMLElement - A Player in a dice game.
+ * A Player in a dice game.
  *
- * A Player's name and color should be unique in a game. Two different Player
- * instances with the same name and same color are considered the same Player.
+ * A player's name should be unique in the game. Two different
+ * TopPlayerHTMLElement elements with the same name attribute are treated as
+ * the same player.
  *
+ * In general it is recommended that no two players do have the same color,
+ * although it is not unconceivable that certain dice games have players work
+ * in teams where it would make sense for two or more different players to
+ * have the same color.
+ *
+ * The name and color attributes are required. The score and has-turn
+ * attributes are not.
+ *
+ * @extends HTMLElement
+ * @mixes module:mixin/ReadOnlyAttributes~ReadOnlyAttributes
  */
 const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
 
@@ -44,12 +59,14 @@ const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
      * Create a new TopPlayerHTMLElement, optionally based on an intitial
      * configuration via an object parameter or declared attributes in HTML.
      *
-     * @param {String} [color = null] - This player's color used in the game.
-     * @param {String} [name = null] - This player's name.
-     * @param {Number} [score = null] - This player's score.
-     * @param {Boolean} [hasTurn = null] - This player has a turn.
+     * @param {Object} [config] - An initial configuration for the
+     * player to create.
+     * @param {String} config.color - This player's color used in the game.
+     * @param {String} config.name - This player's name.
+     * @param {Number} [config.score] - This player's score.
+     * @param {Boolean} [config.hasTurn] - This player has a turn.
      */
-    constructor({color = null, name = null, score = null, hasTurn = null}) {
+    constructor({color, name, score, hasTurn}) {
         super();
 
         if (color && "" !== color) {
@@ -107,27 +124,27 @@ const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
     }
 
     /**
-     * This Player's color.
+     * This player's color.
      *
-     * @return {String} This Player's color.
+     * @type {String}
      */
     get color() {
         return _color.get(this);
     }
 
     /**
-     * This Player's name.
+     * This player's name.
      *
-     * @return {String} This Player's name.
+     * @type {String}
      */
     get name() {
         return _name.get(this);
     }
 
     /**
-     * This Player's score.
+     * This player's score.
      *
-     * @return {Number} This player's score.
+     * @type {Number}
      */
     get score() {
         return null === _score.get(this) ? 0 : _score.get(this);
@@ -174,18 +191,18 @@ const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
     }
 
     /**
-     * A String representation of this Player, his or hers name.
+     * A String representation of this player, his or hers name.
      *
-     * @return {String} The Player's name represents the player as a string.
+     * @return {String} The player's name represents the player as a string.
      */
     toString() {
         return `${this.name}`;
     }
 
     /**
-     * Is this Player equat another player?
+     * Is this player equal another player?
      * 
-     * @param {Player} other - The other Player to compare this Player with.
+     * @param {module:TopPlayerHTMLElement~TopPlayerHTMLElement} other - The other player to compare this player with.
      * @return {Boolean} True when either the object references are the same
      * or when both name and color are the same.
      */

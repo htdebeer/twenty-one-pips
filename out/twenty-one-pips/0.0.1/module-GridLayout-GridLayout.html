@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>GridLayout - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module-error_ConfigurationError-ConfigurationError.html">ConfigurationError</a></li><li><a href="module-error_NoSuchEventTypeError-NoSuchEventTypeError.html">NoSuchEventTypeError</a></li><li><a href="module-GridLayout-GridLayout.html">GridLayout</a><ul class='methods'><li data-type='method'><a href="module-GridLayout-GridLayout.html#getAt">getAt</a></li><li data-type='method'><a href="module-GridLayout-GridLayout.html#layout">layout</a></li><li data-type='method'><a href="module-GridLayout-GridLayout.html#snapTo">snapTo</a></li></ul></li><li><a href="module-TopDiceBoardHTMLElement-TopDiceBoardHTMLElement.html">TopDiceBoardHTMLElement</a><ul class='methods'><li data-type='method'><a href="module-TopDiceBoardHTMLElement-TopDiceBoardHTMLElement.html#throwDice">throwDice</a></li></ul></li><li><a href="module-TopDieHTMLElement-TopDieHTMLElement.html">TopDieHTMLElement</a><ul class='methods'><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#hasCoordinates">hasCoordinates</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#holdIt">holdIt</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#isHeld">isHeld</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#releaseIt">releaseIt</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#render">render</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#throwIt">throwIt</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#toString">toString</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#toUnicode">toUnicode</a></li></ul></li><li><a href="TopPlayerHTMLElement.html">TopPlayerHTMLElement</a><ul class='methods'><li data-type='method'><a href="TopPlayerHTMLElement.html#endTurn">endTurn</a></li><li data-type='method'><a href="TopPlayerHTMLElement.html#equals">equals</a></li><li data-type='method'><a href="TopPlayerHTMLElement.html#startTurn">startTurn</a></li><li data-type='method'><a href="TopPlayerHTMLElement.html#toString">toString</a></li></ul></li><li><a href="TopPlayerListHTMLElement.html">TopPlayerListHTMLElement</a></li></ul><h3>Modules</h3><ul><li><a href="module-error_ConfigurationError.html">error/ConfigurationError</a></li><li><a href="module-error_NoSuchEventTypeError.html">error/NoSuchEventTypeError</a></li><li><a href="module-GridLayout.html">GridLayout</a></li><li><a href="module-TopDiceBoardHTMLElement.html">TopDiceBoardHTMLElement</a></li><li><a href="module-TopDieHTMLElement.html">TopDieHTMLElement</a><ul class='methods'><li data-type='method'><a href="module-TopDieHTMLElement.html#~pipsToUnicode">pipsToUnicode</a></li><li data-type='method'><a href="module-TopDieHTMLElement.html#~randomPips">randomPips</a></li><li data-type='method'><a href="module-TopDieHTMLElement.html#~unicodeToPips">unicodeToPips</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#attributeChangedCallback">attributeChangedCallback</a></li><li><a href="global.html#DEFAULT_SYSTEM_PLAYER">DEFAULT_SYSTEM_PLAYER</a></li><li><a href="global.html#ReadOnlyAttributes">ReadOnlyAttributes</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">GridLayout</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+            <span class="ancestors"><a href="module-GridLayout.html">GridLayout</a>~</span>
+        
+        GridLayout
+        </h2>
+        
+            <div class="class-description">GridLayout handles laying out the dice on a DiceBoard.</div>
+        
+    
+</header>
+
+<article>
+    
+        <div class="container-overview">
+        
+            
+
+    
+    <h2>Constructor</h2>
+    
+
+    <h4 class="name" id="GridLayout"><span class="type-signature"></span>new GridLayout<span class="signature">(config)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="GridLayout.js.html">GridLayout.js</a>, <a href="GridLayout.js.html#line56">line 56</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Create a new GridLayout.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>config</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">GridLayoutConfiguration</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The configuration of the GridLayout</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        </div>
+    
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="dieSize"><span class="type-signature"></span>dieSize<span class="type-signature"> :Number</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="GridLayout.js.html">GridLayout.js</a>, <a href="GridLayout.js.html#line151">line 151</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    The size of a die.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Number</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="dispersion"><span class="type-signature"></span>dispersion<span class="type-signature"> :Number</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="GridLayout.js.html">GridLayout.js</a>, <a href="GridLayout.js.html#line134">line 134</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    The dispersion level used by this GridLayout. The dispersion level
+indicates the distance from the center dice can be layout. Use 1 for a
+tight packed layout.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Number</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="height"><span class="type-signature"></span>height<span class="type-signature"> :Number</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="GridLayout.js.html">GridLayout.js</a>, <a href="GridLayout.js.html#line104">line 104</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    The height in pixels used by this GridLayout.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Number</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="maximumNumberOfDice"><span class="type-signature"></span>maximumNumberOfDice<span class="type-signature"> :Number</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="GridLayout.js.html">GridLayout.js</a>, <a href="GridLayout.js.html#line122">line 122</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    The maximum number of dice that can be layout on this GridLayout. This
+number is >= 0. Read only.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Number</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="width"><span class="type-signature"></span>width<span class="type-signature"> :Number</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="GridLayout.js.html">GridLayout.js</a>, <a href="GridLayout.js.html#line86">line 86</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    The width in pixels used by this GridLayout.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Number</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="getAt"><span class="type-signature"></span>getAt<span class="signature">(point)</span><span class="type-signature"> &rarr; {Die|null}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="GridLayout.js.html">GridLayout.js</a>, <a href="GridLayout.js.html#line449">line 449</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Get the die at point (x, y);
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>point</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Point</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The point in (x, y) coordinates</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The die under coordinates (x, y) or null if no die
+is at the point.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Die</span>
+|
+
+<span class="param-type">null</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="layout"><span class="type-signature"></span>layout<span class="signature">(dice)</span><span class="type-signature"> &rarr; {Array.&lt;module:Die~Die>}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="GridLayout.js.html">GridLayout.js</a>, <a href="GridLayout.js.html#line215">line 215</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Layout dice on this GridLayout.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>dice</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;module:Die~Die></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The dice to layout on this Layout.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Throws:</h5>
+
+        
+
+<dl>
+    <dt>
+        <div class="param-desc">
+        The number of
+dice should not exceed the maximum number of dice this Layout can
+layout.
+        </div>
+    </dt>
+    <dd></dd>
+    <dt>
+        <dl class="param-type">
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type"><a href="module-error_ConfigurationError-ConfigurationError.html">module:error/ConfigurationError~ConfigurationError</a></span>
+
+
+            </dd>
+        </dl>
+    </dt>
+    <dd></dd>
+</dl>
+
+
+    
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The same list of dice, but now layout.
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;module:Die~Die></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="snapTo"><span class="type-signature"></span>snapTo<span class="signature">(diecoordinate)</span><span class="type-signature"> &rarr; {Object|null}</span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="GridLayout.js.html">GridLayout.js</a>, <a href="GridLayout.js.html#line391">line 391</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Snap (x,y) to the closest cell in this Layout.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>diecoordinate</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">The coordinate to find the closest cell
+for.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>diecoordinat.die</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Die</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    <code>null</code>
+                
+                </td>
+            
+
+            <td class="description last">The die to snap to.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>diecoordinate.x</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">The x-coordinate.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>diecoordinate.y</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">The y-coordinate.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The coordinate of the cell closest to (x, y).
+Null when no suitable cell is near (x, y)
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+|
+
+<span class="param-type">null</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Dec 29 2018 14:42:35 GMT+0100 (Central European Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+
+</body>
+</html>

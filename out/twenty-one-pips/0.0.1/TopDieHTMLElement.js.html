@@ -1,4 +1,47 @@
-/**
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>TopDieHTMLElement.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module-error_ConfigurationError-ConfigurationError.html">ConfigurationError</a></li><li><a href="module-error_NoSuchEventTypeError-NoSuchEventTypeError.html">NoSuchEventTypeError</a></li><li><a href="module-GridLayout-GridLayout.html">GridLayout</a><ul class='methods'><li data-type='method'><a href="module-GridLayout-GridLayout.html#getAt">getAt</a></li><li data-type='method'><a href="module-GridLayout-GridLayout.html#layout">layout</a></li><li data-type='method'><a href="module-GridLayout-GridLayout.html#snapTo">snapTo</a></li></ul></li><li><a href="module-TopDiceBoardHTMLElement-TopDiceBoardHTMLElement.html">TopDiceBoardHTMLElement</a><ul class='methods'><li data-type='method'><a href="module-TopDiceBoardHTMLElement-TopDiceBoardHTMLElement.html#throwDice">throwDice</a></li></ul></li><li><a href="module-TopDieHTMLElement-TopDieHTMLElement.html">TopDieHTMLElement</a><ul class='methods'><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#hasCoordinates">hasCoordinates</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#holdIt">holdIt</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#isHeld">isHeld</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#releaseIt">releaseIt</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#render">render</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#throwIt">throwIt</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#toString">toString</a></li><li data-type='method'><a href="module-TopDieHTMLElement-TopDieHTMLElement.html#toUnicode">toUnicode</a></li></ul></li><li><a href="TopPlayerHTMLElement.html">TopPlayerHTMLElement</a><ul class='methods'><li data-type='method'><a href="TopPlayerHTMLElement.html#endTurn">endTurn</a></li><li data-type='method'><a href="TopPlayerHTMLElement.html#equals">equals</a></li><li data-type='method'><a href="TopPlayerHTMLElement.html#startTurn">startTurn</a></li><li data-type='method'><a href="TopPlayerHTMLElement.html#toString">toString</a></li></ul></li><li><a href="TopPlayerListHTMLElement.html">TopPlayerListHTMLElement</a></li></ul><h3>Modules</h3><ul><li><a href="module-error_ConfigurationError.html">error/ConfigurationError</a></li><li><a href="module-error_NoSuchEventTypeError.html">error/NoSuchEventTypeError</a></li><li><a href="module-GridLayout.html">GridLayout</a></li><li><a href="module-TopDiceBoardHTMLElement.html">TopDiceBoardHTMLElement</a></li><li><a href="module-TopDieHTMLElement.html">TopDieHTMLElement</a><ul class='methods'><li data-type='method'><a href="module-TopDieHTMLElement.html#~pipsToUnicode">pipsToUnicode</a></li><li data-type='method'><a href="module-TopDieHTMLElement.html#~randomPips">randomPips</a></li><li data-type='method'><a href="module-TopDieHTMLElement.html#~unicodeToPips">unicodeToPips</a></li></ul></li></ul><h3>Global</h3><ul><li><a href="global.html#attributeChangedCallback">attributeChangedCallback</a></li><li><a href="global.html#DEFAULT_SYSTEM_PLAYER">DEFAULT_SYSTEM_PLAYER</a></li><li><a href="global.html#ReadOnlyAttributes">ReadOnlyAttributes</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">TopDieHTMLElement.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
  * Copyright (c) 2018 Huub de Beer
  *
  * This file is part of twenty-one-pips.
@@ -14,12 +57,12 @@
  * License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
+ * along with twenty-one-pips.  If not, see &lt;http://www.gnu.org/licenses/>.
  * @ignore
  */
 
 //import {ConfigurationError} from "./error/ConfigurationError.js";
-import {ReadOnlyAttributes} from "./mixin/ReadOnlyAttributes.js";
+import {ReadOnlyAttributes} from "./ReadOnlyAttributes.js";
 
 /**
  * @module
@@ -54,7 +97,7 @@ const deg2rad = (deg) => {
 
 const isPipNumber = n => {
     const number = parseInt(n, 10);
-    return Number.isInteger(number) && 1 <= number && number <= NUMBER_OF_PIPS;
+    return Number.isInteger(number) &amp;&amp; 1 &lt;= number &amp;&amp; number &lt;= NUMBER_OF_PIPS;
 };
 
 /**
@@ -76,7 +119,7 @@ const DIE_UNICODE_CHARACTERS = ["⚀","⚁","⚂","⚃","⚄","⚅"];
  */
 const unicodeToPips = (u) => {
     const dieCharIndex = DIE_UNICODE_CHARACTERS.indexOf(u);
-    return 0 <= dieCharIndex ? dieCharIndex + 1 : undefined;
+    return 0 &lt;= dieCharIndex ? dieCharIndex + 1 : undefined;
 };
 
 /**
@@ -153,12 +196,8 @@ const _x = new WeakMap();
 const _y = new WeakMap();
 
 /**
- * TopDieHTMLElement is the "top-die" custom [HTML
- * element](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement) representing a die
+ * TopDieHTMLElement is the "top-die" custom HTML element representing a die
  * on the dice board.
- *
- * @extends HTMLElement
- * @mixes module:mixin/ReadOnlyAttributes~ReadOnlyAttributes
  */
 const TopDieHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
 
@@ -168,13 +207,13 @@ const TopDieHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
     constructor() {
         super();
 
-        // Ensure every die has a pips, 1 <= pips <= 6
+        // Ensure every die has a pips, 1 &lt;= pips &lt;= 6
         let pips = NaN;
         if (this.hasAttribute(PIPS_ATTRIBUTE)) {
             pips = parseInt(this.getAttribute(PIPS_ATTRIBUTE), 10);
         }
 
-        if (Number.isNaN(pips) || 1 > pips || 6 < pips) {
+        if (Number.isNaN(pips) || 1 > pips || 6 &lt; pips) {
             pips = randomPips();
         }
 
@@ -426,7 +465,7 @@ const TopDieHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
      * @fires "top:relase-die" with parameters this Die and the player releasing it.
      */
     releaseIt(player) {
-        if (this.isHeld() && this.heldBy.equals(player)) {
+        if (this.isHeld() &amp;&amp; this.heldBy.equals(player)) {
             this.heldBy = null;
             this.removeAttribute(HELD_BY_ATTRIBUTE);
             this.dispatchEvent(new CustomEvent("top:release-die", {
@@ -523,3 +562,26 @@ export {
     unicodeToPips,
     pipsToUnicode
 };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Dec 29 2018 14:42:35 GMT+0100 (Central European Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+
+
+</body>
+</html>
