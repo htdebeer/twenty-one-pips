@@ -5,13 +5,14 @@ const rollup = require("rollup-stream");
 const source = require("vinyl-source-stream");
 const buffer = require("vinyl-buffer");
 const sourcemaps = require("gulp-sourcemaps");
+const watch = require("glob-watcher");
 
 const BASE_NAME = "twenty-one-pips";
 const SOURCE = "./src";
 const DESTINATION = "./lib";
 const inputFile = `${BASE_NAME}.js`;
 
-const defaultTask = function () {
+const build = function () {
     return rollup({
         input: `${SOURCE}/${inputFile}`,
         format: "es",
@@ -29,4 +30,8 @@ const defaultTask = function () {
     .pipe(gulp.dest(DESTINATION));
 };
 
-exports.default = defaultTask;
+const watchTask = gulp.task("watch", () => {
+    watch([`${SOURCE}/**/*.js`], () => build())
+);
+
+exports.default = build;
