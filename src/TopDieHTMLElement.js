@@ -20,6 +20,7 @@
 
 //import {ConfigurationError} from "./error/ConfigurationError.js";
 import {ReadOnlyAttributes} from "./mixin/ReadOnlyAttributes.js";
+import {validate} from "./validate/validate.js";
 
 /**
  * @module
@@ -165,53 +166,40 @@ const TopDieHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
     /**
      * Create a new TopDieHTMLElement.
      */
-    constructor() {
+    constructor({pips, color, rotation, x, y, heldBy} = {}) {
         super();
 
-        // Ensure every die has a pips, 1 <= pips <= 6
-        let pips = NaN;
-        if (this.hasAttribute(PIPS_ATTRIBUTE)) {
-            pips = parseInt(this.getAttribute(PIPS_ATTRIBUTE), 10);
-        }
+        const pipsValue = validate.integer(pips || this.getAttribute(PIPS_ATTRIBUTE))
+            .between(1, 6)
+            .defaultTo(randomPips())
+            .value;
 
-        if (Number.isNaN(pips) || 1 > pips || 6 < pips) {
-            pips = randomPips();
-        }
+        _pips.set(this, pipsValue);
+        this.setAttribute(PIPS_ATTRIBUTE, pipsValue);
 
-        _pips.set(this, pips);
-        this.setAttribute(PIPS_ATTRIBUTE, pips);
+        this.color = validate.color(color || this.getAttribute(COLOR_ATTRIBUTE))
+            .defaultTo(DEFAULT_COLOR)
+            .value;
 
-        // Other attributes. TODO: add validation.
-        if (this.hasAttribute(COLOR_ATTRIBUTE)) {
-            this.color = this.getAttribute(COLOR_ATTRIBUTE);
-        } else {
-            this.color = DEFAULT_COLOR;
-        }
+        this.rotation = validate.integer(rotation || this.getAttribute(ROTATION_ATTRIBUTE))
+            .between(0, 360)
+            .defaultTo(DEFAULT_ROTATION)
+            .value;
 
-        if (this.hasAttribute(ROTATION_ATTRIBUTE)) {
-            this.rotation = parseInt(this.getAttribute(ROTATION_ATTRIBUTE), 10);
-        } else {
-            this.rotation = DEFAULT_ROTATION;
-        }
+        this.x = validate.integer(x || this.getAttribute(X_ATTRIBUTE))
+            .largerThan(0)
+            .defaultTo(DEFAULT_X)
+            .value;
 
-        if (this.hasAttribute(X_ATTRIBUTE)) {
-            this.x = parseInt(this.getAttribute(X_ATTRIBUTE), 10);
-        } else {
-            this.x = DEFAULT_X;
-        }
+        this.y = validate.integer(y || this.getAttribute(Y_ATTRIBUTE))
+            .largerThan(0)
+            .defaultTo(DEFAULT_Y)
+            .value;
 
-        if (this.hasAttribute(Y_ATTRIBUTE)) {
-            this.y = parseInt(this.getAttribute(Y_ATTRIBUTE), 10);
-        } else {
-            this.y = DEFAULT_Y;
-        }
-
-        if (this.hasAttribute(HELD_BY_ATTRIBUTE)) {
-            this.heldBy = this.getAttribute(HELD_BY_ATTRIBUTE);
-        } else {
-            this.heldBy = null;
-        }
-
+        this.heldBy = validate.string(heldBy || this.getAttribute(HELD_BY_ATTRIBUTE))
+            .notEmpty()
+            .defaultTo(null)
+            .value;
     }
 
     static get observedAttributes() {
