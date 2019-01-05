@@ -30,8 +30,11 @@ const build = function () {
     .pipe(gulp.dest(DESTINATION));
 };
 
-const watchTask = gulp.task("watch", () => {
-    watch([`${SOURCE}/**/*.js`], () => build())
-);
+const watchToBuild = function (done) {
+    build();
+    done();
+};
+
+const watchTask = gulp.task("watch", () => watch([`${SOURCE}/**/*.js`], watchToBuild));
 
 exports.default = build;
