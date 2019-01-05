@@ -22,6 +22,7 @@
  */
 import {ConfigurationError} from "./error/ConfigurationError.js";
 import {ReadOnlyAttributes} from "./mixin/ReadOnlyAttributes.js";
+import {validate} from "./validate/validate.js";
 
 // The names of the (observed) attributes of the TopPlayerHTMLElement.
 const COLOR_ATTRIBUTE = "color";
@@ -69,42 +70,41 @@ const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
     constructor({color, name, score, hasTurn}) {
         super();
 
-        if (color && "" !== color) {
-            _color.set(this, color);
+        const colorValue = validate.color(color || this.getAttribute(COLOR_ATTRIBUTE));
+        if (colorValue.isValid) {
+            _color.set(colorValue.value);
             this.setAttribute(COLOR_ATTRIBUTE, this.color);
-        } else if (this.hasAttribute(COLOR_ATTRIBUTE) && "" !== this.getAttribute(COLOR_ATTRIBUTE)) {
-            _color.set(this, this.getAttribute(COLOR_ATTRIBUTE));
         } else {
             throw new ConfigurationError("A Player needs a color, which is a String.");
         }
 
-        if (name && "" !== name) {
+        const nameValue = validate.string(name || this.getAttribute(NAME_ATTRIBUTE));
+        if (nameValue.isValid) {
             _name.set(this, name);
             this.setAttribute(NAME_ATTRIBUTE, this.name);
-        } else if (this.hasAttribute(NAME_ATTRIBUTE) && "" !== this.getAttribute(NAME_ATTRIBUTE)) {
-            _name.set(this, this.getAttribute(NAME_ATTRIBUTE));
         } else {
             throw new ConfigurationError("A Player needs a name, which is a String.");
         }
 
-        if (score) {
+        const scoreValue = validate.integer(score || this.getAttribute(SCORE_ATTRIBUTE));
+        if (scoreValue.isValid) {
             _score.set(this, score);
             this.setAttribute(SCORE_ATTRIBUTE, this.score);
-        } else if (this.hasAttribute(SCORE_ATTRIBUTE) && Number.isNaN(parseInt(this.getAttribute(SCORE_ATTRIBUTE), 10))) {
-            _score.set(this, parseInt(this.getAttribute(SCORE_ATTRIBUTE), 10));
         } else {
             // Okay. A player does not need to have a score.
             _score.set(this, null);
+            this.removeAttribute(SCORE_ATTRIBUTE);
         }
 
-        if (true === hasTurn) {
+        const hasTurnValue = validate.boolean(hasTurn || this.getAttribute(HAS_TURN_ATTRIBUTE))
+            .isTrue();
+        if (hasTurnValue.isValid) {
             _hasTurn.set(this, hasTurn);
             this.setAttribute(HAS_TURN_ATTRIBUTE, hasTurn);
-        } else if (this.hasAttribute(HAS_TURN_ATTRIBUTE)) {
-            _hasTurn.set(this, true);
         } else {
             // Okay, A player does not always have a turn.
             _hasTurn.set(this, null);
+            this.removeAttribute(HAS_TURN_ATTRIBUTE);
         }
     }
 

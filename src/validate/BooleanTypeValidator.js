@@ -44,6 +44,18 @@ const BooleanTypeValidator = class extends TypeValidator {
 
         super({value, defaultValue, errors});
     }
+
+    isTrue() {
+        return this._check({
+            predicate: () => true === this.origin
+        });
+    }
+
+    isFalse() {
+        return this._check({
+            predicate: () => false === this.origin
+        });
+    }
 };
 
 export {
