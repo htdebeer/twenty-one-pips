@@ -21,8 +21,6 @@ import {TypeValidator} from "./TypeValidator.js";
 //import {ParseError} from "./error/ParseError.js";
 import {InvalidTypeError} from "./error/InvalidTypeError.js";
 
-// Implement later according to https://developer.mozilla.org/en-US/docs/Web/CSS/color#Formal_syntax
-
 const COLOR_DEFAULT_VALUE = "black";
 const ColorTypeValidator = class extends TypeValidator {
     constructor(input) {

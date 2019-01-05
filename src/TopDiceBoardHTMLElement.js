@@ -20,6 +20,7 @@
 //import {ConfigurationError} from "./error/ConfigurationError.js";
 import {GridLayout} from "./GridLayout.js";
 import {DEFAULT_SYSTEM_PLAYER} from "./TopPlayerHTMLElement.js";
+import {validate} from "./validate/validate.js";
 
 /**
  * @module
@@ -55,13 +56,11 @@ const parseNumber = (numberString, defaultNumber = 0) => {
     return Number.isNaN(number) ? defaultNumber : number;
 };
 
-const validatePositiveNumber = (number, maxNumber = Infinity) => {
-    return 0 <= number && number < maxNumber;
-};
-
 const getPositiveNumber = (numberString, defaultValue) => {
-    const value = parseNumber(numberString, defaultValue);
-    return validatePositiveNumber(value) ? value : defaultValue;
+    return validate.integer(numberString)
+        .largerThan(0)
+        .defaultTo(defaultValue)
+        .value;
 };
 
 const getPositiveNumberAttribute = (element, name, defaultValue) => {
@@ -368,7 +367,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
             break;
         }
         case ROTATING_DICE_DISABLED_ATTRIBUTE: {
-            const disabledRotation = getBoolean(newValue, ROTATING_DICE_DISABLED_ATTRIBUTE, getBoolean(oldValue, ROTATING_DICE_DISABLED_ATTRIBUTE, DEFAULT_ROTATING_DICE_DISABLED));
+            const disabledRotation = validate.boolean(newValue, getBoolean(oldValue, ROTATING_DICE_DISABLED_ATTRIBUTE, DEFAULT_ROTATING_DICE_DISABLED)).value;
             this.layout.rotate = !disabledRotation;
             break;
         }
