@@ -1,6 +1,6 @@
 {
   "name": "twenty-one-pips",
-  "version": "0.0.1",
+  "version": "0.0.1a-0",
   "description": "A Dice Throwing Component for Creating Dice Games",
   "main": "lib/twenty-one-pips.js",
   "directories": {
