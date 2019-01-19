@@ -67,12 +67,12 @@ const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
      * @param {Number} [config.score] - This player's score.
      * @param {Boolean} [config.hasTurn] - This player has a turn.
      */
-    constructor({color, name, score, hasTurn}) {
+    constructor({color, name, score, hasTurn} = {}) {
         super();
 
         const colorValue = validate.color(color || this.getAttribute(COLOR_ATTRIBUTE));
         if (colorValue.isValid) {
-            _color.set(colorValue.value);
+            _color.set(this, colorValue.value);
             this.setAttribute(COLOR_ATTRIBUTE, this.color);
         } else {
             throw new ConfigurationError("A Player needs a color, which is a String.");
@@ -160,6 +160,8 @@ const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
 
     /**
      * Start a turn for this player.
+     *
+     * @return {TopPlayerHTMLElement} The player with a turn
      */
     startTurn() {
         if (this.isConnected) {
@@ -171,6 +173,7 @@ const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
         }
         _hasTurn.set(this, true);
         this.setAttribute(HAS_TURN_ATTRIBUTE, true);
+        return this;
     }
 
     /**

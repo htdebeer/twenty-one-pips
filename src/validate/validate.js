@@ -20,29 +20,29 @@
 import {IntegerTypeValidator} from "./IntegerTypeValidator.js";
 import {StringTypeValidator} from "./StringTypeValidator.js";
 import {ColorTypeValidator} from "./ColorTypeValidator.js";
-import {BooleanTypeValidator} from "./BooleanTypeValidator,js";
+import {BooleanTypeValidator} from "./BooleanTypeValidator.js";
 
 const Validator = class {
     constructor() {
     }
 
-    static registerType(name, ValidatorClass) {
-        Validator.typeValidators[name] = ValidatorClass;
-        Validator[name] = function(input) {
-            return new Validator.typeValidator[name](input);
-        };
+    boolean(input) {
+        return new BooleanTypeValidator(input);
     }
 
-    static isRegisteredType(name) {
-        return Validator.typeValidators.hasOwnProperty(name);
+    color(input) {
+        return new ColorTypeValidator(input);
     }
+
+    integer(input) {
+        return new IntegerTypeValidator(input);
+    }
+
+    string(input) {
+        return new StringTypeValidator(input);
+    }
+
 };
-
-Validator.typeValidators = {};
-Validator.registerType("integer", IntegerTypeValidator);
-Validator.registerType("string", StringTypeValidator);
-Validator.registerType("boolean", BooleanTypeValidator);
-Validator.registerType("color", ColorTypeValidator);
 
 const ValidatorSingleton = new Validator();
 

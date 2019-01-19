@@ -30,5 +30,9 @@ window.twentyonepips = window.twentyonepips || Object.freeze({
         TopDieHTMLElement: TopDieHTMLElement,
         TopPlayerHTMLElement: TopPlayerHTMLElement,
         TopPlayerListHTMLElement: TopPlayerListHTMLElement
-    }
+    },
+    Die: TopDieHTMLElement,
+    Player: TopPlayerHTMLElement,
+    PlayerList: TopPlayerListHTMLElement,
+    DiceBoard: TopDiceBoardHTMLElement
 });

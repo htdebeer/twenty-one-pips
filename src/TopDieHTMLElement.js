@@ -166,7 +166,7 @@ const TopDieHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
     /**
      * Create a new TopDieHTMLElement.
      */
-    constructor({pips, color, rotation, x, y, heldBy}) {
+    constructor({pips, color, rotation, x, y, heldBy} = {}) {
         super();
 
         const pipsValue = validate.integer(pips || this.getAttribute(PIPS_ATTRIBUTE))
