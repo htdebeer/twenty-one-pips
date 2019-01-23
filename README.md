@@ -11,21 +11,15 @@ It is still very much under development and there has been no release yet.
 License: LGPL3.0.
 
 
-= Examples
+## Examples
 
 There are a couple of example is the `example` directory:
 
-#   Continuously thrown dice
+* Continuously thrown dice: An animation of dice being thrown continuously,
+  holding and releasing dice with each turn.
 
-    An animation of dice being thrown continuously, holding and releasing dice
-    with each turn.
+  ![Snapshot during the animation](example/continuous_thrown_dice/continuous_thrown_dice-snapshot.png)
 
-    ![Snapshot during the
-    animation](example/continuous_thrown_dice/continuous_thrown_dice-snapshot.png)
+* Guess & Go! A stupid simple guessing game: you guess a number and click "Go!"
 
-#   Guess & Go! 
-
-    A stupid simple guessing game: you guess a number and click "Go!"
-
-    ![Snapshot during the *Guess & Go*
-    game](example/guess_and_go/guess_and_go-snapshot.png)
+  ![Snapshot during the *Guess & Go* game](example/guess_and_go/guess_and_go-snapshot.png)
