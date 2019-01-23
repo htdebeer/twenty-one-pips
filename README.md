@@ -18,7 +18,7 @@ There are a couple of example is the `example` directory:
 * Continuously thrown dice: An animation of dice being thrown continuously,
   holding and releasing dice with each turn.
 
-  ![Snapshot during the animation](example/continuous_thrown_dice/continuous_thrown_dice-snapshot.png)
+  ![Snapshot during the animation](example/continuously_thrown_dice/continuously_thrown_dice-snapshot.png)
 
 * Guess & Go! A stupid simple guessing game: you guess a number and click "Go!"
 
