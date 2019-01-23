@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Guess & Go</title>
+        <script type="module" src="../../lib/twenty-one-pips.js"></script>
+
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                font-size: 14pt;
+            }
+
+            .mask {
+                display: none;
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+            }
+
+            .mask.show {
+                display: block;
+                background-color: silver;
+                opacity: 0.25;
+            }
+
+            .message {
+                display: none;
+                left: 10%;
+                width: 80%;
+                position: absolute;
+                top: 25%;
+                border: 1px solid dimgray;
+                padding: 1em;
+            }
+
+            .message.show {
+                display: block;
+            }
+
+            .message.win {
+                background: rgba(0, 200, 0, 0.5);
+            }
+
+            .message.lose {
+                background: rgba(200, 0, 0, 0.5);
+            }
+
+            .control {
+                padding: 1ex;
+                border-bottom: 1px solid dimgray;
+                background: dodgerblue;
+            }
+
+            .control .and {
+                font-style: italic;
+                font-size: smaller;
+            }
+
+            p {
+                text-align: center;
+                margin: 0;
+            }
+
+            input.invalid {
+                color: crimson;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="message lose">
+            <p>
+                Incorrect guess! You LOSE!
+            </p>
+        </div>
+        <div class="message win">
+            <p>
+                Correct guess! You WIN!
+            </p>
+        </div>
+
+        <div class="mask"></div>
+
+        <div class="control">
+            <p>
+                <input type="number" min="1" placeholder="Guess" />
+                <span class="and">&</span>
+                <button type="button" id="go" disabled>Go!</button>
+            </p>
+        </div>
+
+        <top-dice-board width="500" height="500">
+            <top-die></top-die>
+            <top-die></top-die>
+            <top-die></top-die>
+        </top-dice-board>
+
+        <script type="module" src="./src/index.js"></script>
+    </body>
+</html>
