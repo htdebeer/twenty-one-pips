@@ -3,6 +3,8 @@ const DECREASE = Symbol();
 const INTERVAL = 1000; // ms
 const BOARD = document.querySelector("top-dice-board");
 
+let throwingDiceAnimationIntervalId = null;
+
 const shouldAddDie = (direction) => {
     if (INCREASE === direction) {
         if (BOARD.dice.length >= BOARD.maximumNumberOfDice - 1) {
@@ -54,21 +56,21 @@ const throwDice = () => {
     BOARD.throwDice();
 };
 
-const initialize = () => {
-    while (BOARD.dice.length >= BOARD.maximumNumberOfDice - 1) {
-        removeRandomDie();
-    }
-    throwDice();
+const start = () => {
+    clearInterval(throwingDiceAnimationIntervalId);
+    throwingDiceAnimationIntervalId = null;
+
+    BOARD.dice.forEach(die => BOARD.removeChild(die));
+
+    throwingDiceAnimationIntervalId = setInterval(throwDice, INTERVAL);
 };
 
 const diceBoardFillsWindow = () => {
     BOARD.setAttribute("width", window.innerWidth);
     BOARD.setAttribute("height", window.innerHeight);
-    initialize();
+    start();
 }
 
-
 window.addEventListener("resize", diceBoardFillsWindow);
-diceBoardFillsWindow();
 
-setInterval(throwDice, INTERVAL);
+diceBoardFillsWindow();
