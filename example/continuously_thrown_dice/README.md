@@ -8,8 +8,7 @@ It is also a nice example of how to use the *twenty-one-pips* dice-game
 libary. It shows:
 
 *   How to setup an [HTML file](./index.html) with a dice-board and a couple of players.
-*   How to setup interaction with the dice-board via [JavaScript
-  script](src/index.js):
+*   How to setup interaction with the dice-board via [JavaScript](src/index.js):
 
     *   Adding and removing dice,
     *   Throwing dice,
