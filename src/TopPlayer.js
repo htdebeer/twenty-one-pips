@@ -228,5 +228,6 @@ const DEFAULT_SYSTEM_PLAYER = new TopPlayer({color: "red", name: "*"});
 export {
     TopPlayer,
     DEFAULT_SYSTEM_PLAYER,
-    TAG_NAME
+    TAG_NAME,
+    HAS_TURN_ATTRIBUTE
 };

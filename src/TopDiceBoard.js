@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 Huub de Beer
+ * Copyright (c) 2018, 2019 Huub de Beer
  *
  * This file is part of twenty-one-pips.
  *
@@ -19,8 +19,8 @@
  */
 //import {ConfigurationError} from "./error/ConfigurationError.js";
 import {GridLayout} from "./GridLayout.js";
-import {TopDie} from "./TopDie.js";
-import {DEFAULT_SYSTEM_PLAYER, TopPlayer} from "./TopPlayer.js";
+import {TopDie, TAG_NAME as TOP_DIE} from "./TopDie.js";
+import {DEFAULT_SYSTEM_PLAYER, TopPlayer, TAG_NAME as TOP_PLAYER, HAS_TURN_ATTRIBUTE} from "./TopPlayer.js";
 import {TAG_NAME as TOP_PLAYER_LIST} from "./TopPlayerList.js";
 import {validate} from "./validate/validate.js";
 
@@ -152,7 +152,7 @@ const setupInteraction = (board) => {
     const holdDie = () => {
         if (HOLD === state || INDETERMINED === state) {
             // toggle hold / release
-            const playerWithATurn = board.querySelector("top-player-list top-player[has-turn]");
+            const playerWithATurn = board.querySelector(`${TOP_PLAYER_LIST} ${TOP_PLAYER}[${HAS_TURN_ATTRIBUTE}]`);
             if (dieUnderCursor.isHeld()) {
                 dieUnderCursor.releaseIt(playerWithATurn);
             } else {
@@ -390,12 +390,6 @@ const TopDiceBoard = class extends HTMLElement {
             updateBoard(this, this.layout.layout(this.dice));
             updateReadyDice(this, -1);
         });
-
-        // All dice boards do have a player list. If there isn't one yet,
-        // create one.
-        if (null === this.querySelector("top-player-list")) {
-            this.appendChild(document.createElement("top-player-list"));
-        }
     }
 
     disconnectedCallback() {
@@ -420,7 +414,7 @@ const TopDiceBoard = class extends HTMLElement {
      * @type {TopDie[]}
      */
     get dice() {
-        return [...this.getElementsByTagName("top-die")];
+        return [...this.getElementsByTagName(TOP_DIE)];
     }
 
     /**
@@ -556,7 +550,7 @@ const TopDiceBoard = class extends HTMLElement {
      * @param {Number} [config.x] - The x coordinate of the die.
      * @param {Number} [config.y] - The y coordinate of the die.
      * @param {Number} [config.rotation] - The rotation of the die.
-     * @param {TopPlayer} [heldBy] - The player holding the die.
+     * @param {TopPlayer} [config.heldBy] - The player holding the die.
      *
      * @return {TopDie} The added die.
      */
@@ -580,7 +574,10 @@ const TopDiceBoard = class extends HTMLElement {
      *
      * @param {TopPlayer|Object} config - The player or a configuration of a
      * player to add to this TopDiceBoard.
-     *
+     * @param {String} config.color - This player's color used in the game.
+     * @param {String} config.name - This player's name.
+     * @param {Number} [config.score] - This player's score.
+     * @param {Boolean} [config.hasTurn] - This player has a turn.
      *
      * @throws Error when the player to add conflicts with a pre-existing
      * player.

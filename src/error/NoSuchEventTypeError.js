@@ -1,5 +1,5 @@
 /** 
- * Copyright (c) 2018 Huub de Beer
+ * Copyright (c) 2018, 2019 Huub de Beer
  *
  * This file is part of twenty-one-pips.
  *

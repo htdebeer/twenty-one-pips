@@ -86,7 +86,7 @@ const changeTheNumberOfDice = (controller) => {
  *
  * @param {ContinuouslyThrownDiceAnimation} controller - The animation
  * controller.
- * @param {TopPlayerHTMLElement} player - The player that is to hold or
+ * @param {TopPlayer} player - The player that is to hold or
  * release some dice.
  *
  * @private
@@ -119,7 +119,7 @@ class ContinuouslyThrownDiceAnimation {
     /**
      * Create a new ContinuouslyThrownDiceAnimation.
      *
-     * @param {TopDiceBoardHTMLElement} board - The dice board used for the
+     * @param {TopDiceBoard} board - The dice board used for the
      * animation.
      * @param {Number} [stepDuration = INTERVAL] - The number of milliseconds
      * between each step in the animation.
@@ -141,7 +141,7 @@ class ContinuouslyThrownDiceAnimation {
     /**
      * The dice board used for this ContiunuouslyThrownDiceAnimation.
      *
-     * @type {TopDiceBoardHTMLElement}
+     * @type {TopDiceBoard}
      */
     get board() {
         return _board.get(this);
