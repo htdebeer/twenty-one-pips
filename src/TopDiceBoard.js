@@ -121,6 +121,18 @@ const updateBoard = (board, dice = board.dice) => {
     }
 };
 
+const addDie = (board) => {
+    updateReadyDice(board, 1);
+    if (isReady(board)) {
+        updateBoard(board, board.layout.layout(board.dice));
+    }
+};
+
+const removeDie = (board) => {
+    updateBoard(board, board.layout.layout(board.dice));
+    updateReadyDice(board, -1);
+};
+
 
 // Interaction states
 const NONE = Symbol("no_interaction");
@@ -379,17 +391,11 @@ const TopDiceBoard = class extends HTMLElement {
     }
 
     connectedCallback() {
-        this.addEventListener("top-die:added", () => {
-            updateReadyDice(this, 1);
-            if (isReady(this)) {
-                updateBoard(this, this.layout.layout(this.dice));
-            }
-        });
+        this.addEventListener("top-die:added", () => addDie(this));
+        this.addEventListener("top-die:removed", () => removeDie(this));
 
-        this.addEventListener("top-die:removed", () => {
-            updateBoard(this, this.layout.layout(this.dice));
-            updateReadyDice(this, -1);
-        });
+        // Add dice that are already in the DOM
+        this.dice.forEach(() => addDie(this));
     }
 
     disconnectedCallback() {

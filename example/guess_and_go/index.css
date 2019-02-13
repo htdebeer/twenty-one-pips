@@ -1,0 +1,63 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-size: 14pt;
+}
+
+.mask {
+    display: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.mask.show {
+    display: block;
+    background-color: silver;
+    opacity: 0.25;
+}
+
+.message {
+    display: none;
+    left: 10%;
+    width: 80%;
+    position: absolute;
+    top: 25%;
+    border: 1px solid dimgray;
+    padding: 1em;
+}
+
+.message.show {
+    display: block;
+}
+
+.message.win {
+    background: rgba(0, 200, 0, 0.5);
+}
+
+.message.lose {
+    background: rgba(200, 0, 0, 0.5);
+}
+
+.control {
+    padding: 1ex;
+    border-bottom: 1px solid dimgray;
+    background: dodgerblue;
+}
+
+.control .and {
+    font-style: italic;
+    font-size: smaller;
+}
+
+p {
+    text-align: center;
+    margin: 0;
+}
+
+input.invalid {
+    color: crimson;
+}
+
