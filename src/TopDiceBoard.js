@@ -21,6 +21,7 @@
 import {GridLayout} from "./GridLayout.js";
 import {DEFAULT_SYSTEM_PLAYER} from "./TopPlayer.js";
 import {validate} from "./validate/validate.js";
+import {TopDie} from "./TopDie.js";
 
 /**
  * @module
@@ -527,6 +528,39 @@ const TopDiceBoard = class extends HTMLElement {
         updateBoard(this, this.layout.layout(this.dice));
         return this.dice;
     }
+
+    /**
+     * Add a die to this TopDiceBoard.
+     *
+     * @param {TopDie|Object} [config = {}] - The die or a configuration of
+     * the die to add to this TopDiceBoard.
+     * @param {Number|null} [config.pips] - The pips of the die to add.
+     * If no pips are specified or the pips are not between 1 and 6, a random
+     * number between 1 and 6 is generated instead.
+     * @param {String} [config.color] - The color of the die to add. Default
+     * to the default color.
+     * @param {Number} [config.x] - The x coordinate of the die.
+     * @param {Number} [config.y] - The y coordinate of the die.
+     * @param {Number} [config.rotation] - The rotation of the die.
+     * @param {TopPlayer} [heldBy] - The player holding the die.
+     *
+     * @return {TopDie} The added die.
+     */
+    addDie(config = {}) {
+        return this.appendChild(config instanceof TopDie ? config : new TopDie(config));
+    }
+
+    /**
+     * Remove die from this TopDiceBoard.
+     *
+     * @param {TopDie} die - The die to remove from this board.
+     */
+    removeDie(die) {
+        if (die.parentNode && die.parentNode === this) {
+            this.removeChild(die);
+        }
+    }
+
 };
 
 window.customElements.define("top-dice-board", TopDiceBoard);

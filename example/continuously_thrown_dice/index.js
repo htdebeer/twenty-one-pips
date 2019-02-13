@@ -17,7 +17,7 @@ const INTERVAL = 1000; // ms
 const addADie = (controller) => {
     controller
         .board
-        .appendChild(new twentyonepips.TopDie());
+        .addDie();
 };
 
 /**
@@ -31,7 +31,7 @@ const addADie = (controller) => {
 const removeRandomDie = (controller) => {
     controller
         .board
-        .removeChild(controller.board.dice[Math.floor(Math.random() * controller.board.dice.length)]);
+        .removeDie(controller.board.dice[Math.floor(Math.random() * controller.board.dice.length)]);
 };
 
 /**
