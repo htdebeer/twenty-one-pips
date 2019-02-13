@@ -19,7 +19,7 @@
  */
 //import {ConfigurationError} from "./error/ConfigurationError.js";
 import {GridLayout} from "./GridLayout.js";
-import {DEFAULT_SYSTEM_PLAYER} from "./TopPlayerHTMLElement.js";
+import {DEFAULT_SYSTEM_PLAYER} from "./TopPlayer.js";
 import {validate} from "./validate/validate.js";
 
 /**
@@ -300,15 +300,15 @@ const setupInteraction = (board) => {
 };
 
 /**
- * TopDiceBoardHTMLElement is a custom HTML element to render and control a
+ * TopDiceBoard is a custom HTML element to render and control a
  * dice board. 
  *
  * @extends HTMLElement
  */
-const TopDiceBoardHTMLElement = class extends HTMLElement {
+const TopDiceBoard = class extends HTMLElement {
 
     /**
-     * Create a new TopDiceBoardHTMLElement.
+     * Create a new TopDiceBoard.
      */
     constructor() {
         super();
@@ -408,7 +408,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
     /**
      * The GridLayout used by this DiceBoard to layout the dice.
      *
-     * @type {module:GridLayout~GridLayout}
+     * @type {GridLayout}
      */
     get layout() {
         return _layout.get(this);
@@ -418,7 +418,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
      * The dice on this board. Note, to actually throw the dice use
      * {@link throwDice}. 
      *
-     * @type {module:TopDieHTMLElement~TopDieHTMLElement[]}
+     * @type {TopDie[]}
      */
     get dice() {
         return [...this.getElementsByTagName("top-die")];
@@ -505,7 +505,7 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
     /**
      * The players playing on this board.
      *
-     * @type {module:TopPlayerHTMLElement~TopPlayerHTMLElement[]}
+     * @type {TopPlayer[]}
      */
     get players() {
         return this.querySelector("top-player-list").players;
@@ -514,10 +514,10 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
     /**
      * As player, throw the dice on this board.
      *
-     * @param {module:TopPlayerHTMLElement~TopPlayerHTMLElement} [player = DEFAULT_SYSTEM_PLAYER] - The
+     * @param {TopPlayer} [player = DEFAULT_SYSTEM_PLAYER] - The
      * player that is throwing the dice on this board.
      *
-     * @return {module:TopDieHTMLElement~TopDieHTMLElement[]} The thrown dice on this board. This list of dice is the same as this TopDiceBoardHTMLElement's {@see dice} property
+     * @return {TopDie[]} The thrown dice on this board. This list of dice is the same as this TopDiceBoard's {@see dice} property
      */
     throwDice(player = DEFAULT_SYSTEM_PLAYER) {
         if (player && !player.hasTurn) {
@@ -529,10 +529,10 @@ const TopDiceBoardHTMLElement = class extends HTMLElement {
     }
 };
 
-window.customElements.define("top-dice-board", TopDiceBoardHTMLElement);
+window.customElements.define("top-dice-board", TopDiceBoard);
 
 export {
-    TopDiceBoardHTMLElement,
+    TopDiceBoard,
     DEFAULT_DIE_SIZE,
     DEFAULT_HOLD_DURATION,
     DEFAULT_WIDTH,

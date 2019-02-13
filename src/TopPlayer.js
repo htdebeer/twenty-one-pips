@@ -24,13 +24,13 @@ import {ConfigurationError} from "./error/ConfigurationError.js";
 import {ReadOnlyAttributes} from "./mixin/ReadOnlyAttributes.js";
 import {validate} from "./validate/validate.js";
 
-// The names of the (observed) attributes of the TopPlayerHTMLElement.
+// The names of the (observed) attributes of the TopPlayer.
 const COLOR_ATTRIBUTE = "color";
 const NAME_ATTRIBUTE = "name";
 const SCORE_ATTRIBUTE = "score";
 const HAS_TURN_ATTRIBUTE = "has-turn";
 
-// The private properties of the TopPlayerHTMLElement 
+// The private properties of the TopPlayer 
 const _color = new WeakMap();
 const _name = new WeakMap();
 const _score = new WeakMap();
@@ -40,7 +40,7 @@ const _hasTurn = new WeakMap();
  * A Player in a dice game.
  *
  * A player's name should be unique in the game. Two different
- * TopPlayerHTMLElement elements with the same name attribute are treated as
+ * TopPlayer elements with the same name attribute are treated as
  * the same player.
  *
  * In general it is recommended that no two players do have the same color,
@@ -54,10 +54,10 @@ const _hasTurn = new WeakMap();
  * @extends HTMLElement
  * @mixes module:mixin/ReadOnlyAttributes~ReadOnlyAttributes
  */
-const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
+const TopPlayer = class extends ReadOnlyAttributes(HTMLElement) {
 
     /**
-     * Create a new TopPlayerHTMLElement, optionally based on an intitial
+     * Create a new TopPlayer, optionally based on an intitial
      * configuration via an object parameter or declared attributes in HTML.
      *
      * @param {Object} [config] - An initial configuration for the
@@ -161,7 +161,7 @@ const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
     /**
      * Start a turn for this player.
      *
-     * @return {TopPlayerHTMLElement} The player with a turn
+     * @return {TopPlayer} The player with a turn
      */
     startTurn() {
         if (this.isConnected) {
@@ -205,7 +205,7 @@ const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
     /**
      * Is this player equal another player?
      * 
-     * @param {module:TopPlayerHTMLElement~TopPlayerHTMLElement} other - The other player to compare this player with.
+     * @param {TopPlayer} other - The other player to compare this player with.
      * @return {Boolean} True when either the object references are the same
      * or when both name and color are the same.
      */
@@ -215,7 +215,7 @@ const TopPlayerHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
     }
 };
 
-window.customElements.define("top-player", TopPlayerHTMLElement);
+window.customElements.define("top-player", TopPlayer);
 
 /**
  * The default system player. Dice are thrown by a player. For situations
@@ -224,9 +224,9 @@ window.customElements.define("top-player", TopPlayerHTMLElement);
  * change the name and/or the color, create and use your own "system player".
  * @const
  */
-const DEFAULT_SYSTEM_PLAYER = new TopPlayerHTMLElement({color: "red", name: "*"});
+const DEFAULT_SYSTEM_PLAYER = new TopPlayer({color: "red", name: "*"});
 
 export {
-    TopPlayerHTMLElement,
+    TopPlayer,
     DEFAULT_SYSTEM_PLAYER
 };

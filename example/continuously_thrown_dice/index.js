@@ -17,7 +17,7 @@ const INTERVAL = 1000; // ms
 const addADie = (controller) => {
     controller
         .board
-        .appendChild(new twentyonepips.Die());
+        .appendChild(new twentyonepips.TopDie());
 };
 
 /**

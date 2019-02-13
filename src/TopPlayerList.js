@@ -17,17 +17,17 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-import {DEFAULT_SYSTEM_PLAYER} from "./TopPlayerHTMLElement.js";
+import {DEFAULT_SYSTEM_PLAYER} from "./TopPlayer.js";
 
 /**
- * TopPlayerListHTMLElement to describe the players in the game.
+ * TopPlayerList to describe the players in the game.
  *
  * @extends HTMLElement
  */
-const TopPlayerListHTMLElement = class extends HTMLElement {
+const TopPlayerList = class extends HTMLElement {
 
     /**
-     * Create a new TopPlayerListHTMLElement.
+     * Create a new TopPlayerList.
      */
     constructor() {
         super();
@@ -52,15 +52,15 @@ const TopPlayerListHTMLElement = class extends HTMLElement {
     /**
      * The players in this list.
      *
-     * @type {module:TopPlayerHTMLElement~TopPlayerHTMLElement[]}
+     * @type {TopPlayer[]}
      */
     get players() {
         return [...this.getElementsByTagName("top-player")];
     }
 };
 
-window.customElements.define("top-player-list", TopPlayerListHTMLElement);
+window.customElements.define("top-player-list", TopPlayerList);
 
 export {
-    TopPlayerListHTMLElement
+    TopPlayerList
 };

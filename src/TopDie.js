@@ -154,17 +154,17 @@ const _x = new WeakMap();
 const _y = new WeakMap();
 
 /**
- * TopDieHTMLElement is the "top-die" custom [HTML
+ * TopDie is the "top-die" custom [HTML
  * element](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement) representing a die
  * on the dice board.
  *
  * @extends HTMLElement
  * @mixes module:mixin/ReadOnlyAttributes~ReadOnlyAttributes
  */
-const TopDieHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
+const TopDie = class extends ReadOnlyAttributes(HTMLElement) {
 
     /**
-     * Create a new TopDieHTMLElement.
+     * Create a new TopDie.
      */
     constructor({pips, color, rotation, x, y, heldBy} = {}) {
         super();
@@ -272,9 +272,9 @@ const TopDieHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
 
 
     /**
-     * The Player that is holding this Die, if any. Null otherwise.
+     * The player that is holding this Die, if any. Null otherwise.
      *
-     * @type {Player|null} 
+     * @type {TopPlayer|null} 
      */
     get heldBy() {
         return _heldBy.get(this);
@@ -382,7 +382,7 @@ const TopDieHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
      * The player holds this Die. A player can only hold a die that is not
      * being held by another player yet.
      *
-     * @param {module:Player~Player} player - The player who wants to hold this Die.
+     * @param {TopPlayer} player - The player who wants to hold this Die.
      * @fires "top:hold-die" with parameters this Die and the player.
      */
     holdIt(player) {
@@ -410,7 +410,7 @@ const TopDieHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
      * The player releases this Die. A player can only release dice that she is
      * holding.
      *
-     * @param {module:Player~Player} player - The player who wants to release this Die.
+     * @param {TopPlayer} player - The player who wants to release this Die.
      * @fires "top:relase-die" with parameters this Die and the player releasing it.
      */
     releaseIt(player) {
@@ -504,10 +504,10 @@ const TopDieHTMLElement = class extends ReadOnlyAttributes(HTMLElement) {
     }
 };
 
-window.customElements.define("top-die", TopDieHTMLElement);
+window.customElements.define("top-die", TopDie);
 
 export {
-    TopDieHTMLElement,
+    TopDie,
     unicodeToPips,
     pipsToUnicode
 };
