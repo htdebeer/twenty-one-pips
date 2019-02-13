@@ -17,7 +17,9 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-import {DEFAULT_SYSTEM_PLAYER} from "./TopPlayer.js";
+import {DEFAULT_SYSTEM_PLAYER, TAG_NAME as TOP_PLAYER} from "./TopPlayer.js";
+
+const TAG_NAME = "top-player-list";
 
 /**
  * TopPlayerList to describe the players in the game.
@@ -55,12 +57,13 @@ const TopPlayerList = class extends HTMLElement {
      * @type {TopPlayer[]}
      */
     get players() {
-        return [...this.getElementsByTagName("top-player")];
+        return [...this.getElementsByTagName(TOP_PLAYER)];
     }
 };
 
-window.customElements.define("top-player-list", TopPlayerList);
+window.customElements.define(TAG_NAME, TopPlayerList);
 
 export {
-    TopPlayerList
+    TopPlayerList,
+    TAG_NAME
 };

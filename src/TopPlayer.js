@@ -17,12 +17,11 @@
  * along with twenty-one-pips.  If not, see <http://www.gnu.org/licenses/>.
  * @ignore
  */
-/**
- * @module
- */
 import {ConfigurationError} from "./error/ConfigurationError.js";
 import {ReadOnlyAttributes} from "./mixin/ReadOnlyAttributes.js";
 import {validate} from "./validate/validate.js";
+
+const TAG_NAME = "top-player";
 
 // The names of the (observed) attributes of the TopPlayer.
 const COLOR_ATTRIBUTE = "color";
@@ -52,7 +51,7 @@ const _hasTurn = new WeakMap();
  * attributes are not.
  *
  * @extends HTMLElement
- * @mixes module:mixin/ReadOnlyAttributes~ReadOnlyAttributes
+ * @mixes ReadOnlyAttributes
  */
 const TopPlayer = class extends ReadOnlyAttributes(HTMLElement) {
 
@@ -215,7 +214,7 @@ const TopPlayer = class extends ReadOnlyAttributes(HTMLElement) {
     }
 };
 
-window.customElements.define("top-player", TopPlayer);
+window.customElements.define(TAG_NAME, TopPlayer);
 
 /**
  * The default system player. Dice are thrown by a player. For situations
@@ -228,5 +227,6 @@ const DEFAULT_SYSTEM_PLAYER = new TopPlayer({color: "red", name: "*"});
 
 export {
     TopPlayer,
-    DEFAULT_SYSTEM_PLAYER
+    DEFAULT_SYSTEM_PLAYER,
+    TAG_NAME
 };

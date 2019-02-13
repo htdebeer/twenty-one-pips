@@ -19,10 +19,6 @@
  */
 
 /**
- * @module
- */
-
-/**
  * ConfigurationError
  *
  * @extends Error

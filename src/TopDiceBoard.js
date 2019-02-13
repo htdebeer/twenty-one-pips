@@ -19,13 +19,12 @@
  */
 //import {ConfigurationError} from "./error/ConfigurationError.js";
 import {GridLayout} from "./GridLayout.js";
-import {DEFAULT_SYSTEM_PLAYER} from "./TopPlayer.js";
-import {validate} from "./validate/validate.js";
 import {TopDie} from "./TopDie.js";
+import {DEFAULT_SYSTEM_PLAYER, TopPlayer} from "./TopPlayer.js";
+import {TAG_NAME as TOP_PLAYER_LIST} from "./TopPlayerList.js";
+import {validate} from "./validate/validate.js";
 
-/**
- * @module
- */
+const TAG_NAME = "top-dice-board";
 
 const DEFAULT_DIE_SIZE = 100; // px
 const DEFAULT_HOLD_DURATION = 375; // ms
@@ -50,7 +49,6 @@ const DRAGGING_DICE_DISABLED_ATTRIBUTE = "dragging-dice-disabled";
 const HOLDING_DICE_DISABLED_ATTRIBUTE = "holding-dice-disabled";
 const ROTATING_DICE_DISABLED_ATTRIBUTE = "rotating-dice-disabled";
 const HOLD_DURATION_ATTRIBUTE = "hold-duration";
-
 
 const parseNumber = (numberString, defaultNumber = 0) => {
     const number = parseInt(numberString, 10);
@@ -504,12 +502,28 @@ const TopDiceBoard = class extends HTMLElement {
     }
 
     /**
+     * The TopPlayerList element of this TopDiceBoard. If it does not exist,
+     * it will be created.
+     *
+     * @type {TopPlayerList}
+     * @private
+     */
+    get _playerList() {
+        let playerList = this.querySelector(TOP_PLAYER_LIST);
+        if (null === playerList) {
+            playerList = this.appendChild(TOP_PLAYER_LIST);
+        }
+
+        return playerList;
+    }
+
+    /**
      * The players playing on this board.
      *
      * @type {TopPlayer[]}
      */
     get players() {
-        return this.querySelector("top-player-list").players;
+        return this._playerList.players;
     }
 
     /**
@@ -561,9 +575,36 @@ const TopDiceBoard = class extends HTMLElement {
         }
     }
 
+    /**
+     * Add a player to this TopDiceBoard.
+     *
+     * @param {TopPlayer|Object} config - The player or a configuration of a
+     * player to add to this TopDiceBoard.
+     *
+     *
+     * @throws Error when the player to add conflicts with a pre-existing
+     * player.
+     *
+     * @return {TopPlayer} The added player.
+     */
+    addPlayer(config = {}) {
+        return this._playerList.appendChild(config instanceof TopPlayer ? config : new TopPlayer(config));
+    }
+
+    /**
+     * Remove player from this TopDiceBoard.
+     *
+     * @param {TopPlayer} player - The player to remove from this board.
+     */
+    removePlayer(player) {
+        if (player.parentNode && player.parentNode === this._playerList) {
+            this._playerList.removeChild(player);
+        }
+    }
+
 };
 
-window.customElements.define("top-dice-board", TopDiceBoard);
+window.customElements.define(TAG_NAME, TopDiceBoard);
 
 export {
     TopDiceBoard,
@@ -572,5 +613,6 @@ export {
     DEFAULT_WIDTH,
     DEFAULT_HEIGHT,
     DEFAULT_DISPERSION,
-    DEFAULT_ROTATING_DICE_DISABLED
+    DEFAULT_ROTATING_DICE_DISABLED,
+    TAG_NAME
 };

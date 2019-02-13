@@ -22,9 +22,8 @@
 import {ReadOnlyAttributes} from "./mixin/ReadOnlyAttributes.js";
 import {validate} from "./validate/validate.js";
 
-/**
- * @module
- */
+const TAG_NAME = "top-die";
+
 const CIRCLE_DEGREES = 360; // degrees
 const NUMBER_OF_PIPS = 6; // Default / regular six sided die has 6 pips maximum.
 const DEFAULT_COLOR = "Ivory";
@@ -159,12 +158,23 @@ const _y = new WeakMap();
  * on the dice board.
  *
  * @extends HTMLElement
- * @mixes module:mixin/ReadOnlyAttributes~ReadOnlyAttributes
+ * @mixes ReadOnlyAttributes
  */
 const TopDie = class extends ReadOnlyAttributes(HTMLElement) {
 
     /**
      * Create a new TopDie.
+     *
+     * @param {Object} [config = {}] - The initial configuration of the die.
+     * @param {Number|null} [config.pips] - The pips of the die to add.
+     * If no pips are specified or the pips are not between 1 and 6, a random
+     * number between 1 and 6 is generated instead.
+     * @param {String} [config.color] - The color of the die to add. Default
+     * to the default color.
+     * @param {Number} [config.x] - The x coordinate of the die.
+     * @param {Number} [config.y] - The y coordinate of the die.
+     * @param {Number} [config.rotation] - The rotation of the die.
+     * @param {TopPlayer} [config.heldBy] - The player holding the die.
      */
     constructor({pips, color, rotation, x, y, heldBy} = {}) {
         super();
@@ -504,10 +514,11 @@ const TopDie = class extends ReadOnlyAttributes(HTMLElement) {
     }
 };
 
-window.customElements.define("top-die", TopDie);
+window.customElements.define(TAG_NAME, TopDie);
 
 export {
     TopDie,
     unicodeToPips,
-    pipsToUnicode
+    pipsToUnicode,
+    TAG_NAME
 };

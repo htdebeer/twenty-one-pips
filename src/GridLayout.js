@@ -19,10 +19,6 @@
  */
 import {ConfigurationError} from "./error/ConfigurationError.js";
 
-/**
- * @module
- */
-
 const FULL_CIRCLE_IN_DEGREES = 360;
 
 const randomizeCenter = (n) => {
@@ -80,7 +76,7 @@ const GridLayout = class {
 
     /**
      * The width in pixels used by this GridLayout.
-     * @throws module:error/ConfigurationError.ConfigurationError Width >= 0
+     * @throws ConfigurationError Width >= 0
      * @type {Number} 
      */
     get width() {
@@ -97,7 +93,7 @@ const GridLayout = class {
 
     /**
      * The height in pixels used by this GridLayout. 
-     * @throws module:error/ConfigurationError.ConfigurationError Height >= 0
+     * @throws ConfigurationError Height >= 0
      *
      * @type {Number}
      */
@@ -128,7 +124,7 @@ const GridLayout = class {
      * indicates the distance from the center dice can be layout. Use 1 for a
      * tight packed layout.
      *
-     * @throws module:error/ConfigurationError.ConfigurationError Dispersion >= 0
+     * @throws ConfigurationError Dispersion >= 0
      * @type {Number}
      */
     get dispersion() {
@@ -145,7 +141,7 @@ const GridLayout = class {
     /**
      * The size of a die.
      *
-     * @throws module:error/ConfigurationError.ConfigurationError DieSize >= 0
+     * @throws ConfigurationError DieSize >= 0
      * @type {Number}
      */
     get dieSize() {
@@ -205,10 +201,10 @@ const GridLayout = class {
     /**
      * Layout dice on this GridLayout.
      *
-     * @param {module:Die~Die[]} dice - The dice to layout on this Layout.
-     * @return {module:Die~Die[]} The same list of dice, but now layout.
+     * @param {TopDie[]} dice - The dice to layout on this Layout.
+     * @return {TopDie[]} The same list of dice, but now layout.
      *
-     * @throws {module:error/ConfigurationError~ConfigurationError} The number of
+     * @throws {ConfigurationError} The number of
      * dice should not exceed the maximum number of dice this Layout can
      * layout.
      */
@@ -253,9 +249,9 @@ const GridLayout = class {
      * Compute a list with available cells to place dice on.
      *
      * @param {Number} max - The number empty cells to compute.
-     * @param {Die[]} alreadyLayoutDice - A list with dice that have already been layout.
+     * @param {TopDie[]} alreadyLayoutDice - A list with dice that have already been layout.
      * 
-     * @return {NUmber[]} The list of available cells represented by their number.
+     * @return {Number[]} The list of available cells represented by their number.
      * @private
      */
     _computeAvailableCells(max, alreadyLayoutDice) {
@@ -311,7 +307,7 @@ const GridLayout = class {
      * Does cell contain a cell from alreadyLayoutDice?
      *
      * @param {Number} cell - A cell in layout represented by a number.
-     * @param {Die[]} alreadyLayoutDice - A list of dice that have already been layout.
+     * @param {TopDie[]} alreadyLayoutDice - A list of dice that have already been layout.
      *
      * @return {Boolean} True if cell does not contain a die.
      * @private
@@ -381,7 +377,7 @@ const GridLayout = class {
      *
      * @param {Object} diecoordinate - The coordinate to find the closest cell
      * for.
-     * @param {Die} [diecoordinat.die = null] - The die to snap to.
+     * @param {TopDie} [diecoordinat.die = null] - The die to snap to.
      * @param {Number} diecoordinate.x - The x-coordinate.
      * @param {Number} diecoordinate.y - The y-coordinate.
      *
@@ -443,7 +439,7 @@ const GridLayout = class {
      * Get the die at point (x, y);
      *
      * @param {Point} point - The point in (x, y) coordinates
-     * @return {Die|null} The die under coordinates (x, y) or null if no die
+     * @return {TopDie|null} The die under coordinates (x, y) or null if no die
      * is at the point.
      */
     getAt(point = {x: 0, y: 0}) {

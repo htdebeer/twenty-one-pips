@@ -19,10 +19,6 @@
  */
 
 /**
- * @module
- */
-
-/**
  * NoSuchEventTypeError is thrown when an {@link EventAware} object tries to 
  * set, unset, emit, or unregister an unregistered event type.
  *

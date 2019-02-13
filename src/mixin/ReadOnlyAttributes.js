@@ -35,10 +35,10 @@ const attribute2property = (name) => {
 };
 
 /**
- * Mixin {@link module:mixin/ReadOnlyAttributes~ReadOnlyAttributes} to a class.
+ * Mixin {@link ReadOnlyAttributes} to a class.
  *
  * @param {*} Sup - The class to mix into.
- * @return {module:mixin/ReadOnlyAttributes~ReadOnlyAttributes} The mixed-in class
+ * @return {ReadOnlyAttributes} The mixed-in class
  */
 const ReadOnlyAttributes = (Sup) =>
     /**
@@ -51,7 +51,7 @@ const ReadOnlyAttributes = (Sup) =>
      * @return {ReadOnlyAttributes} The mixed in class.
      *
      * @mixin
-     * @alias module:mixin/ReadOnlyAttributes~ReadOnlyAttributes
+     * @alias ReadOnlyAttributes
      */
     class extends Sup {
 
