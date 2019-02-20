@@ -15,7 +15,8 @@
     "watch": "npx gulp watch",
     "start-server": "npx http-server . -p 22222 >/dev/null",
     "start-test": "npx mocha-headless-chrome -f http://localhost:22222/test",
-    "test": "start-server-and-test start-server http://localhost:22222 start-test"
+    "test": "start-server-and-test start-server http://localhost:22222 start-test",
+    "check": "npx eslint src/"
   },
   "repository": {
     "type": "git",
@@ -33,6 +34,7 @@
   },
   "homepage": "https://twentyonepips.org",
   "devDependencies": {
+    "babel-eslint": "^10.0.1",
     "chai": "^4.2.0",
     "docdash": "^1.0.1",
     "eslint": "^5.11.1",
@@ -42,6 +44,7 @@
     "gulp-sourcemaps": "^2.6.4",
     "gulp-terser": "^1.1.6",
     "http-server": "^0.11.1",
+    "husky": "^1.3.1",
     "jsdoc": "^3.5.5",
     "mocha": "^5.2.0",
     "mocha-headless-chrome": "^2.0.2",
@@ -52,5 +55,10 @@
   },
   "dependencies": {
     "npm": "^6.5.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run check && npm run test"
+    }
   }
 }
