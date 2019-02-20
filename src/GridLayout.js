@@ -18,6 +18,7 @@
  * @ignore
  */
 import {ConfigurationError} from "./error/ConfigurationError.js";
+import {DEFAULT_DIE_SIZE, DEFAULT_DISPERSION, DEFAULT_WIDTH, DEFAULT_HEIGHT} from "./TopDiceBoard.js";
 
 const FULL_CIRCLE_IN_DEGREES = 360;
 
@@ -57,10 +58,10 @@ const GridLayout = class {
      * @param {GridLayoutConfiguration} config - The configuration of the GridLayout
      */
     constructor({
-        width,
-        height,
-        dispersion,
-        dieSize
+        width = DEFAULT_WIDTH,
+        height = DEFAULT_HEIGHT,
+        dieSize = DEFAULT_DIE_SIZE,
+        dispersion = DEFAULT_DISPERSION
     } = {}) {
         _dice.set(this, []);
         _dieSize.set(this, 1);
@@ -84,7 +85,7 @@ const GridLayout = class {
     }
 
     set width(w) {
-        if (0 > w) {
+        if (!Number.isInteger(w) || 0 > w) {
             throw new ConfigurationError(`Width should be a number larger than 0, got '${w}' instead.`);
         }
         _width.set(this, w);
@@ -102,7 +103,7 @@ const GridLayout = class {
     }
 
     set height(h) {
-        if (0 > h) {
+        if (!Number.isInteger(h) || 0 > h) {
             throw new ConfigurationError(`Height should be a number larger than 0, got '${h}' instead.`);
         }
         _height.set(this, h);
@@ -132,7 +133,7 @@ const GridLayout = class {
     }
 
     set dispersion(d) {
-        if (0 > d) {
+        if (!Number.isInteger(d) || 0 > d) {
             throw new ConfigurationError(`Dispersion should be a number larger than 0, got '${d}' instead.`);
         }
         return _dispersion.set(this, d);
@@ -149,7 +150,7 @@ const GridLayout = class {
     }
 
     set dieSize(ds) {
-        if (0 >= ds) {
+        if (!Number.isInteger(ds) || 0 >= ds) {
             throw new ConfigurationError(`dieSize should be a number larger than 1, got '${ds}' instead.`);
         }
         _dieSize.set(this, ds);
@@ -217,9 +218,8 @@ const GridLayout = class {
         const diceToLayout = [];
 
         for (const die of dice) {
-            if (die.hasCoordinates() && die.isHeld()) {
-                // Dice that are being held and have been layout before should
-                // keep their current coordinates and rotation. In other words,
+            if (die.isHeld()) {
+                // Dice that are being held should keep their current coordinates and rotation. In other words,
                 // these dice are skipped.
                 alreadyLayoutDice.push(die);
             } else {

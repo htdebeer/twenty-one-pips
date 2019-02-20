@@ -1,14 +1,13 @@
 import {
     DEFAULT_DIE_SIZE,
     DEFAULT_HOLD_DURATION,
-    DEFAULT_BACKGROUND,
     DEFAULT_WIDTH,
     DEFAULT_HEIGHT,
     DEFAULT_DISPERSION
-} from "../../src/dice_board/DiceBoard.js";
-import {GridLayout} from "../../src/dice_board/GridLayout.js";
-import {Die} from "../../src/Die.js";
-import {Player} from "../../src/Player.js";
+} from "../src/TopDiceBoard.js";
+import {GridLayout} from "../src/GridLayout.js";
+import {TopDie} from "../src/TopDie.js";
+import {TopPlayer} from "../src/TopPlayer.js";
 
 describe("GridLayout", function () {
     describe("create a new GridLayout", function () {
@@ -24,7 +23,7 @@ describe("GridLayout", function () {
             });
             chai.expect(l.width).to.equal(100);
             chai.expect(l.height).to.equal(4000);
-            chai.expect(l.maximumNumberOfDice).to.equal(0);
+            chai.expect(l.maximumNumberOfDice).to.equal(40);
 
             l = new GridLayout({
                 width: 200,
@@ -32,19 +31,39 @@ describe("GridLayout", function () {
             });
             chai.expect(l.width).to.equal(200);
             chai.expect(l.height).to.equal(200);
-            chai.expect(l.maximumNumberOfDice).to.equal(1);
+            chai.expect(l.maximumNumberOfDice).to.equal(4);
         });
 
-        it("should throw an error when height or width are <= 0", function () {
+        it("should throw an error when height, width, disperion, or dieSize are <= 0 or not an integer", function () {
             chai.expect(() => new GridLayout({
                 width: -100,
                 height: 0,
+            })).to.throw();
+
+            chai.expect(() => new GridLayout({
+                height: 5.4
+            })).to.throw();
+
+            chai.expect(() => new GridLayout({
+                dispersion: "6"
+            })).to.throw();
+            
+            chai.expect(() => new GridLayout({
+                dieSize: -9.5
+            })).to.throw();
+
+            chai.expect(() => new GridLayout({
+                width: false
+            })).to.throw();
+            
+            chai.expect(() => new GridLayout({
+                dieSize: false
             })).to.throw();
         });
     });
 
     describe("#layout(dice)", function () {
-        const dice = [new Die(), new Die(), new Die(), new Die(), new Die()];
+        const dice = [new TopDie(), new TopDie(), new TopDie(), new TopDie(), new TopDie()];
         const grid = new GridLayout();
 
         it("should return an empty list when an empty list is supplied to layout", function () {
@@ -62,14 +81,12 @@ describe("GridLayout", function () {
         });
         
         it("should re-layout dice that are being held", function () {
-            const player = new Player({name: "John", color: "red"});
-            const notHoldDie = new Die();
+            const player = new TopPlayer({name: "John", color: "red"});
+            const notHoldDie = new TopDie();
             chai.expect(notHoldDie.isHeld()).to.be.false;
-            chai.expect(notHoldDie.hasCoordinates()).to.be.false;
 
             grid.layout([notHoldDie]);
             chai.expect(notHoldDie.isHeld()).to.be.false;
-            chai.expect(notHoldDie.hasCoordinates()).to.be.true;
 
             const firstCoordinates = notHoldDie.coordinates;
             const firstRotation = notHoldDie.rotation;
@@ -98,14 +115,12 @@ describe("GridLayout", function () {
         });
         
         it("should not re-layout dice that are being held", function () {
-            const player = new Player({name: "John", color: "red"});
-            const holdDie = new Die({heldBy: player});
+            const player = new TopPlayer({name: "John", color: "red"});
+            const holdDie = new TopDie({heldBy: player});
             chai.expect(holdDie.isHeld()).to.be.true;
-            chai.expect(holdDie.hasCoordinates()).to.be.false;
 
             grid.layout([holdDie]);
             chai.expect(holdDie.isHeld()).to.be.true;
-            chai.expect(holdDie.hasCoordinates()).to.be.true;
 
             const firstCoordinates = holdDie.coordinates;
             const firstRotation = holdDie.rotation;
@@ -161,8 +176,8 @@ describe("GridLayout", function () {
         });
 
         it("should return the next bet fit if the closest cell is already taken", function () {
-            const die = new Die();
-            const player = new Player({name: "test", color: "red"});
+            const die = new TopDie();
+            const player = new TopPlayer({name: "test", color: "red"});
             die.coordinates = {x: 100, y: 100};
             die.holdIt(player);
 
@@ -177,8 +192,8 @@ describe("GridLayout", function () {
         });
 
         it("should return the current coordinates if the current cell is the best fit", function () {
-            const die = new Die();
-            const player = new Player({name: "test", color: "red"});
+            const die = new TopDie();
+            const player = new TopPlayer({name: "test", color: "red"});
             die.coordinates = {x: 100, y: 100};
             die.holdIt(player);
 

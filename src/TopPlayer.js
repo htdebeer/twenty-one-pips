@@ -209,8 +209,9 @@ const TopPlayer = class extends ReadOnlyAttributes(HTMLElement) {
      * or when both name and color are the same.
      */
     equals(other) {
-        const name = "string" === typeof other ? other : other.name;
-        return other === this || name === this.name;
+        const sameName = other.name === this.name;
+        const sameColor = other.color === this.color;
+        return other === this || (sameName && sameColor);
     }
 };
 

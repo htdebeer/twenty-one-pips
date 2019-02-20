@@ -21,6 +21,7 @@
 //import {ConfigurationError} from "./error/ConfigurationError.js";
 import {ReadOnlyAttributes} from "./mixin/ReadOnlyAttributes.js";
 import {validate} from "./validate/validate.js";
+import {TopPlayer} from "./TopPlayer.js";
 
 const TAG_NAME = "top-die";
 
@@ -206,10 +207,8 @@ const TopDie = class extends ReadOnlyAttributes(HTMLElement) {
             .defaultTo(DEFAULT_Y)
             .value;
 
-        this.heldBy = validate.string(heldBy || this.getAttribute(HELD_BY_ATTRIBUTE))
-            .notEmpty()
-            .defaultTo(null)
-            .value;
+        // Todo: validate that TopPlayer is on the same board as Die?
+        this.heldBy = heldBy instanceof TopPlayer ? heldBy : document.querySelector(this.getAttribute(HELD_BY_ATTRIBUTE));
     }
 
     static get observedAttributes() {
@@ -318,15 +317,6 @@ const TopDie = class extends ReadOnlyAttributes(HTMLElement) {
     }
 
     /**
-     * Does this Die have coordinates?
-     *
-     * @return {Boolean} True when the Die does have coordinates
-     */
-    hasCoordinates() {
-        return null !== this.coordinates;
-    }
-
-    /**
      * The x coordinate
      *
      * @type {Number}
@@ -380,7 +370,7 @@ const TopDie = class extends ReadOnlyAttributes(HTMLElement) {
         if (!this.isHeld()) {
             _pips.set(this, randomPips());
             this.setAttribute(PIPS_ATTRIBUTE, this.pips);
-            this.dispatchEvent(new Event("top:throw-die", {
+            this.dispatchEvent(new CustomEvent("top:throw-die", {
                 detail: {
                     die: this
                 }
@@ -398,7 +388,7 @@ const TopDie = class extends ReadOnlyAttributes(HTMLElement) {
     holdIt(player) {
         if (!this.isHeld()) {
             this.heldBy = player;
-            this.dispatchEvent(new Event("top:hold-die", {
+            this.dispatchEvent(new CustomEvent("top:hold-die", {
                 detail: {
                     die: this,
                     player

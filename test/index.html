@@ -13,13 +13,10 @@
 
         <script>mocha.setup("bdd")</script>
         <script type="module">
-            import "./Model.js";
-            import "./Player.js";
-            import "./Die.js";
+            import "./TopDie.js";
+            import "./TopPlayer.js";
 
-            import "./dice_board/DieSVG.js";
-            import "./dice_board/GridLayout.js";
-            import "./dice_board/SVGDiceBoard.js";
+            import "./GridLayout.js";
 
             mocha.checkLeaks();
             mocha.run();
