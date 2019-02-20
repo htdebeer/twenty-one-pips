@@ -83,7 +83,6 @@ const GridLayout = class {
     get width() {
         return _width.get(this);
     }
-
     set width(w) {
         if (!Number.isInteger(w) || 0 > w) {
             throw new ConfigurationError(`Width should be a number larger than 0, got '${w}' instead.`);
@@ -101,7 +100,6 @@ const GridLayout = class {
     get height() {
         return _height.get(this);
     }
-
     set height(h) {
         if (!Number.isInteger(h) || 0 > h) {
             throw new ConfigurationError(`Height should be a number larger than 0, got '${h}' instead.`);
@@ -131,7 +129,6 @@ const GridLayout = class {
     get dispersion() {
         return _dispersion.get(this);
     }
-
     set dispersion(d) {
         if (!Number.isInteger(d) || 0 > d) {
             throw new ConfigurationError(`Dispersion should be a number larger than 0, got '${d}' instead.`);
@@ -148,7 +145,6 @@ const GridLayout = class {
     get dieSize() {
         return _dieSize.get(this);
     }
-
     set dieSize(ds) {
         if (!Number.isInteger(ds) || 0 >= ds) {
             throw new ConfigurationError(`dieSize should be a number larger than 1, got '${ds}' instead.`);
@@ -157,11 +153,15 @@ const GridLayout = class {
         this._calculateGrid(this.width, this.height);
     }
 
+    /**
+     * Rotate dice
+     *
+     * @type {Boolean}
+     */
     get rotate() {
         const r = _rotate.get(this);
         return undefined === r ? true : r;
     }
-
     set rotate(r) {
         _rotate.set(this, r);
     }

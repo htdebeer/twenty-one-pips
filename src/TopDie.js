@@ -298,6 +298,13 @@ const TopDie = class extends ReadOnlyAttributes(HTMLElement) {
     }
 
     /**
+     * @typedef {Object} Coordinates
+     *
+     * @property {Number} x - The x coordinate
+     * @property {Number} y - The y coordinate
+     */
+
+    /**
      * The coordinates of this Die.
      *
      * @type {Coordinates|null}
