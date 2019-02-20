@@ -10,9 +10,12 @@
     "src": "src"
   },
   "scripts": {
-    "doc": "node_modules/.bin/jsdoc ./src --configure jsdoc.conf.json",
-    "build": "node_modules/.bin/gulp",
-    "watch": "node_modules/.bin/gulp watch"
+    "doc": "npx jsdoc ./src --configure jsdoc.conf.json",
+    "build": "npx gulp",
+    "watch": "npx gulp watch",
+    "start-server": "npx http-server . -p 22222 >/dev/null",
+    "start-test": "npx mocha-headless-chrome -f http://localhost:22222/test",
+    "test": "start-server-and-test start-server http://localhost:22222 start-test"
   },
   "repository": {
     "type": "git",
@@ -41,7 +44,9 @@
     "http-server": "^0.11.1",
     "jsdoc": "^3.5.5",
     "mocha": "^5.2.0",
+    "mocha-headless-chrome": "^2.0.2",
     "rollup-stream": "^1.24.1",
+    "start-server-and-test": "^1.7.11",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^2.0.0"
   },
