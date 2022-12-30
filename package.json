@@ -55,7 +55,7 @@
     "vinyl-source-stream": "^2.0.0"
   },
   "dependencies": {
-    "npm": "^6.14.8"
+    "npm": "^9.2.0"
   },
   "husky": {
     "hooks": {
