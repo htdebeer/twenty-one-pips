@@ -47,7 +47,7 @@
     "husky": "^2.7.0",
     "js-yaml": "^3.14.0",
     "jsdoc": "^3.6.5",
-    "mocha": "^6.2.3",
+    "mocha": "^10.2.0",
     "mocha-headless-chrome": "^2.0.3",
     "rollup-stream": "^1.24.1",
     "start-server-and-test": "^1.11.3",
